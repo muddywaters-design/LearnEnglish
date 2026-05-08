@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מילים | תרגול אנגלית</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f5f7ff;
+  --bg2:      #eef1fb;
+  --surface:  #ffffff;
+  --border:   #dde2f0;
+  --border2:  #c8d0e8;
+  --txt:      #1a1d2e;
+  --txt2:     #4a5068;
+  --txt3:     #8890aa;
+  --blue:     #3d5afe;
+  --blue-l:   #6b82ff;
+  --blue-bg:  #eef0ff;
+  --blue-bg2: #dce0ff;
+  --green:    #00b87a;
+  --green-bg: #e6f9f3;
+  --red:      #f03e5f;
+  --red-bg:   #fde8ed;
+  --gold:     #f59e0b;
+  --gold-bg:  #fef3c7;
+  --r:        16px;
+  --shadow:   0 2px 12px rgba(61,90,254,0.08);
+  --shadow-lg:0 8px 32px rgba(61,90,254,0.12);
+}
+
+/* ── DARK THEME ── */
+body.dark {
+  --bg:       #0f0e17;
+  --bg2:      #1a1828;
+  --surface:  #1a1828;
+  --border:   #2a2840;
+  --border2:  #363450;
+  --txt:      #e8f0ff;
+  --txt2:     #a0a8c8;
+  --txt3:     #6068a0;
+  --blue:     #6b8fff;
+  --blue-l:   #8faeff;
+  --blue-bg:  #1e2540;
+  --blue-bg2: #252d50;
+  --green:    #4dd88a;
+  --green-bg: #0e2820;
+  --red:      #f06080;
+  --red-bg:   #2a1020;
+  --gold:     #f5c842;
+  --gold-bg:  #2a2010;
+  --shadow:   0 2px 12px rgba(0,0,0,0.3);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.5);
+}
+body.dark .front { background: linear-gradient(145deg,#1a1828,#222035); }
+body.dark .back  { background: linear-gradient(145deg,#0e2010,#122018); }
+body.dark header { background: #0f0e17ee; }
+body.dark .qcard { background: var(--surface); }
+body.dark #apiKeyPanel { background: #1e1c10; border-color: #4a4010; }
+body.dark #apiKeyPanel span { color: #c8a840; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── HEADER ── */
+header {
+  width: 100%; padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem; font-weight: 700;
+  color: var(--blue); white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+.prog-track {
+  flex: 1; height: 6px;
+  background: var(--blue-bg2);
+  border-radius: 999px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-l));
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.hdr-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+#syncMsg { font-size: 0.7rem; color: var(--green); white-space: nowrap; font-weight: 500; }
+.wcount { font-size: 0.75rem; color: var(--txt3); white-space: nowrap; font-weight: 500; }
+.btn-add {
+  padding: 7px 16px; border-radius: 999px;
+  border: none; background: var(--blue); color: #fff;
+  cursor: pointer; font-size: 0.8rem; font-weight: 600;
+  font-family: inherit; white-space: nowrap;
+  transition: all 0.2s; box-shadow: 0 2px 8px rgba(61,90,254,0.3);
+}
+.btn-add:hover { background: var(--blue-l); transform: translateY(-1px); }
+
+/* ── STATS ── */
+.stats-bar {
+  width: 100%; max-width: 720px;
+  display: flex; gap: 10px;
+  padding: 16px 16px 0; flex-wrap: wrap; justify-content: center;
+}
+.stat-chip {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 18px; min-width: 80px;
+  box-shadow: var(--shadow); gap: 2px;
+  transition: box-shadow 0.2s;
+}
+.stat-chip:hover { box-shadow: var(--shadow-lg); }
+.stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem; font-weight: 700; color: var(--blue);
+  line-height: 1;
+}
+.stat-lbl {
+  font-size: 0.62rem; color: var(--txt3);
+  letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600;
+}
+.ring-wrap { position: relative; width: 44px; height: 44px; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--blue-bg2); stroke-width: 4; }
+.ring-fg { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; color: var(--blue); font-weight: 700; }
+
+/* ── MODES ── */
+.modes {
+  display: flex; gap: 6px;
+  padding: 16px 16px 0; flex-wrap: wrap; justify-content: center;
+}
+.mode-btn {
+  padding: 8px 18px; border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface); color: var(--txt2);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.85rem; font-weight: 500;
+  transition: all 0.2s;
+}
+.mode-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+.mode-btn.active {
+  background: var(--blue); color: #fff;
+  border-color: var(--blue); font-weight: 600;
+  box-shadow: 0 2px 10px rgba(61,90,254,0.3);
+}
+
+/* ── MAIN ── */
+main {
+  width: 100%; max-width: 640px;
+  padding: 20px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+
+/* ── FLASHCARD ── */
+.scene { width: 100%; perspective: 1200px; }
+.card {
+  width: 100%; min-height: 280px;
+  position: relative; transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+}
+.card.flipped { transform: rotateY(180deg); }
+.face {
+  position: absolute; width: 100%; min-height: 280px;
+  backface-visibility: hidden; border-radius: 20px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 36px 32px; gap: 12px; text-align: center;
+}
+.front {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.back {
+  background: linear-gradient(145deg, #f0fdf8, #e6f9f3);
+  border: 1.5px solid #b2edd4;
+  transform: rotateY(180deg);
+  box-shadow: var(--shadow-lg);
+}
+.card-lbl {
+  font-size: 0.65rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--txt3); font-weight: 600;
+}
+.card-en {
+  font-family: 'Fraunces', serif;
+  font-size: 2.4rem; font-weight: 700;
+  color: var(--txt); line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+.card-he {
+  font-size: 1.3rem; color: var(--green);
+  font-weight: 600; line-height: 1.3;
+}
+.card-explain {
+  font-size: 0.88rem; color: var(--txt2);
+  line-height: 1.65; max-width: 380px; direction: rtl;
+}
+.card-example {
+  font-size: 0.85rem; color: var(--gold);
+  font-style: italic; direction: ltr;
+  max-width: 380px; line-height: 1.6;
+  font-family: 'Fraunces', serif;
+  background: var(--gold-bg);
+  padding: 8px 14px; border-radius: 8px;
+  border-right: 3px solid var(--gold);
+}
+.flip-hint {
+  font-size: 0.7rem; color: var(--txt3); font-weight: 500;
+}
+.speak-btn {
+  background: var(--blue-bg); border: 1.5px solid var(--blue-bg2);
+  border-radius: 999px; color: var(--blue);
+  cursor: pointer; padding: 5px 14px;
+  font-size: 0.78rem; font-family: inherit;
+  font-weight: 600; transition: all 0.2s;
+}
+.speak-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.fc-nav { display: flex; gap: 10px; align-items: center; }
+.nav-btn {
+  padding: 9px 22px; border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface); color: var(--txt);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.9rem; font-weight: 500;
+  box-shadow: var(--shadow); transition: all 0.2s;
+}
+.nav-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+.counter { color: var(--txt3); font-size: 0.9rem; font-weight: 600; min-width: 60px; text-align: center; }
+
+/* ── QUIZ CARD ── */
+.qcard {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 20px;
+  padding: 28px; text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+.q-lbl {
+  font-size: 0.65rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--txt3);
+  font-weight: 600; margin-bottom: 12px;
+}
+.q-en {
+  font-family: 'Fraunces', serif;
+  font-size: 2.2rem; font-weight: 700;
+  color: var(--blue); letter-spacing: -0.3px;
+}
+.q-row { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.choice {
+  padding: 14px 16px; border-radius: 14px;
+  border: 1.5px solid var(--border2);
+  background: var(--bg); color: var(--txt);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.95rem; font-weight: 500;
+  line-height: 1.4; transition: all 0.18s;
+}
+.choice:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); }
+.choice.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; }
+.choice.wrong   { background: var(--red-bg);   border-color: var(--red);   color: var(--red);   font-weight: 600; }
+.choice:disabled { cursor: default; }
+
+/* ── FILL ── */
+.blank-area { font-size: 1.15rem; color: var(--txt2); padding: 18px 10px; text-align: center; line-height: 2; }
+.blank-input {
+  background: transparent; border: none;
+  border-bottom: 2.5px solid var(--blue);
+  color: var(--blue); font-size: 1.3rem;
+  font-family: 'Fraunces', serif; text-align: center;
+  width: 200px; outline: none; padding: 0 4px;
+  direction: ltr; font-weight: 700;
+}
+.hint-chars {
+  font-size: 0.72rem; color: var(--txt3);
+  letter-spacing: 5px; margin-top: 8px;
+  font-family: monospace; font-weight: 600;
+}
+
+/* ── WRITE ── */
+.write-input {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: 14px; color: var(--txt);
+  font-size: 1rem; padding: 14px 18px;
+  outline: none; font-family: inherit;
+  font-weight: 500; direction: rtl;
+  transition: border-color 0.2s;
+  box-shadow: var(--shadow);
+}
+.write-input:focus { border-color: var(--blue); }
+
+/* ── BUTTONS ── */
+.btn-submit {
+  padding: 13px 40px; border-radius: 999px;
+  border: none; background: var(--blue); color: #fff;
+  font-weight: 700; cursor: pointer;
+  font-size: 1rem; font-family: inherit;
+  box-shadow: 0 4px 16px rgba(61,90,254,0.35);
+  transition: all 0.2s;
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61,90,254,0.4); }
+.btn-submit:active { transform: translateY(0); }
+
+.feedback {
+  padding: 14px 20px; border-radius: 14px;
+  font-size: 0.95rem; font-weight: 600;
+  text-align: center; width: 100%;
+  animation: fadeUp 0.3s ease;
+}
+.feedback.ok { background: var(--green-bg); color: var(--green); border: 1.5px solid #b2edd4; }
+.feedback.no { background: var(--red-bg);   color: var(--red);   border: 1.5px solid #fbb8c6; }
+
+.btn-next {
+  padding: 9px 28px; border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface); color: var(--txt);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.9rem; font-weight: 500;
+  box-shadow: var(--shadow); transition: all 0.2s;
+}
+.btn-next:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+
+/* ── DONE ── */
+.done-wrap {
+  text-align: center; padding: 44px 32px;
+  background: var(--surface); border-radius: 20px;
+  border: 1.5px solid var(--border); width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+.done-score {
+  font-family: 'Fraunces', serif;
+  font-size: 3.5rem; font-weight: 700;
+  color: var(--green); margin: 10px 0;
+}
+.done-msg { color: var(--txt2); margin-bottom: 28px; font-size: 1rem; font-weight: 500; }
+
+/* ── SMART BADGE ── */
+.smart-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--blue);
+  font-weight: 600; background: var(--blue-bg);
+  border: 1.5px solid var(--blue-bg2);
+  border-radius: 999px; padding: 5px 14px;
+}
+
+/* ── WORD LIST ── */
+.wl-toggle {
+  font-size: 0.8rem; color: var(--txt3);
+  cursor: pointer; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.wl-toggle:hover { color: var(--blue); }
+.word-list {
+  display: none; width: 100%;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 16px;
+  box-shadow: var(--shadow);
+}
+.word-list.open { display: block; }
+.wl-inner { columns: 2; gap: 10px; }
+.wl-row {
+  font-size: 0.83rem; padding: 5px 0;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 6px; break-inside: avoid;
+  border-bottom: 1px solid var(--bg2);
+}
+.wl-en { color: var(--txt); font-weight: 600; direction: ltr; display: inline-block; }
+.wl-he { color: var(--blue); font-size: 0.75rem; font-weight: 500; }
+.del-btn {
+  background: none; border: none; color: var(--border2);
+  cursor: pointer; font-size: 0.8rem;
+  padding: 2px 6px; border-radius: 6px;
+  flex-shrink: 0; transition: all 0.2s;
+}
+.del-btn:hover { color: var(--red); background: var(--red-bg); }
+
+/* ── SYNC/EXPORT ── */
+.io-row {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+.btn-io {
+  background: var(--surface); border: 1.5px solid var(--border2);
+  border-radius: 999px; color: var(--txt2);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.8rem; font-weight: 500;
+  padding: 7px 18px; transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.btn-io:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,29,46,0.55);
+  backdrop-filter: blur(6px); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: fadeUp 0.2s ease;
+}
+.overlay.hidden { display: none; }
+.modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 22px; padding: 28px;
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(26,29,46,0.2);
+}
+.modal-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--txt); }
+.m-row { display: flex; gap: 8px; }
+.m-input {
+  flex: 1; background: var(--bg);
+  border: 1.5px solid var(--border2); border-radius: 12px;
+  color: var(--txt); font-size: 0.95rem; font-weight: 500;
+  padding: 10px 14px; outline: none; font-family: inherit;
+  transition: border-color 0.2s;
+}
+.m-input:focus { border-color: var(--blue); background: var(--surface); }
+.m-input-full { width: 100%; }
+.btn-ai {
+  padding: 10px 16px; border-radius: 12px;
+  border: none; background: var(--blue); color: #fff;
+  font-weight: 700; cursor: pointer;
+  white-space: nowrap; font-family: inherit; font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(61,90,254,0.3);
+  transition: all 0.2s;
+}
+.btn-ai:disabled { opacity: 0.5; cursor: default; }
+.btn-manual {
+  background: var(--bg); border: 1.5px solid var(--border2);
+  border-radius: 999px; color: var(--txt2);
+  cursor: pointer; font-family: inherit;
+  font-size: 0.82rem; font-weight: 500;
+  padding: 7px 18px; width: 100%; transition: all 0.2s;
+}
+.btn-manual:hover { border-color: var(--blue); color: var(--blue); }
+.divider { text-align: center; font-size: 0.72rem; color: var(--txt3); font-weight: 600; }
+.ai-result {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.ai-lbl {
+  font-size: 0.62rem; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--txt3);
+  margin-bottom: 4px; font-weight: 700;
+}
+.ai-he-input {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border2); border-radius: 10px;
+  color: var(--green); font-size: 0.95rem; font-weight: 600;
+  padding: 8px 12px; outline: none; font-family: inherit;
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.btn-cancel {
+  padding: 9px 20px; border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: transparent; color: var(--txt2);
+  cursor: pointer; font-family: inherit; font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: var(--red); color: var(--red); }
+.btn-save {
+  padding: 9px 24px; border-radius: 999px;
+  border: none; background: var(--blue); color: #fff;
+  font-weight: 700; cursor: pointer; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(61,90,254,0.3);
+  transition: all 0.2s;
+}
+.btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(61,90,254,0.4); }
+.m-msg { font-size: 0.83rem; font-weight: 500; }
+.m-msg.err { color: var(--red); }
+.m-msg.ok  { color: var(--green); }
+
+#importMsg { font-size: 0.8rem; font-weight: 600; min-height: 1.2em; text-align: center; }
+
+.hidden { display: none !important; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <div class="modal-title">➕ הוסף מילה חדשה</div>
+    <!-- Direction toggle -->
+    <div style="display:flex;gap:6px;background:var(--bg2);border-radius:999px;padding:4px;width:fit-content;align-self:center;">
+      <button id="dirEnHe" onclick="setDir('en')" style="padding:5px 16px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;">🇬🇧 אנגלית</button>
+      <button id="dirHeEn" onclick="setDir('he')" style="padding:5px 16px;border-radius:999px;border:none;background:transparent;color:var(--txt2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;">🇮🇱 עברית</button>
+    </div>
+
+    <!-- EN→HE input -->
+    <div id="inputEnHe">
+      <div class="m-row">
+        <input class="m-input" id="newEn" placeholder="מילה באנגלית..." dir="ltr" onkeydown="if(event.key==='Enter')lookupWord()">
+        <button class="btn-ai" id="aiBtn" onclick="lookupWord()">✨ Claude</button>
+      </div>
+    </div>
+
+    <!-- HE→EN input -->
+    <div id="inputHeEn" style="display:none;">
+      <div class="m-row">
+        <input class="m-input" id="newHeWord" placeholder="מילה בעברית..." dir="rtl" onkeydown="if(event.key==='Enter')lookupWordHe()">
+        <button class="btn-ai" id="aiBtnHe" onclick="lookupWordHe()">✨ Claude</button>
+      </div>
+    </div>
+
+    <div class="divider">— או —</div>
+    <button class="btn-manual" id="manualToggle" onclick="showManual()">✏️ הוסף ידנית (ללא אינטרנט)</button>
+    <div id="manualFields" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+      <div id="manualFieldEnHe">
+        <div class="ai-lbl">תרגום לעברית</div>
+        <input class="m-input m-input-full" id="manualHe" dir="rtl" placeholder="לדוגמה: מפואר, נהדר" onkeydown="if(event.key==='Enter')saveManual()">
+      </div>
+      <div id="manualFieldHeEn" style="display:none;">
+        <div class="ai-lbl">תרגום לאנגלית</div>
+        <input class="m-input m-input-full" id="manualEn" dir="ltr" placeholder="e.g. Splendid, Magnificent" onkeydown="if(event.key==='Enter')saveManual()">
+      </div>
+    </div>
+    <div id="aiResult" class="ai-result hidden">
+      <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
+      <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
+      <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',serif;"></div></div>
+    </div>
+    <div id="modalMsg" class="m-msg hidden"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+      <button class="btn-save hidden" id="saveBtn" onclick="saveAI()">שמור ✓</button>
+      <button class="btn-save hidden" id="manualSaveBtn" onclick="saveManual()">שמור ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">📖 מילים</div>
+  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+  <div class="hdr-right">
+    <span id="syncMsg"></span>
+    <button id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים" style="background:none;border:1.5px solid var(--border2);border-radius:999px;color:var(--txt3);cursor:pointer;font-size:0.75rem;padding:5px 10px;font-family:inherit;transition:all 0.2s;">🌙</button>
+    <button id="apiKeyBtn" onclick="toggleApiKeyPanel()" title="הגדר API Key" style="background:none;border:1.5px solid var(--border2);border-radius:999px;color:var(--txt3);cursor:pointer;font-size:0.75rem;font-weight:600;padding:5px 12px;font-family:inherit;transition:all 0.2s;">🔑</button>
+    <span id="queueBadge" style="display:none;font-size:0.72rem;font-weight:600;color:#f59e0b;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:999px;padding:3px 10px;cursor:pointer;" onclick="processQueue()" title="לחץ לנסות שוב">⏳ <span id="queueCount">0</span> ממתינות</span>
+    <span class="wcount" id="wcount">37 מילים</span>
+    <button class="btn-add" onclick="openModal()">+ הוסף</button>
+  </div>
+</header>
+
+<!-- API KEY PANEL -->
+<div id="apiKeyPanel" style="display:none;width:100%;background:#fffbeb;border-bottom:1.5px solid #fcd34d;padding:10px 20px;">
+  <div style="max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:0.82rem;font-weight:600;color:#92400e;">🔑 Anthropic API Key:</span>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-..." dir="ltr"
+      style="flex:1;min-width:200px;background:#fff;border:1.5px solid #fcd34d;border-radius:10px;color:#1a1d2e;font-size:0.85rem;padding:6px 12px;outline:none;font-family:monospace;">
+    <button onclick="saveApiKey()" style="padding:6px 16px;border-radius:999px;border:none;background:#f59e0b;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">שמור</button>
+    <button onclick="clearApiKey()" style="padding:6px 14px;border-radius:999px;border:1.5px solid #fcd34d;background:transparent;color:#92400e;font-weight:600;cursor:pointer;font-family:inherit;font-size:0.82rem;">נקה</button>
+    <span style="font-size:0.72rem;color:#92400e;">נשמר רק במכשיר זה (localStorage)</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-chip"><div class="stat-val" id="statTotal">37</div><div class="stat-lbl">מילים</div></div>
+  <div class="stat-chip"><div class="stat-val" id="statSessions">0</div><div class="stat-lbl">תרגולים</div></div>
+  <div class="stat-chip"><div class="stat-val" id="statBest">—</div><div class="stat-lbl">שיא</div></div>
+  <div class="stat-chip"><div class="stat-val" id="statStreak">0</div><div class="stat-lbl">רצף ימים</div></div>
+  <div class="stat-chip" style="min-width:90px;">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 48 48" width="44" height="44">
+        <circle class="ring-bg" cx="24" cy="24" r="20"/>
+        <circle class="ring-fg" id="mastRing" cx="24" cy="24" r="20" stroke-dasharray="125.6" stroke-dashoffset="125.6"/>
+      </svg>
+      <div class="ring-num" id="mastPct">0%</div>
+    </div>
+    <div class="stat-lbl">שליטה</div>
+  </div>
+</div>
+
+<!-- MODES -->
+<div class="modes">
+  <button class="mode-btn active" onclick="setMode('fc')">🃏 כרטיסיות</button>
+  <button class="mode-btn" onclick="setMode('mc')">🔤 בחירה מרובה</button>
+  <button class="mode-btn" onclick="setMode('fill')">✏️ השלמת מילה</button>
+  <button class="mode-btn" onclick="setMode('write')">📝 כתיבת תרגום</button>
+  <button class="mode-btn" onclick="setMode('smart')">🧠 מצב חכם</button>
+</div>
+
+<main>
+  <!-- FLASHCARD -->
+  <div id="fcMode" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div class="scene">
+      <div class="card" id="card" onclick="flipCard()">
+        <div class="face front">
+          <div class="card-lbl">מילה באנגלית</div>
+          <div class="card-en" id="fcEn"></div>
+          <button class="speak-btn" onclick="event.stopPropagation();speak(document.getElementById('fcEn').textContent)">🔊 האזן</button>
+          <div class="flip-hint">לחץ להפוך ↩</div>
+        </div>
+        <div class="face back">
+          <div class="card-lbl">תרגום לעברית</div>
+          <div class="card-he" id="fcHe"></div>
+          <div class="card-explain" id="fcExplain"></div>
+          <div class="card-example" id="fcExample"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button class="nav-btn" onclick="fcNav(-1)">→ הקודם</button>
+      <span class="counter"><span id="fcI">1</span> / <span id="fcT">37</span></span>
+      <button class="nav-btn" onclick="fcNav(1)">הבא ←</button>
+    </div>
+  </div>
+
+  <!-- MULTIPLE CHOICE -->
+  <div id="mcMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div class="qcard">
+      <div class="q-lbl">מה המשמעות של המילה?</div>
+      <div class="q-row">
+        <div class="q-en" id="mcEn"></div>
+        <button class="speak-btn" onclick="speak(document.getElementById('mcEn').textContent)">🔊</button>
+      </div>
+    </div>
+    <div class="choices" id="mcChoices"></div>
+    <div class="feedback hidden" id="mcFb"></div>
+    <button class="btn-next hidden" id="mcNext" onclick="nextQ('mc')">הבא →</button>
+  </div>
+
+  <!-- FILL -->
+  <div id="fillMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div class="qcard">
+      <div class="q-lbl">השלם את המילה החסרה</div>
+      <div class="blank-area" id="fillArea"></div>
+      <div class="hint-chars" id="fillHint"></div>
+    </div>
+    <button class="btn-submit" onclick="checkFill()">בדוק</button>
+    <div class="feedback hidden" id="fillFb"></div>
+    <button class="btn-next hidden" id="fillNext" onclick="nextQ('fill')">הבא →</button>
+  </div>
+
+  <!-- WRITE -->
+  <div id="writeMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div class="qcard">
+      <div class="q-lbl">מה התרגום לעברית?</div>
+      <div class="q-row">
+        <div class="q-en" id="writeEn"></div>
+        <button class="speak-btn" onclick="speak(document.getElementById('writeEn').textContent)">🔊</button>
+      </div>
+    </div>
+    <input class="write-input" id="writeInput" placeholder="תרגום בעברית..." dir="rtl" onkeydown="if(event.key==='Enter')checkWrite()">
+    <button class="btn-submit" onclick="checkWrite()">בדוק</button>
+    <div class="feedback hidden" id="writeFb"></div>
+    <button class="btn-next hidden" id="writeNext" onclick="nextQ('write')">הבא →</button>
+  </div>
+
+  <!-- SMART -->
+  <div id="smartMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="align-self:flex-start;">
+      <span class="smart-badge">🧠 מתמקד במילים שעוד לא שלטת בהן</span>
+    </div>
+    <div id="smartInner" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>
+  </div>
+
+  <!-- DONE -->
+  <div class="done-wrap hidden" id="doneScreen">
+    <div style="font-size:2.5rem;margin-bottom:6px;">🎉</div>
+    <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--txt);margin-bottom:4px;">סיימת!</div>
+    <div class="done-score" id="doneScore"></div>
+    <div class="done-msg" id="doneMsg"></div>
+    <button class="btn-submit" onclick="restartMode()">תרגל שוב</button>
+  </div>
+
+  <div class="wl-toggle" onclick="toggleList()">📋 הצג את כל המילים</div>
+  <div class="word-list" id="wordList"><div class="wl-inner" id="wlInner"></div></div>
+
+  <div class="io-row">
+    <button class="btn-io" onclick="downloadUpdatedFile()" style="border-color:var(--blue);color:var(--blue);font-weight:600;">💾 הורד קובץ מעודכן</button>
+  </div>
+</main>
+
+<script>
+const BASE_WORDS=[
+{en:"Splendid",he:"מפואר, נהדר",explain:"מתאר משהו יוצא דופן באיכותו או ביופיו.",example:"The view from the mountaintop was absolutely splendid."},
+{en:"Exploits",he:"מעשי גבורה, ניצול",explain:"כשם עצם: מעשים אמיצים. כפועל: לנצל משהו לטובת עצמך.",example:"The soldiers were celebrated for their wartime exploits."},
+{en:"Indulge",he:"להתפנק, לאפשר לעצמך",explain:"לאפשר לעצמך ליהנות מדבר, לעיתים ביתר שאת.",example:"She decided to indulge in a slice of chocolate cake after dinner."},
+{en:"Reverence",he:"יראת כבוד, הערצה",explain:"כבוד עמוק ומעורב בהערצה כלפי אדם או דבר נעלה.",example:"The students listened in reverence as the professor spoke."},
+{en:"Solemnity",he:"חגיגיות, רצינות",explain:"אווירה רצינית ומכובדת, לרוב בהקשר של טקס.",example:"The solemnity of the funeral was felt by everyone present."},
+{en:"Hunch / Hunched",he:"תחושה עמומה / כפוף",explain:"hunch: תחושת בטן. hunched: לשבת עם הגב כפוף קדימה.",example:"He had a hunch that something was wrong, so he turned back."},
+{en:"Dwelled",he:"שהה, גר, עסק במחשבה",explain:"לגור במקום, או להתעכב על מחשבה זמן רב.",example:"She dwelled on the mistake for days, unable to move on."},
+{en:"Disrupt",he:"לשבש, להפריע",explain:"לגרום להפרעה בתהליך רגיל או להשבית סדר קיים.",example:"The protesters disrupted the city council meeting."},
+{en:"Flanking",he:"מהאגף, מהצד",explain:"להיות ממוקם בצד, או לתקוף מהצד.",example:"The two bodyguards stood flanking the entrance to the hall."},
+{en:"Fatigued",he:"עייף, תשוש, מותש",explain:"מותש מאוד מעייפות פיזית או נפשית.",example:"After the long hike, the group was too fatigued to cook dinner."},
+{en:"Accede",he:"להסכים, להיכנע",explain:"להסכים לבקשה או דרישה, לעיתים בחוסר רצון.",example:"The manager eventually acceded to the team's request."},
+{en:"Premeditation",he:"תכנון מראש, זדון",explain:"תכנון של מעשה לפני ביצועו, בכוונה תחילה.",example:"The crime was committed with clear premeditation."},
+{en:"Secluded",he:"מבודד, שקט, נסתר",explain:"מקום שקט ומרוחק, רחוק מאנשים ומרעש.",example:"They found a secluded beach where they could relax in peace."},
+{en:"Subdued",he:"עמום, מרוסן",explain:"שקט, חסר אנרגיה, או כהה ועמום באווירתו.",example:"The lighting in the restaurant was subdued, creating an intimate mood."},
+{en:"Rankled",he:"הרגיז, ציקצק",explain:"לגרום לתחושה מתמשכת של כעס שלא הולכת.",example:"His dismissive comment rankled her for the rest of the week."},
+{en:"Deemed",he:"נחשב, הוגדר כ",explain:"להחשיב משהו בצורה מסוימת, לרוב על ידי גורם סמכותי.",example:"The plan was deemed too risky by the safety committee."},
+{en:"Affluence",he:"עושר, שפע, אמידות",explain:"מצב של עושר וחיים ברמה גבוהה.",example:"Growing up in affluence, she never understood the value of money."},
+{en:"Oblivious",he:"חסר מודעות, לא שם לב",explain:"לא מודע לדברים שקורים סביבו.",example:"He was completely oblivious to the chaos unfolding behind him."},
+{en:"Distorted",he:"מעוות, מסולף",explain:"שונה מהצורה המקורית, מעוות לרעה.",example:"The media distorted his words to make him look guilty."},
+{en:"Ominously",he:"באופן מאיים",explain:"בדרך שמעוררת תחושת סכנה או אסון קרב.",example:"Dark clouds gathered ominously above the village."},
+{en:"Immensely",he:"עצומות, מאוד",explain:"במידה גדולה מאוד.",example:"I enjoyed the concert immensely — it was one of the best I'd seen."},
+{en:"Lectern",he:"עמוד נאום, פודיום",explain:"שולחן עמידה עם משטח מוטה לניירות נאום.",example:"The professor placed her notes on the lectern before beginning."},
+{en:"Manuscript",he:"כתב יד, טיוטה מקורית",explain:"הנוסח המקורי של ספר או יצירה לפני הדפסה.",example:"The author submitted his manuscript to the publisher."},
+{en:"Deprivation",he:"מחסור, חסך",explain:"מצב של חוסר בדברים בסיסיים כמו שינה, מזון, חופש.",example:"Years of sleep deprivation had taken a toll on her health."},
+{en:"Shrivelled",he:"מקומט, כמוש, מצומק",explain:"התכווצות ועיוות עקב יובש או גיל.",example:"The forgotten fruit had shrivelled into something unrecognisable."},
+{en:"Withered",he:"נבול, קמל, יבש",explain:"צמח שאיבד את חיוניותו ויבש.",example:"The flowers had withered after a week without water."},
+{en:"Protruding",he:"בולט, יוצא החוצה",explain:"יוצא ומבצבץ מתוך משטח, בולט לעין.",example:"A nail was protruding from the old wooden floorboard."},
+{en:"Wonders",he:"נפלאות, פלאים",explain:"דברים מרשימים ומדהימים, או הפועל לתהות.",example:"Travelling through Japan, she was filled with a sense of wonders."},
+{en:"Half-hearted",he:"בחצי לב, חסר מוטיבציה",explain:"ביצוע דבר ללא התלהבות אמיתית.",example:"His half-hearted apology didn't convince anyone in the room."},
+{en:"Motorcade",he:"שיירת מכוניות רשמית",explain:"שורה של מכוניות הנוסעות יחד לצורך ביטחון.",example:"The president's motorcade swept through the city streets."},
+{en:"Swung out",he:"נע החוצה בתנועה רחבה",explain:"תנועה רחבה ומעגלית החוצה.",example:"The car door swung out and nearly hit the cyclist."},
+{en:"Thaw out",he:"להפשיר, להיפתח",explain:"להפשיר דבר קפוא, או להירגע ולהיפתח.",example:"It took a while for him to thaw out at the party, but eventually he relaxed."},
+{en:"As it were",he:"כביכול, למעשה",explain:"ביטוי שמצביע שהמילים הן דימוי ולא מדויקות.",example:"He became the engine, as it were, that kept everything moving."},
+{en:"Fall off the twig",he:"למות (סלנג בריטי)",explain:"ביטוי הומוריסטי בריטי שמשמעותו למות.",example:"Old Mr. Jenkins showed no signs of falling off the twig any time soon."},
+{en:"Admonitory glare",he:"מבט מזהיר ומייסר",explain:"מבט חד שנועד להזהיר מישהו ללא מילים.",example:"The teacher silenced the class with a single admonitory glare."},
+{en:"Illusory halo",he:"הילה אשלייתית",explain:"תדמית חיובית מוגזמת שאינה משקפת מציאות.",example:"Fame creates an illusory halo around celebrities."},
+{en:"Tame",he:"מאולף, עדין",explain:"מאולף ולא פרוע, או משעמם וחסר עוצמה.",example:"After years of wild adventures, his new routine felt surprisingly tame."}
+,
+{en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause."},
+{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep."},
+{en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions."},
+{en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility."},
+{en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend."},
+{en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job."},
+{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months."},
+{en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year."},
+{en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast."},
+{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans."},
+{en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell."},
+{en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs."},
+{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending."},
+{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn."},
+{en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work."},
+{en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes."},
+{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window."},
+{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse."},
+{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal."},
+{en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident."},
+{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises."},
+{en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals."},
+{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it."}];
+
+let WORDS=[...BASE_WORDS];
+let mode='fc',fcIdx=0,flipped=false;
+let shuffled=[],qIdx=0,score=0,qTotal=0;
+let aiData=null;
+let mastery={};
+let stats={sessions:0,bestPct:0,streak:0,lastDate:''};
+
+function saveLocal(){
+  try{
+    localStorage.setItem('vocab_extra',JSON.stringify(WORDS.slice(BASE_WORDS.length)));
+    localStorage.setItem('vocab_mastery',JSON.stringify(mastery));
+    localStorage.setItem('vocab_stats',JSON.stringify(stats));
+  }catch(e){}
+}
+function loadLocal(){
+  try{
+    const extra=JSON.parse(localStorage.getItem('vocab_extra')||'[]');
+    extra.forEach(w=>{if(w.en&&w.he&&!WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase()))WORDS.push(w);});
+    mastery=JSON.parse(localStorage.getItem('vocab_mastery')||'{}');
+    stats=Object.assign({sessions:0,bestPct:0,streak:0,lastDate:''},JSON.parse(localStorage.getItem('vocab_stats')||'{}'));
+  }catch(e){}
+}
+
+function recordSession(pct){
+  stats.sessions++;
+  if(pct>stats.bestPct)stats.bestPct=pct;
+  const today=new Date().toDateString();
+  if(stats.lastDate===new Date(Date.now()-86400000).toDateString())stats.streak++;
+  else if(stats.lastDate!==today)stats.streak=1;
+  stats.lastDate=today;
+  saveLocal();updateStatsUI();
+}
+
+function updateMastery(en,correct){
+  if(!mastery[en])mastery[en]={correct:0,total:0};
+  mastery[en].total++;
+  if(correct)mastery[en].correct++;
+  saveLocal();updateStatsUI();
+}
+
+function masteryPct(){
+  const known=WORDS.filter(w=>{const m=mastery[w.en];return m&&m.total>=2&&m.correct/m.total>=0.7;});
+  return WORDS.length?Math.round(known.length/WORDS.length*100):0;
+}
+
+function updateStatsUI(){
+  document.getElementById('statTotal').textContent=WORDS.length;
+  document.getElementById('statSessions').textContent=stats.sessions;
+  document.getElementById('statBest').textContent=stats.bestPct?stats.bestPct+'%':'—';
+  document.getElementById('statStreak').textContent=stats.streak;
+  const pct=masteryPct();
+  document.getElementById('mastPct').textContent=pct+'%';
+  document.getElementById('mastRing').style.strokeDashoffset=125.6-(pct/100)*125.6;
+}
+
+function getWeakWords(){
+  const weak=WORDS.filter(w=>{const m=mastery[w.en];return !m||m.total<1||m.correct/m.total<0.7;});
+  return weak.length>=4?weak:WORDS;
+}
+
+let addDir='en';
+let apiKey = '';
+
+function toggleTheme(){
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('vocab_theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+function loadTheme(){
+  const saved = localStorage.getItem('vocab_theme');
+  if(saved === 'dark'){
+    document.body.classList.add('dark');
+    const btn = document.getElementById('themeBtn');
+    if(btn) btn.textContent = '☀️';
+  }
+}
+
+function loadApiKey(){
+  apiKey = localStorage.getItem('vocab_api_key') || '';
+  updateApiKeyBtn();
+}
+function saveApiKey(){
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if(!val){ alert('הכנס API key תחילה'); return; }
+  apiKey = val;
+  localStorage.setItem('vocab_api_key', val);
+  updateApiKeyBtn();
+  toggleApiKeyPanel();
+  showSync('🔑 API Key נשמר');
+}
+function clearApiKey(){
+  apiKey = '';
+  localStorage.removeItem('vocab_api_key');
+  document.getElementById('apiKeyInput').value = '';
+  updateApiKeyBtn();
+  showSync('🔑 API Key נמחק');
+}
+function toggleApiKeyPanel(){
+  const panel = document.getElementById('apiKeyPanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){
+    const inp = document.getElementById('apiKeyInput');
+    inp.value = apiKey;
+    setTimeout(()=>inp.focus(), 50);
+  }
+}
+function updateApiKeyBtn(){
+  const btn = document.getElementById('apiKeyBtn');
+  if(!btn) return;
+  btn.textContent = apiKey ? '🔑✓' : '🔑';
+  btn.style.color = apiKey ? 'var(--green)' : 'var(--txt3)';
+  btn.style.borderColor = apiKey ? 'var(--green)' : 'var(--border2)';
+}
+function getApiHeaders(){
+  const key = apiKey || '';
+  return { 'Content-Type': 'application/json', ...(key ? {'x-api-key': key, 'anthropic-version': '2023-06-01'} : {}) };
+}
+
+function isDuplicate(en, he){
+  // Check both English and Hebrew
+  const dupEn = en ? WORDS.find(w=>w.en.toLowerCase()===en.toLowerCase()) : null;
+  const dupHe = he ? WORDS.find(w=>w.he===he || w.he.toLowerCase()===he.toLowerCase()) : null;
+  if(dupEn) return `"${dupEn.en}" כבר קיימת ברשימה`;
+  if(dupHe) return `"${dupHe.he}" (${dupHe.en}) כבר קיימת ברשימה`;
+  return null;
+} // 'en' = adding English word, 'he' = adding Hebrew word
+
+function setDir(dir){
+  addDir=dir;
+  // toggle button styles
+  document.getElementById('dirEnHe').style.background=dir==='en'?'var(--blue)':'transparent';
+  document.getElementById('dirEnHe').style.color=dir==='en'?'#fff':'var(--txt2)';
+  document.getElementById('dirHeEn').style.background=dir==='he'?'var(--blue)':'transparent';
+  document.getElementById('dirHeEn').style.color=dir==='he'?'#fff':'var(--txt2)';
+  document.getElementById('inputEnHe').style.display=dir==='en'?'block':'none';
+  document.getElementById('inputHeEn').style.display=dir==='he'?'block':'none';
+  document.getElementById('manualFieldEnHe').style.display=dir==='en'?'block':'none';
+  document.getElementById('manualFieldHeEn').style.display=dir==='he'?'block':'none';
+  // reset results
+  document.getElementById('aiResult').classList.add('hidden');
+  document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('modalMsg').classList.add('hidden');
+}
+
+async function lookupWordHe(){
+  const he=document.getElementById('newHeWord').value.trim();
+  if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
+  const dupMsgHe=isDuplicate(null,he);
+  if(dupMsgHe){showMMsg('⚠️ '+dupMsgHe,'err');return;}
+  if(location.protocol==='file:' && !apiKey){showMMsg('📂 הגדר API Key (לחץ 🔑 למעלה) או הוסף ידנית','err');showManual();return;}
+  const btn=document.getElementById('aiBtnHe');
+  btn.disabled=true;btn.textContent='⏳';
+  document.getElementById('modalMsg').classList.add('hidden');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:getApiHeaders(),
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+        messages:[{role:'user',content:'For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"English translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'}]})
+    });
+    if(res.status===529||res.status===503){
+      btn.disabled=false; btn.textContent='✨ Claude';
+      // Show queue option
+      showMMsg('⚠️ השרת עמוס כרגע. שמור לתור וייתווסף אוטומטית כשיתפנה.','err');
+      // Add queue button dynamically
+      const existingQBtn=document.getElementById('queueAddBtn');
+      if(!existingQBtn){
+        const qBtn=document.createElement('button');
+        qBtn.id='queueAddBtn';
+        qBtn.className='btn-save';
+        qBtn.textContent='📋 הוסף לתור';
+        qBtn.style.marginTop='4px';
+        qBtn.onclick=()=>{
+          addToQueue(en,'en');
+          closeModal();
+        };
+        document.querySelector('.modal-actions').prepend(qBtn);
+      }
+      return;
+    }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message||'API error');
+    const p=JSON.parse(data.content?.[0]?.text?.trim());
+    aiData={en:p.en,he,explain:p.explain,example:p.example};
+    document.getElementById('newHe').value=he;
+    document.getElementById('newHe').readOnly=true;
+    document.getElementById('aiExplain').textContent=p.explain;
+    document.getElementById('aiExample').textContent='"'+p.example+'"';
+    // show translation
+    const heInput=document.querySelector('.ai-he-input');
+    heInput.value=p.en; heInput.dir='ltr'; heInput.style.color='var(--blue)';
+    document.querySelector('.ai-result div:first-child .ai-lbl').textContent='תרגום לאנגלית (ניתן לעריכה)';
+    document.getElementById('aiResult').classList.remove('hidden');
+    document.getElementById('saveBtn').classList.remove('hidden');
+  }catch(e){
+    console.error(e);
+    showMMsg('❌ שגיאה — נסה ידנית','err');
+    setTimeout(showManual,1200);
+  }
+  btn.disabled=false;btn.textContent='✨ Claude';
+}
+
+function speak(text){
+  if(typeof speechSynthesis==='undefined'){alert('הדפדפן לא תומך בהקראה');return;}
+  // Must call synchronously inside user gesture (mobile requirement)
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='en-GB';
+  u.rate=0.85;
+  // Try to find English voice, fall back to whatever is available
+  var vs=speechSynthesis.getVoices();
+  if(vs.length>0){
+    var v=vs.find(function(x){return x.lang==='en-GB';})
+        ||vs.find(function(x){return x.lang==='en-US';})
+        ||vs.find(function(x){return x.lang.startsWith('en');})
+        ||vs[0];
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  } else {
+    // voices not loaded yet — speak without specifying voice (browser picks default)
+    speechSynthesis.speak(u);
+    // also set up listener for next time
+    speechSynthesis.onvoiceschanged=function(){
+      speechSynthesis.onvoiceschanged=null;
+    };
+  }
+}
+
+function shuffle(arr){return[...arr].sort(()=>Math.random()-0.5);}
+function setProgress(pct){document.getElementById('prog').style.width=pct+'%';}
+function showSync(msg){const el=document.getElementById('syncMsg');el.textContent=msg;setTimeout(()=>{el.textContent='';},2500);}
+function updateCount(){document.getElementById('wcount').textContent=WORDS.length+' מילים';updateStatsUI();}
+
+function loadFC(){
+  const w=WORDS[fcIdx];
+  document.getElementById('fcEn').textContent=w.en;
+  document.getElementById('fcHe').textContent=w.he;
+  document.getElementById('fcExplain').textContent=w.explain||'';
+  document.getElementById('fcExample').textContent=w.example?'"'+w.example+'"':'';
+  document.getElementById('fcI').textContent=fcIdx+1;
+  document.getElementById('fcT').textContent=WORDS.length;
+  flipped=false;document.getElementById('card').classList.remove('flipped');
+  setProgress((fcIdx+1)/WORDS.length*100);
+}
+function flipCard(){flipped=!flipped;document.getElementById('card').classList.toggle('flipped',flipped);}
+function fcNav(d){fcIdx=(fcIdx+d+WORDS.length)%WORDS.length;loadFC();}
+
+// Build question list: each word appears twice (en→he and he→en)
+function makeQuestions(words){
+  const qs=[];
+  words.forEach(w=>{qs.push({word:w,dir:'en'});qs.push({word:w,dir:'he'});});
+  return shuffle(qs);
+}
+
+function setMode(m){
+  mode=m;
+  const ids=['fc','mc','fill','write','smart'];
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
+  ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
+  document.getElementById(m+'Mode').classList.remove('hidden');
+  document.getElementById('doneScreen').classList.add('hidden');
+  qIdx=0;score=0;qTotal=0;
+  shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
+  if(m==='fc'){fcIdx=0;loadFC();}
+  if(m==='mc')loadMC();
+  if(m==='fill')loadFill();
+  if(m==='write')loadWrite();
+  if(m==='smart')loadSmart();
+  setProgress(0);
+}
+function restartMode(){setMode(mode);}
+
+function loadMC(){
+  if(qIdx>=shuffled.length){showDone();return;}
+  const {word:w,dir}=shuffled[qIdx];
+  // dir='en': show English word, pick Hebrew answer
+  // dir='he': show Hebrew word, pick English answer
+  const qEl=document.getElementById('mcEn');
+  qEl.textContent=dir==='en'?w.en:w.he;
+  qEl.dir=dir==='en'?'ltr':'rtl';
+  document.getElementById('mcFb').classList.add('hidden');
+  document.getElementById('mcNext').classList.add('hidden');
+  setProgress(qIdx/shuffled.length*100);
+  const wrong=shuffle(WORDS.filter(x=>x.en!==w.en)).slice(0,3);
+  const box=document.getElementById('mcChoices');box.innerHTML='';
+  shuffle([w,...wrong]).forEach(opt=>{
+    const label=dir==='en'?opt.he:opt.en;
+    const b=document.createElement('button');b.className='choice';
+    b.textContent=label; b.dir=dir==='en'?'rtl':'ltr';
+    b.onclick=()=>{
+      box.querySelectorAll('.choice').forEach(x=>x.disabled=true);
+      const ok=opt.en===w.en;b.classList.add(ok?'correct':'wrong');
+      if(!ok){
+        const correct=dir==='en'?w.he:w.en;
+        box.querySelectorAll('.choice').forEach(x=>{if(x.textContent===correct)x.classList.add('correct');});
+      }
+      qTotal++;if(ok)score++;updateMastery(w.en,ok);
+      showFB('mcFb',ok,w);document.getElementById('mcNext').classList.remove('hidden');
+    };
+    box.appendChild(b);
+  });
+}
+
+function loadFill(){
+  if(qIdx>=shuffled.length){showDone();return;}
+  const {word:w,dir}=shuffled[qIdx];
+  setProgress(qIdx/shuffled.length*100);
+  if(dir==='en'){
+    // show Hebrew, type English
+    const hint=w.en.split('').map((c,i)=>i===0?c.toUpperCase():(c===' '||c==='-'?c:'_')).join(' ');
+    document.getElementById('fillArea').innerHTML=`<span style="color:var(--blue);font-weight:600">${w.he}</span> = <input class="blank-input" id="blankInput" placeholder="${w.en[0]}..." dir="ltr" onkeydown="if(event.key==='Enter')checkFill()">`;
+    document.getElementById('fillHint').textContent=hint;
+  } else {
+    // show English, type Hebrew
+    const hint=w.he.split('').map((c,i)=>i===0?c:'_').join(' ');
+    document.getElementById('fillArea').innerHTML=`<span style="color:var(--blue);font-weight:600;direction:ltr;display:inline-block">${w.en}</span> = <input class="blank-input" id="blankInput" placeholder="${w.he[0]}..." dir="rtl" style="font-family:inherit;width:200px" onkeydown="if(event.key==='Enter')checkFill()">`;
+    document.getElementById('fillHint').textContent=hint;
+  }
+  document.getElementById('fillFb').classList.add('hidden');
+  document.getElementById('fillNext').classList.add('hidden');
+  setTimeout(()=>document.getElementById('blankInput')?.focus(),50);
+}
+function checkFill(){
+  const inp=document.getElementById('blankInput');if(!inp)return;
+  const {word:w,dir}=shuffled[qIdx];
+  const answer=dir==='en'?w.en:w.he;
+  // flexible check: exact match or all typed words appear in answer
+  const typed=inp.value.trim().toLowerCase();
+  const ok=typed===answer.toLowerCase()||
+    answer.toLowerCase().split(/[,\s\/]+/).some(a=>a.length>1&&typed.includes(a));
+  inp.disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok);
+  showFB('fillFb',ok,w);document.getElementById('fillNext').classList.remove('hidden');
+}
+
+function loadWrite(){
+  if(qIdx>=shuffled.length){showDone();return;}
+  const {word:w,dir}=shuffled[qIdx];
+  const prompt=dir==='en'?w.en:w.he;
+  const placeholder=dir==='en'?'תרגום בעברית...':'English translation...';
+  const inputDir=dir==='en'?'rtl':'ltr';
+  const el=document.getElementById('writeEn');
+  el.textContent=prompt; el.dir=dir==='en'?'ltr':'rtl';
+  const inp=document.getElementById('writeInput');
+  inp.value='';inp.disabled=false;
+  inp.placeholder=placeholder; inp.dir=inputDir;
+  document.getElementById('writeFb').classList.add('hidden');
+  document.getElementById('writeNext').classList.add('hidden');
+  setProgress(qIdx/shuffled.length*100);
+  setTimeout(()=>inp.focus(),50);
+}
+function checkWrite(){
+  const val=document.getElementById('writeInput').value.trim();if(!val)return;
+  const {word:w,dir}=shuffled[qIdx];
+  const answer=dir==='en'?w.he:w.en;
+  const answerWords=answer.split(/[,\s\/]+/).map(x=>x.trim().toLowerCase());
+  const inputWords=val.split(/\s+/).map(x=>x.trim().toLowerCase());
+  const ok=inputWords.some(iw=>answerWords.some(aw=>aw.includes(iw)&&iw.length>1));
+  document.getElementById('writeInput').disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok);
+  showFB('writeFb',ok,w);document.getElementById('writeNext').classList.remove('hidden');
+}
+
+function nextQ(m){qIdx++;if(m==='mc')loadMC();if(m==='fill')loadFill();if(m==='write')loadWrite();}
+
+function showFB(id,ok,word,dir){
+  const el=document.getElementById(id);
+  el.className='feedback '+(ok?'ok':'no');
+  el.textContent=ok?`✅ נכון! ${word.en} = ${word.he}`:`❌ לא נכון. התשובה: ${word.en} = ${word.he}`;
+  el.classList.remove('hidden');
+}
+
+function showDone(){
+  ['mc','fill','write'].forEach(m=>document.getElementById(m+'Mode').classList.add('hidden'));
+  const pct=Math.round(score/qTotal*100)||0;
+  document.getElementById('doneScore').textContent=`${score} / ${qTotal}`;
+  document.getElementById('doneMsg').textContent=pct>=80?'🌟 כל הכבוד!':pct>=60?'👍 יפה, המשך לתרגל':'💪 עוד קצת — ואתה שם!';
+  document.getElementById('doneScreen').classList.remove('hidden');
+  recordSession(pct);setProgress(100);
+}
+
+// SMART MODE
+let smartWords=[],smartIdx=0,smartScore=0,smartTotal=0;
+function loadSmart(){smartWords=makeQuestions(getWeakWords());smartIdx=0;smartScore=0;smartTotal=0;renderSmartQ();}
+function renderSmartQ(){
+  if(smartIdx>=smartWords.length){showSmartDone();return;}
+  const {word:w,dir}=smartWords[smartIdx];
+  const m=mastery[w.en];
+  const types=['mc','fill','write'];
+  let type=types[smartIdx%3];
+  if(m&&m.total>=2&&m.correct/m.total>=0.5)type='write';
+  const inner=document.getElementById('smartInner');inner.innerHTML='';
+  setProgress(smartIdx/smartWords.length*100);
+  if(type==='mc'){
+    const qc=document.createElement('div');qc.className='qcard';
+    const qText=dir==='en'?w.en:w.he;const qDir=dir==='en'?'ltr':'rtl';qc.innerHTML=`<div class="q-lbl">${dir==='en'?'מה המשמעות?':'מה התרגום לאנגלית?'}</div><div class="q-row"><div class="q-en" dir="${qDir}">${qText}</div></div>`;
+    inner.appendChild(qc);
+    const box=document.createElement('div');box.className='choices';inner.appendChild(box);
+    const wrong=shuffle(WORDS.filter(x=>x.en!==w.en)).slice(0,3);
+    shuffle([w,...wrong]).forEach(opt=>{
+      const label=dir==='en'?opt.he:opt.en;
+      const b=document.createElement('button');b.className='choice';
+      b.textContent=label;b.dir=dir==='en'?'rtl':'ltr';
+      b.onclick=()=>{
+        box.querySelectorAll('.choice').forEach(x=>x.disabled=true);
+        const ok=opt.en===w.en;b.classList.add(ok?'correct':'wrong');
+        if(!ok){const correctLabel=dir==='en'?w.he:w.en;box.querySelectorAll('.choice').forEach(x=>{if(x.textContent===correctLabel)x.classList.add('correct');});}
+        smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(inner,ok,w);
+      };box.appendChild(b);
+    });
+  } else if(type==='fill'){
+    const qc=document.createElement('div');qc.className='qcard';
+    const sfPrompt=dir==='en'?w.he:w.en;
+    const sfAnswer=dir==='en'?w.en:w.he;
+    const sfDir=dir==='en'?'ltr':'rtl';
+    const sfHint=sfAnswer.split('').map((c,i)=>i===0?c.toUpperCase():(c===' '||c==='-'?c:'_')).join(' ');
+    qc.innerHTML=`<div class="q-lbl">השלם את המילה החסרה</div><div class="blank-area"><span style="color:var(--blue);font-weight:600" dir="${dir==='en'?'rtl':'ltr'}">${sfPrompt}</span> = <input class="blank-input" id="sBlank" placeholder="${sfAnswer[0]}..." dir="${sfDir}" onkeydown="if(event.key==='Enter')checkSFill()"></div><div class="hint-chars">${sfHint}</div>`;
+    inner.appendChild(qc);
+    const btn=document.createElement('button');btn.className='btn-submit';btn.textContent='בדוק';btn.onclick=checkSFill;inner.appendChild(btn);
+    setTimeout(()=>document.getElementById('sBlank')?.focus(),50);
+  } else {
+    const qc=document.createElement('div');qc.className='qcard';
+    const swPrompt=dir==='en'?w.en:w.he;const swLbl=dir==='en'?'מה התרגום לעברית?':'What is the English translation?';qc.innerHTML=`<div class="q-lbl">${swLbl}</div><div class="q-row"><div class="q-en" dir="${dir==='en'?'ltr':'rtl'}">${swPrompt}</div></div>`;
+    inner.appendChild(qc);
+    const inp=document.createElement('input');inp.className='write-input';inp.placeholder=dir==='en'?'תרגום בעברית...':'English translation...';inp.dir=dir==='en'?'rtl':'ltr';inp.id='sWrite';
+    inp.onkeydown=e=>{if(e.key==='Enter')checkSWrite();};inner.appendChild(inp);
+    const btn=document.createElement('button');btn.className='btn-submit';btn.textContent='בדוק';btn.onclick=checkSWrite;inner.appendChild(btn);
+    setTimeout(()=>inp.focus(),50);
+  }
+}
+function checkSFill(){
+  const inp=document.getElementById('sBlank');if(!inp||inp.disabled)return;
+  const {word:w,dir}=smartWords[smartIdx];
+  const answer=dir==='en'?w.en:w.he;
+  const typed=inp.value.trim().toLowerCase();
+  const ok=typed===answer.toLowerCase()||answer.toLowerCase().split(/[,\s\/]+/).some(a=>a.length>1&&typed.includes(a));
+  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(document.getElementById('smartInner'),ok,w);
+}
+function checkSWrite(){
+  const inp=document.getElementById('sWrite');if(!inp||inp.disabled)return;
+  const {word:w,dir}=smartWords[smartIdx];
+  const answer=dir==='en'?w.he:w.en;
+  const answerWords=answer.split(/[,\s\/]+/).map(x=>x.trim().toLowerCase());
+  const inputWords=inp.value.trim().split(/\s+/).map(x=>x.trim().toLowerCase());
+  const ok=inputWords.some(iw=>answerWords.some(aw=>aw.includes(iw)&&iw.length>1));
+  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(document.getElementById('smartInner'),ok,w);
+}
+function appendSmartFB(parent,ok,w){
+  const fb=document.createElement('div');fb.className='feedback '+(ok?'ok':'no');
+  fb.textContent=ok?`✅ נכון! ${w.en} = ${w.he}`:`❌ לא נכון. התשובה: ${w.he}`;parent.appendChild(fb);
+  const btn=document.createElement('button');btn.className='btn-next';btn.textContent='הבא →';
+  btn.onclick=()=>{smartIdx++;renderSmartQ();};parent.appendChild(btn);
+}
+function showSmartDone(){
+  document.getElementById('smartInner').innerHTML='';
+  document.getElementById('smartMode').classList.add('hidden');
+  const pct=Math.round(smartScore/smartTotal*100)||0;
+  document.getElementById('doneScore').textContent=`${smartScore} / ${smartTotal}`;
+  document.getElementById('doneMsg').textContent=pct>=80?'🌟 כל הכבוד!':pct>=60?'👍 יפה, המשך לתרגל':'💪 עוד קצת — ואתה שם!';
+  document.getElementById('doneScreen').classList.remove('hidden');
+  recordSession(pct);setProgress(100);
+}
+
+function buildList(){
+  const el=document.getElementById('wlInner');el.innerHTML='';
+  WORDS.forEach((w,i)=>{
+    const m=mastery[w.en];
+    const pct=m&&m.total>0?Math.round(m.correct/m.total*100):null;
+    const dot=pct===null?'':(pct>=70?'<span style="color:var(--ok);font-size:0.6rem;margin-right:3px">●</span>':'<span style="color:var(--err);font-size:0.6rem;margin-right:3px">●</span>');
+    const d=document.createElement('div');d.className='wl-row';
+    d.innerHTML=`<span>${dot}<span class="wl-en">${w.en}</span> <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
+    el.appendChild(d);
+  });
+}
+function toggleList(){const el=document.getElementById('wordList');el.classList.toggle('open');if(el.classList.contains('open'))buildList();}
+function deleteWord(i){
+  if(WORDS.length<=4){alert('חייבות להיות לפחות 4 מילים');return;}
+  WORDS.splice(i,1);buildList();updateCount();saveLocal();showSync('🗑️ נמחק');
+  if(fcIdx>=WORDS.length)fcIdx=0;if(mode==='fc')loadFC();
+}
+
+function openModal(){
+  document.getElementById('newEn').value='';
+  document.getElementById('newHe').value='';
+  document.getElementById('newHe').readOnly=false;
+  if(document.getElementById('newHeWord')) document.getElementById('newHeWord').value='';
+  if(document.getElementById('manualHe')) document.getElementById('manualHe').value='';
+  if(document.getElementById('manualEn')) document.getElementById('manualEn').value='';
+  document.getElementById('aiResult').classList.add('hidden');
+  document.getElementById('manualFields').classList.add('hidden');
+  document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('manualSaveBtn').classList.add('hidden');
+  document.getElementById('manualToggle').classList.remove('hidden');
+  document.getElementById('modalMsg').classList.add('hidden');
+  const oldQBtn=document.getElementById('queueAddBtn');
+  if(oldQBtn)oldQBtn.remove();
+  // reset label in case it was changed
+  document.querySelector('.ai-result div:first-child .ai-lbl').textContent='תרגום (ניתן לעריכה)';
+  const heInput=document.querySelector('.ai-he-input');
+  heInput.dir='rtl'; heInput.style.color='var(--green)';
+  setDir('en');
+  aiData=null;
+  document.getElementById('overlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('newEn').focus(),100);
+}
+function closeModal(){document.getElementById('overlay').classList.add('hidden');}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function showManual(){
+  document.getElementById('manualFields').classList.remove('hidden');
+  document.getElementById('manualSaveBtn').classList.remove('hidden');
+  document.getElementById('manualToggle').classList.add('hidden');
+  setTimeout(()=>document.getElementById('manualHe').focus(),50);
+}
+
+async function lookupWord(){
+  const en=document.getElementById('newEn').value.trim();
+  if(!en){showMMsg('⚠️ הכנס מילה תחילה','err');return;}
+  if(WORDS.some(w=>w.en.toLowerCase()===en.toLowerCase())){showMMsg('⚠️ המילה כבר קיימת','err');return;}
+
+  // קובץ HTML מקומי לא יכול לקרוא API חיצוני — עבור לידני אוטומטית
+  if(location.protocol==='file:'){
+    showMMsg('📂 בקובץ מקומי Claude לא זמין — מעבר להוספה ידנית','err');
+    showManual();
+    return;
+  }
+
+  const btn=document.getElementById('aiBtn');btn.disabled=true;btn.textContent='⏳';
+  document.getElementById('modalMsg').classList.add('hidden');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:getApiHeaders(),
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+        messages:[{role:'user',content:'For "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'}]})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message||'API error');
+    const p=JSON.parse(data.content?.[0]?.text?.trim());
+    aiData={en,he:p.he,explain:p.explain,example:p.example};
+    document.getElementById('newHe').value=p.he;
+    document.getElementById('aiExplain').textContent=p.explain;
+    document.getElementById('aiExample').textContent='"'+p.example+'"';
+    document.getElementById('aiResult').classList.remove('hidden');
+    document.getElementById('saveBtn').classList.remove('hidden');
+  }catch(e){
+    console.error('Claude API error:',e);
+    showMMsg('❌ שגיאה בחיבור ל-Claude. עובר להוספה ידנית...','err');
+    setTimeout(showManual, 1200);
+  }
+  btn.disabled=false;btn.textContent='✨ Claude';
+}
+
+function showMMsg(t,c){const e=document.getElementById('modalMsg');e.textContent=t;e.className='m-msg '+c;e.classList.remove('hidden');}
+
+function saveAI(){
+  let en,he;
+  if(addDir==='en'){
+    en=document.getElementById('newEn').value.trim();
+    he=document.getElementById('newHe').value.trim();
+  } else {
+    he=document.getElementById('newHeWord').value.trim();
+    en=document.querySelector('.ai-he-input').value.trim();
+  }
+  if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
+  const dupAI=isDuplicate(en,he);
+  if(dupAI){showMMsg('⚠️ '+dupAI,'err');return;}
+  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||''});
+  updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
+}
+function saveManual(){
+  let en,he;
+  if(addDir==='en'){
+    en=document.getElementById('newEn').value.trim();
+    he=document.getElementById('manualHe').value.trim();
+    if(!en){showMMsg('⚠️ הכנס מילה באנגלית','err');return;}
+    if(!he){showMMsg('⚠️ הכנס תרגום לעברית','err');return;}
+  } else {
+    he=document.getElementById('newHeWord').value.trim();
+    en=document.getElementById('manualEn').value.trim();
+    if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
+    if(!en){showMMsg('⚠️ הכנס תרגום לאנגלית','err');return;}
+  }
+  const dupMan=isDuplicate(en,he);
+  if(dupMan){showMMsg('⚠️ '+dupMan,'err');return;}
+  WORDS.push({en,he,explain:'',example:''});
+  updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
+}
+
+function downloadUpdatedFile(){
+  // Use WORDS (includes everything from localStorage) as the new BASE_WORDS
+  const wordsJson = JSON.stringify(WORDS, null, 2);
+
+  // Find the script tag with BASE_WORDS
+  const scripts = Array.from(document.querySelectorAll('script'));
+  const mainScript = scripts.find(s => !s.src && s.textContent.includes('const BASE_WORDS='));
+  if(!mainScript){ showSync('❌ שגיאה בהורדה'); return; }
+
+  const js = mainScript.textContent;
+
+  // Find exact start and end of BASE_WORDS array
+  const arrStart = js.indexOf('const BASE_WORDS=');
+  // Walk forward to find the matching closing ];
+  let depth = 0, pos = js.indexOf('[', arrStart), arrEnd = -1;
+  for(let i = pos; i < js.length; i++){
+    if(js[i]==='[') depth++;
+    else if(js[i]===']'){ depth--; if(depth===0){ arrEnd=i+1; break; } }
+  }
+  // Also skip the semicolon
+  if(js[arrEnd]===';') arrEnd++;
+
+  const updatedJs = js.slice(0, arrStart)
+    + 'const BASE_WORDS=' + wordsJson + ';
+'
+    + js.slice(arrEnd);
+
+  // Also clear localStorage extra words since they're now in BASE_WORDS
+  const initOld = "loadTheme();loadApiKey();loadLocal();loadQueue();";
+  const initNew = "loadApiKey();loadLocal();loadQueue();";
+  // (no change needed — on open, localStorage extra will just be empty or ignored)
+
+  const styleEl = document.querySelector('style');
+  const linkEl  = document.querySelector('link[rel="stylesheet"]');
+  const fullHtml =
+    '<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+' +
+    '<meta charset="UTF-8">
+' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">
+' +
+    '<title>מילים | תרגול אנגלית</title>
+' +
+    (linkEl ? linkEl.outerHTML + '
+' : '') +
+    (styleEl ? styleEl.outerHTML + '
+' : '') +
+    '</head>
+<body>
+' +
+    document.body.innerHTML + '
+' +
+    '<script>
+' + updatedJs + '
+<\/script>
+' +
+    '</body>
+</html>';
+
+  // Use data URI — works on mobile Chrome where blob URLs don't trigger download
+  const encoded = 'data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml);
+  const a = document.createElement('a');
+  a.href = encoded;
+  a.download = 'vocab_' + new Date().toISOString().slice(0,10) + '.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>document.body.removeChild(a), 500);
+  showSync('💾 הורד עם ' + WORDS.length + ' מילים');
+}
+function importWords(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data))throw new Error('פורמט שגוי');
+      let added=0,skipped=0;
+      data.forEach(w=>{
+        if(!w.en||!w.he){skipped++;return;}
+        if(WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase())){skipped++;return;}
+        WORDS.push({en:w.en,he:w.he,explain:w.explain||'',example:w.example||''});
+        added++;
+      });
+      updateCount();saveLocal();buildList();
+      const msg=document.getElementById('importMsg');
+      msg.textContent='✅ יובאו '+added+' מילים'+(skipped?' ('+skipped+' כבר קיימות)':'');
+      msg.style.color='var(--ok)';
+      setTimeout(()=>{msg.textContent='';},4000);
+      if(added>0)refreshAfterAdd();
+    }catch(err){
+      const msg=document.getElementById('importMsg');
+      msg.textContent='❌ שגיאה בקובץ: '+err.message;
+      msg.style.color='var(--err)';
+    }
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ── PENDING QUEUE ──────────────────────────────────────────────────
+let pendingQueue = []; // [{en, dir, he_manual}]
+
+function loadQueue(){
+  try{ pendingQueue=JSON.parse(localStorage.getItem('vocab_queue')||'[]'); }catch(e){ pendingQueue=[]; }
+  updateQueueBadge();
+}
+
+function saveQueue(){
+  try{ localStorage.setItem('vocab_queue', JSON.stringify(pendingQueue)); }catch(e){}
+  updateQueueBadge();
+}
+
+function updateQueueBadge(){
+  const badge=document.getElementById('queueBadge');
+  const cnt=document.getElementById('queueCount');
+  if(!badge||!cnt)return;
+  if(pendingQueue.length>0){
+    badge.style.display='inline-flex';
+    cnt.textContent=pendingQueue.length;
+  } else {
+    badge.style.display='none';
+  }
+}
+
+function addToQueue(en, dir){
+  // Avoid duplicates in queue
+  if(pendingQueue.some(q=>q.en===en&&q.dir===dir))return;
+  pendingQueue.push({en, dir, addedAt: Date.now()});
+  saveQueue();
+  showSync('📋 נוסף לתור — יעובד אוטומטית');
+}
+
+async function processQueue(){
+  if(pendingQueue.length===0)return;
+  const badge=document.getElementById('queueBadge');
+  if(badge) badge.textContent='⏳ מעבד...';
+
+  const toProcess=[...pendingQueue];
+  const stillPending=[];
+
+  for(const item of toProcess){
+    // Skip if already added
+    if(WORDS.some(w=>w.en.toLowerCase()===item.en.toLowerCase())){
+      continue; // already exists, drop from queue
+    }
+    try{
+      const prompt = item.dir==='he'
+        ? 'For the Hebrew word "'+item.en+'", respond ONLY with JSON (no markdown):\n{"en":"English translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'
+        : 'For "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}';
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:getApiHeaders(),
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+          messages:[{role:'user',content:prompt}]})
+      });
+      if(res.status===529||res.status===503){
+        stillPending.push(item); // still overloaded
+        continue;
+      }
+      if(!res.ok){ stillPending.push(item); continue; }
+      const data=await res.json();
+      if(data.error){ stillPending.push(item); continue; }
+      const p=JSON.parse(data.content?.[0]?.text?.trim());
+      const en = item.dir==='he' ? p.en : item.en;
+      const he = item.dir==='he' ? item.en : p.he;
+      if(!isDuplicate(en,he)){
+        WORDS.push({en, he, explain:p.explain||'', example:p.example||''});
+      }
+      await new Promise(r=>setTimeout(r,500)); // small delay between calls
+    }catch(e){
+      stillPending.push(item);
+    }
+  }
+
+  pendingQueue=stillPending;
+  saveQueue();
+  updateCount(); saveLocal(); buildList(); refreshAfterAdd();
+  if(stillPending.length===0){
+    showSync('✅ כל המילים עובדו!');
+  } else {
+    showSync('⚠️ '+stillPending.length+' מילים עדיין ממתינות');
+  }
+  updateQueueBadge();
+}
+
+// Auto-process queue on load (after short delay)
+setTimeout(()=>{
+  if(pendingQueue.length>0 && navigator.onLine) processQueue();
+}, 2000);
+
+function refreshAfterAdd(){
+  // Point flashcard to the new word and rebuild quiz pool
+  fcIdx = WORDS.length - 1;
+  if(mode==='fc'){
+    loadFC();
+  } else {
+    // Rebuild shuffled with new word included
+    shuffled = makeQuestions(mode==='smart' ? getWeakWords() : WORDS);
+    qIdx = 0; score = 0; qTotal = 0;
+    if(mode==='mc') loadMC();
+    if(mode==='fill') loadFill();
+    if(mode==='write') loadWrite();
+    if(mode==='smart') loadSmart();
+  }
+  updateStatsUI();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadTheme();loadApiKey();loadLocal();loadQueue();updateCount();loadFC();buildList();updateStatsUI();
+});
+</script>
+</body>
+</html>
