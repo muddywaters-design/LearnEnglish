@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>מילים | תרגול אנגלית</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<meta name="theme-color" content="#3d5afe">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -63,7 +65,7 @@ body.dark #apiKeyPanel { background: #1e1c10; border-color: #4a4010; }
 body.dark #apiKeyPanel span { color: #c8a840; }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Rubik', 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   background: var(--bg);
   color: var(--txt);
   min-height: 100vh;
@@ -82,7 +84,7 @@ header {
   box-shadow: var(--shadow);
 }
 .logo {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   font-size: 1.2rem; font-weight: 700;
   color: var(--blue); white-space: nowrap;
   letter-spacing: -0.3px;
@@ -125,7 +127,7 @@ header {
 }
 .stat-chip:hover { box-shadow: var(--shadow-lg); }
 .stat-val {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   font-size: 1.5rem; font-weight: 700; color: var(--blue);
   line-height: 1;
 }
@@ -198,7 +200,7 @@ main {
   text-transform: uppercase; color: var(--txt3); font-weight: 600;
 }
 .card-en {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   font-size: 2.4rem; font-weight: 700;
   color: var(--txt); line-height: 1.1;
   letter-spacing: -0.5px;
@@ -215,7 +217,7 @@ main {
   font-size: 0.85rem; color: var(--gold);
   font-style: italic; direction: ltr;
   max-width: 380px; line-height: 1.6;
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   background: var(--gold-bg);
   padding: 8px 14px; border-radius: 8px;
   border-right: 3px solid var(--gold);
@@ -256,7 +258,7 @@ main {
   font-weight: 600; margin-bottom: 12px;
 }
 .q-en {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   font-size: 2.2rem; font-weight: 700;
   color: var(--blue); letter-spacing: -0.3px;
 }
@@ -281,7 +283,7 @@ main {
   background: transparent; border: none;
   border-bottom: 2.5px solid var(--blue);
   color: var(--blue); font-size: 1.3rem;
-  font-family: 'Fraunces', serif; text-align: center;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif; text-align: center;
   width: 200px; outline: none; padding: 0 4px;
   direction: ltr; font-weight: 700;
 }
@@ -343,7 +345,7 @@ main {
   box-shadow: var(--shadow-lg);
 }
 .done-score {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
   font-size: 3.5rem; font-weight: 700;
   color: var(--green); margin: 10px 0;
 }
@@ -357,6 +359,82 @@ main {
   border: 1.5px solid var(--blue-bg2);
   border-radius: 999px; padding: 5px 14px;
 }
+
+/* ── GAME MODE ── */
+.g-hero {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 20px;
+  padding: 36px 28px; text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+.g-title {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
+  font-size: 1.7rem; font-weight: 700; color: var(--txt);
+  margin-bottom: 6px;
+}
+.g-sub { color: var(--txt2); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; }
+.g-statrow { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+.g-stat {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 18px; min-width: 86px;
+}
+.g-stat-v { font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif; font-size: 1.5rem; font-weight: 700; color: var(--blue); line-height: 1; }
+.g-stat-l { font-size: 0.62rem; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 3px; }
+.g-rules { font-size: 0.78rem; color: var(--txt3); line-height: 1.9; margin-top: 16px; }
+
+/* HUD while playing */
+.g-hud { width: 100%; display: flex; align-items: center; gap: 12px; }
+.g-time-wrap { flex: 1; }
+.g-time-track { height: 10px; background: var(--blue-bg2); border-radius: 999px; overflow: hidden; }
+.g-time-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-l));
+  border-radius: 999px; transition: width 0.12s linear;
+}
+.g-time-fill.low { background: linear-gradient(90deg, var(--red), #ff8fa3); }
+.g-time-num {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif; font-size: 1.5rem; font-weight: 700;
+  color: var(--blue); min-width: 44px; text-align: center; line-height: 1;
+}
+.g-time-num.low { color: var(--red); }
+.g-score-box { text-align: center; min-width: 70px; }
+.g-score-v { font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif; font-size: 1.5rem; font-weight: 700; color: var(--txt); line-height: 1; }
+.g-score-l { font-size: 0.58rem; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.g-streak {
+  min-height: 24px; font-size: 0.9rem; font-weight: 700;
+  color: var(--gold); text-align: center;
+}
+
+/* floating feedback */
+.g-flash {
+  position: fixed; left: 50%; top: 42%;
+  transform: translate(-50%,-50%);
+  font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif;
+  font-size: 2.4rem; font-weight: 700;
+  pointer-events: none; z-index: 300; opacity: 0;
+}
+.g-flash.go { animation: gFlash 0.65s ease-out; }
+.g-flash.good { color: var(--green); }
+.g-flash.bad  { color: var(--red); }
+@keyframes gFlash {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.6); }
+  25%  { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  60%  { opacity: 1; transform: translate(-50%,-72%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-95%) scale(0.95); }
+}
+.g-newbest {
+  display: inline-block; background: var(--gold-bg); color: #8a5a00;
+  border: 1.5px solid var(--gold); border-radius: 999px;
+  padding: 5px 16px; font-size: 0.82rem; font-weight: 700; margin-bottom: 12px;
+}
+body.dark .g-newbest { color: var(--gold); }
+
+/* While a game is running, clear the screen for it (matters a lot on mobile).
+   The mode buttons stay clickable — being unable to leave feels broken. */
+body.playing .stats-bar,
+body.playing .wl-toggle,
+body.playing .word-list,
+body.playing .io-row { display: none !important; }
 
 /* ── WORD LIST ── */
 .wl-toggle {
@@ -422,7 +500,7 @@ main {
   max-height: 92vh; overflow-y: auto;
   box-shadow: 0 20px 60px rgba(26,29,46,0.2);
 }
-.modal-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--txt); }
+.modal-title { font-family: 'Fraunces', Georgia, 'Times New Roman', 'David', serif; font-size: 1.4rem; font-weight: 700; color: var(--txt); }
 .m-row { display: flex; gap: 8px; }
 .m-input {
   flex: 1; background: var(--bg);
@@ -541,7 +619,7 @@ main {
     <div id="aiResult" class="ai-result hidden">
       <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
       <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
-      <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',serif;"></div></div>
+      <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',Georgia,'Times New Roman',serif;"></div></div>
     </div>
     <div id="modalMsg" class="m-msg hidden"></div>
     <div class="modal-actions">
@@ -552,11 +630,14 @@ main {
   </div>
 </div>
 
+<div class="g-flash" id="gFlash"></div>
+
 <!-- HEADER -->
 <header>
   <div class="logo">📖 מילים</div>
   <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
   <div class="hdr-right">
+    <span id="offlineBadge" style="display:none;align-items:center;gap:4px;font-size:0.7rem;font-weight:600;color:#8a5a00;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:999px;padding:3px 10px;white-space:nowrap;">📴 לא מקוון</span>
     <span id="syncMsg"></span>
     <button id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים" style="background:none;border:1.5px solid var(--border2);border-radius:999px;color:var(--txt3);cursor:pointer;font-size:0.75rem;padding:5px 10px;font-family:inherit;transition:all 0.2s;">🌙</button>
     <button id="apiKeyBtn" onclick="toggleApiKeyPanel()" title="הגדר API Key" style="background:none;border:1.5px solid var(--border2);border-radius:999px;color:var(--txt3);cursor:pointer;font-size:0.75rem;font-weight:600;padding:5px 12px;font-family:inherit;transition:all 0.2s;">🔑</button>
@@ -603,6 +684,7 @@ main {
   <button class="mode-btn" onclick="setMode('fill')">✏️ השלמת מילה</button>
   <button class="mode-btn" onclick="setMode('write')">📝 כתיבת תרגום</button>
   <button class="mode-btn" onclick="setMode('smart')">🧠 מצב חכם</button>
+  <button class="mode-btn" onclick="setMode('game')">🎮 משחק</button>
 </div>
 
 <main>
@@ -680,10 +762,78 @@ main {
     <div id="smartInner" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>
   </div>
 
+  <!-- GAME -->
+  <div id="gameMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+
+    <!-- start screen -->
+    <div id="gameStart" class="g-hero">
+      <div style="font-size:2.6rem;margin-bottom:4px;">🎮</div>
+      <div class="g-title">מירוץ מילים</div>
+      <div class="g-sub">60 שניות. רק המילים <strong>שאתה הוספת</strong>.<br>כמה תספיק?</div>
+      <div class="g-statrow">
+        <div class="g-stat">
+          <div class="g-stat-v" id="gMyCount">0</div>
+          <div class="g-stat-l">מילים שלי</div>
+        </div>
+        <div class="g-stat">
+          <div class="g-stat-v" id="gBest">0</div>
+          <div class="g-stat-l">שיא אישי</div>
+        </div>
+      </div>
+      <button class="btn-submit" id="gStartBtn" onclick="gameStart()">התחל משחק</button>
+      <div id="gEmptyMsg" style="display:none;">
+        <div style="color:var(--txt2);font-size:0.9rem;line-height:1.7;margin-bottom:16px;">
+          עדיין לא הוספת מילים משלך.<br>הוסף מילים עם ➕ והן יופיעו כאן.
+        </div>
+        <button class="btn-submit" onclick="openModal()">➕ הוסף מילה ראשונה</button>
+      </div>
+      <div class="g-rules">
+        ✅ תשובה נכונה: +10 נק׳ ו-2 שניות בונוס<br>
+        ❌ טעות: 3 שניות נקנסות<br>
+        🔥 רצף תשובות מכפיל את הניקוד
+      </div>
+    </div>
+
+    <!-- playing -->
+    <div id="gamePlay" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div class="g-hud">
+        <div class="g-time-num" id="gTimeNum">60</div>
+        <div class="g-time-wrap"><div class="g-time-track"><div class="g-time-fill" id="gTimeFill"></div></div></div>
+        <div class="g-score-box">
+          <div class="g-score-v" id="gScoreV">0</div>
+          <div class="g-score-l">ניקוד</div>
+        </div>
+      </div>
+      <div class="g-streak" id="gStreak"></div>
+      <div class="qcard">
+        <div class="q-lbl" id="gLbl">מה התרגום?</div>
+        <div class="q-row"><div class="q-en" id="gWord"></div></div>
+      </div>
+      <div class="choices" id="gChoices"></div>
+      <button class="btn-next" onclick="gameEnd()">סיים משחק</button>
+    </div>
+
+    <!-- game over -->
+    <div id="gameOver" class="hidden g-hero">
+      <div style="font-size:2.4rem;margin-bottom:6px;">🏁</div>
+      <div class="g-title">נגמר הזמן!</div>
+      <div id="gNewBest" class="g-newbest" style="display:none;">🏆 שיא אישי חדש!</div>
+      <div class="done-score" id="gFinalScore">0</div>
+      <div class="done-msg" id="gFinalStats"></div>
+      <div class="g-statrow">
+        <div class="g-stat">
+          <div class="g-stat-v" id="gBestOver">0</div>
+          <div class="g-stat-l">שיא אישי</div>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="gameStart()">🔄 שחק שוב</button>
+    </div>
+  </div>
+
   <!-- DONE -->
   <div class="done-wrap hidden" id="doneScreen">
     <div style="font-size:2.5rem;margin-bottom:6px;">🎉</div>
-    <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--txt);margin-bottom:4px;">סיימת!</div>
+    <div style="font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:1.8rem;font-weight:700;color:var(--txt);margin-bottom:4px;">סיימת!</div>
     <div class="done-score" id="doneScore"></div>
     <div class="done-msg" id="doneMsg"></div>
     <button class="btn-submit" onclick="restartMode()">תרגל שוב</button>
@@ -737,29 +887,29 @@ const BASE_WORDS=[
 {en:"Illusory halo",he:"הילה אשלייתית",explain:"תדמית חיובית מוגזמת שאינה משקפת מציאות.",example:"Fame creates an illusory halo around celebrities."},
 {en:"Tame",he:"מאולף, עדין",explain:"מאולף ולא פרוע, או משעמם וחסר עוצמה.",example:"After years of wild adventures, his new routine felt surprisingly tame."}
 ,
-{en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause."},
-{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep."},
-{en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions."},
-{en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility."},
-{en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend."},
-{en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job."},
-{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months."},
-{en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year."},
-{en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast."},
-{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans."},
-{en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell."},
-{en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs."},
-{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending."},
-{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn."},
-{en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work."},
-{en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes."},
-{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window."},
-{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse."},
-{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal."},
-{en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident."},
-{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises."},
-{en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals."},
-{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it."}];
+{en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause.",mine:true},
+{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep.",mine:true},
+{en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions.",mine:true},
+{en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility.",mine:true},
+{en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend.",mine:true},
+{en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job.",mine:true},
+{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months.",mine:true},
+{en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year.",mine:true},
+{en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast.",mine:true},
+{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans.",mine:true},
+{en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell.",mine:true},
+{en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs.",mine:true},
+{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending.",mine:true},
+{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn.",mine:true},
+{en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work.",mine:true},
+{en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes.",mine:true},
+{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window.",mine:true},
+{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse.",mine:true},
+{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal.",mine:true},
+{en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident.",mine:true},
+{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",mine:true},
+{en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals.",mine:true},
+{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",mine:true}];
 
 let WORDS=[...BASE_WORDS];
 let mode='fc',fcIdx=0,flipped=false;
@@ -778,7 +928,7 @@ function saveLocal(){
 function loadLocal(){
   try{
     const extra=JSON.parse(localStorage.getItem('vocab_extra')||'[]');
-    extra.forEach(w=>{if(w.en&&w.he&&!WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase()))WORDS.push(w);});
+    extra.forEach(w=>{if(w.en&&w.he&&!WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase()))WORDS.push(Object.assign({},w,{mine:true}));});
     mastery=JSON.parse(localStorage.getItem('vocab_mastery')||'{}');
     stats=Object.assign({sessions:0,bestPct:0,streak:0,lastDate:''},JSON.parse(localStorage.getItem('vocab_stats')||'{}'));
   }catch(e){}
@@ -823,6 +973,25 @@ function getWeakWords(){
 
 let addDir='en';
 let apiKey = '';
+
+/* ═══════════════ OFFLINE HANDLING ═══════════════ */
+// Everything except "add word via Claude" works with no connection at all.
+// This just makes the state visible instead of letting a button fail silently.
+function updateOnlineStatus(){
+  const off = !navigator.onLine;
+  const badge = document.getElementById('offlineBadge');
+  if(badge) badge.style.display = off ? 'inline-flex' : 'none';
+  ['aiBtn','aiBtnHe'].forEach(id=>{
+    const b = document.getElementById(id);
+    if(b){
+      b.disabled = off;
+      b.style.opacity = off ? '0.45' : '';
+      b.title = off ? 'אין חיבור לאינטרנט — השתמש בהוספה ידנית' : '';
+    }
+  });
+}
+window.addEventListener('online',  ()=>{ updateOnlineStatus(); if(pendingQueue.length>0) processQueue(); });
+window.addEventListener('offline', updateOnlineStatus);
 
 function toggleTheme(){
   const isDark = document.body.classList.toggle('dark');
@@ -1016,20 +1185,187 @@ function makeQuestions(words){
   return shuffle(qs);
 }
 
+/* ═══════════════ GAME: מירוץ מילים ═══════════════ */
+const GAME_SECONDS = 60;
+let gLeft=0, gScore=0, gStreak=0, gMaxStreak=0, gCorrect=0, gWrong=0;
+let gTimer=null, gCurrent=null, gActive=false;
+
+// Only words the user added themselves
+function myWords(){ return WORDS.filter(w => w.mine); }
+
+function gameBest(){
+  try { return parseInt(localStorage.getItem('vocab_game_best')||'0',10) || 0; } catch(e){ return 0; }
+}
+function setGameBest(v){ try { localStorage.setItem('vocab_game_best', String(v)); } catch(e){} }
+
+function gameMult(){
+  if(gStreak>=8) return 4;
+  if(gStreak>=5) return 3;
+  if(gStreak>=3) return 2;
+  return 1;
+}
+
+function showGameStart(){
+  gameStop();
+  const mine = myWords();
+  document.getElementById('gamePlay').classList.add('hidden');
+  document.getElementById('gameOver').classList.add('hidden');
+  document.getElementById('gameStart').classList.remove('hidden');
+  document.getElementById('gMyCount').textContent = mine.length;
+  document.getElementById('gBest').textContent = gameBest();
+  const enough = mine.length > 0;
+  document.getElementById('gStartBtn').style.display = enough ? '' : 'none';
+  document.getElementById('gEmptyMsg').style.display = enough ? 'none' : '';
+}
+
+function gameStart(){
+  const mine = myWords();
+  if(mine.length === 0){ showGameStart(); return; }
+  gLeft=GAME_SECONDS; gScore=0; gStreak=0; gMaxStreak=0; gCorrect=0; gWrong=0; gActive=true;
+  document.body.classList.add('playing');
+  document.getElementById('gameStart').classList.add('hidden');
+  document.getElementById('gameOver').classList.add('hidden');
+  document.getElementById('gamePlay').classList.remove('hidden');
+  updateGameHud();
+  nextGameQ();
+  if(gTimer) clearInterval(gTimer);
+  gTimer = setInterval(()=>{
+    gLeft -= 0.1;
+    if(gLeft <= 0){ gLeft = 0; updateGameHud(); gameEnd(); }
+    else updateGameHud();
+  }, 100);
+}
+
+function gameStop(){
+  if(gTimer){ clearInterval(gTimer); gTimer=null; }
+  gActive=false;
+  document.body.classList.remove('playing');
+}
+
+function updateGameHud(){
+  const low = gLeft <= 10;
+  const numEl = document.getElementById('gTimeNum');
+  const fillEl = document.getElementById('gTimeFill');
+  if(numEl){ numEl.textContent = Math.ceil(gLeft); numEl.classList.toggle('low', low); }
+  if(fillEl){ fillEl.style.width = (gLeft/GAME_SECONDS*100) + '%'; fillEl.classList.toggle('low', low); }
+  const sv = document.getElementById('gScoreV');
+  if(sv) sv.textContent = gScore;
+  const st = document.getElementById('gStreak');
+  if(st){
+    const m = gameMult();
+    st.textContent = gStreak > 0 ? ('🔥 רצף ' + gStreak + (m>1 ? '  ×'+m : '')) : '';
+  }
+}
+
+function nextGameQ(){
+  if(!gActive) return;
+  const mine = myWords();
+  if(mine.length === 0){ gameEnd(); return; }
+  const w = mine[Math.floor(Math.random()*mine.length)];
+  const dir = Math.random() < 0.5 ? 'en' : 'he';
+  gCurrent = {word:w, dir};
+
+  const wordEl = document.getElementById('gWord');
+  wordEl.textContent = dir==='en' ? w.en : w.he;
+  wordEl.dir = dir==='en' ? 'ltr' : 'rtl';
+  document.getElementById('gLbl').textContent =
+    dir==='en' ? 'מה התרגום לעברית?' : 'מה התרגום לאנגלית?';
+
+  // distractors come from the whole list so they stay plausible
+  const pool = WORDS.filter(x => x.en.toLowerCase() !== w.en.toLowerCase());
+  const wrong = shuffle(pool).slice(0,3);
+  const opts = shuffle([w, ...wrong]);
+  const box = document.getElementById('gChoices');
+  box.innerHTML = '';
+  opts.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.textContent = dir==='en' ? opt.he : opt.en;
+    b.dir = dir==='en' ? 'rtl' : 'ltr';
+    b.onclick = () => gameAnswer(b, opt.en === w.en, box);
+    box.appendChild(b);
+  });
+}
+
+function gameFlash(text, good){
+  const el = document.getElementById('gFlash');
+  if(!el) return;
+  el.textContent = text;
+  el.className = 'g-flash ' + (good ? 'good' : 'bad');
+  void el.offsetWidth;              // restart the animation
+  el.classList.add('go');
+  setTimeout(()=>{ el.classList.remove('go'); }, 700);
+}
+
+function gameAnswer(btn, ok, box){
+  if(!gActive) return;
+  const w = gCurrent.word;
+  box.querySelectorAll('.choice').forEach(x => x.disabled = true);
+  updateMastery(w.en, ok);          // feeds the 🧠 smart mode too
+
+  if(ok){
+    gCorrect++; gStreak++;
+    if(gStreak > gMaxStreak) gMaxStreak = gStreak;
+    const pts = 10 * gameMult();
+    gScore += pts;
+    gLeft = Math.min(GAME_SECONDS, gLeft + 2);
+    btn.classList.add('correct');
+    gameFlash('+' + pts, true);
+  } else {
+    gWrong++; gStreak = 0;
+    gLeft = Math.max(0, gLeft - 3);
+    btn.classList.add('wrong');
+    const correctLabel = gCurrent.dir==='en' ? w.he : w.en;
+    box.querySelectorAll('.choice').forEach(x => {
+      if(x.textContent === correctLabel) x.classList.add('correct');
+    });
+    gameFlash('−3 שנ׳', false);
+  }
+
+  updateGameHud();
+  if(gLeft <= 0){ gameEnd(); return; }
+  setTimeout(()=>{ if(gActive) nextGameQ(); }, ok ? 350 : 950);
+}
+
+function gameEnd(){
+  if(!gActive && !gTimer) return;   // already ended
+  gameStop();
+  document.body.classList.remove('playing');
+  document.getElementById('gamePlay').classList.add('hidden');
+  document.getElementById('gameStart').classList.add('hidden');
+  document.getElementById('gameOver').classList.remove('hidden');
+
+  const prevBest = gameBest();
+  const isNew = gScore > prevBest;
+  if(isNew) setGameBest(gScore);
+
+  document.getElementById('gFinalScore').textContent = gScore;
+  document.getElementById('gFinalStats').textContent =
+    '✅ ' + gCorrect + ' נכון · ❌ ' + gWrong + ' שגוי · 🔥 רצף שיא ' + gMaxStreak;
+  document.getElementById('gNewBest').style.display = isNew ? '' : 'none';
+  document.getElementById('gBestOver').textContent = Math.max(prevBest, gScore);
+
+  const answered = gCorrect + gWrong;
+  if(answered > 0) recordSession(Math.round(gCorrect / answered * 100));
+  saveLocal();
+}
+
 function setMode(m){
+  gameStop();                       // always kill the game timer when leaving/entering a mode
   mode=m;
-  const ids=['fc','mc','fill','write','smart'];
+  const ids=['fc','mc','fill','write','smart','game'];
   document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
   ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
   document.getElementById(m+'Mode').classList.remove('hidden');
   document.getElementById('doneScreen').classList.add('hidden');
   qIdx=0;score=0;qTotal=0;
-  shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
+  if(m!=='game') shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
   if(m==='fc'){fcIdx=0;loadFC();}
   if(m==='mc')loadMC();
   if(m==='fill')loadFill();
   if(m==='write')loadWrite();
   if(m==='smart')loadSmart();
+  if(m==='game')showGameStart();
   setProgress(0);
 }
 function restartMode(){setMode(mode);}
@@ -1230,7 +1566,8 @@ function buildList(){
     const pct=m&&m.total>0?Math.round(m.correct/m.total*100):null;
     const dot=pct===null?'':(pct>=70?'<span style="color:var(--ok);font-size:0.6rem;margin-right:3px">●</span>':'<span style="color:var(--err);font-size:0.6rem;margin-right:3px">●</span>');
     const d=document.createElement('div');d.className='wl-row';
-    d.innerHTML=`<span>${dot}<span class="wl-en">${w.en}</span> <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
+    const mineTag = w.mine ? '<span title="מילה שהוספת — נכללת במשחק" style="color:var(--blue);font-size:0.7rem;margin-left:3px">🎮</span>' : '';
+    d.innerHTML=`<span>${dot}<span class="wl-en">${w.en}</span>${mineTag} <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
     el.appendChild(d);
   });
 }
@@ -1262,6 +1599,7 @@ function openModal(){
   heInput.dir='rtl'; heInput.style.color='var(--green)';
   setDir('en');
   aiData=null;
+  updateOnlineStatus();
   document.getElementById('overlay').classList.remove('hidden');
   setTimeout(()=>document.getElementById('newEn').focus(),100);
 }
@@ -1281,9 +1619,9 @@ async function lookupWord(){
   if(!en){showMMsg('⚠️ הכנס מילה תחילה','err');return;}
   if(WORDS.some(w=>w.en.toLowerCase()===en.toLowerCase())){showMMsg('⚠️ המילה כבר קיימת','err');return;}
 
-  // קובץ HTML מקומי לא יכול לקרוא API חיצוני — עבור לידני אוטומטית
-  if(location.protocol==='file:'){
-    showMMsg('📂 בקובץ מקומי Claude לא זמין — מעבר להוספה ידנית','err');
+  // קובץ HTML מקומי בלי API key לא יכול לקרוא API חיצוני — עבור לידני אוטומטית
+  if(location.protocol==='file:' && !apiKey){
+    showMMsg('📂 הגדר API Key (לחץ 🔑 למעלה) או הוסף ידנית','err');
     showManual();
     return;
   }
@@ -1328,7 +1666,7 @@ function saveAI(){
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
   const dupAI=isDuplicate(en,he);
   if(dupAI){showMMsg('⚠️ '+dupAI,'err');return;}
-  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||''});
+  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
 function saveManual(){
@@ -1346,7 +1684,7 @@ function saveManual(){
   }
   const dupMan=isDuplicate(en,he);
   if(dupMan){showMMsg('⚠️ '+dupMan,'err');return;}
-  WORDS.push({en,he,explain:'',example:''});
+  WORDS.push({en,he,explain:'',example:'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
 
@@ -1359,59 +1697,44 @@ function downloadUpdatedFile(){
   const mainScript = scripts.find(s => !s.src && s.textContent.includes('const BASE_WORDS='));
   if(!mainScript){ showSync('❌ שגיאה בהורדה'); return; }
 
-  const js = mainScript.textContent;
+  const srcJs = mainScript.textContent;
 
-  // Find exact start and end of BASE_WORDS array
-  const arrStart = js.indexOf('const BASE_WORDS=');
-  // Walk forward to find the matching closing ];
-  let depth = 0, pos = js.indexOf('[', arrStart), arrEnd = -1;
-  for(let i = pos; i < js.length; i++){
-    if(js[i]==='[') depth++;
-    else if(js[i]===']'){ depth--; if(depth===0){ arrEnd=i+1; break; } }
+  // Find exact start and end of BASE_WORDS array (bracket-depth walk, handles nested [])
+  const arrStart = srcJs.indexOf('const BASE_WORDS=');
+  let depth = 0, pos = srcJs.indexOf('[', arrStart), arrEnd = -1;
+  for(let i = pos; i < srcJs.length; i++){
+    if(srcJs[i]==='[') depth++;
+    else if(srcJs[i]===']'){ depth--; if(depth===0){ arrEnd=i+1; break; } }
   }
-  // Also skip the semicolon
-  if(js[arrEnd]===';') arrEnd++;
+  if(srcJs[arrEnd]===';') arrEnd++;
 
-  const updatedJs = js.slice(0, arrStart)
-    + 'const BASE_WORDS=' + wordsJson + ';
-'
-    + js.slice(arrEnd);
-
-  // Also clear localStorage extra words since they're now in BASE_WORDS
-  const initOld = "loadTheme();loadApiKey();loadLocal();loadQueue();";
-  const initNew = "loadApiKey();loadLocal();loadQueue();";
-  // (no change needed — on open, localStorage extra will just be empty or ignored)
+  const updatedJs = srcJs.slice(0, arrStart) + 'const BASE_WORDS=' + wordsJson + ';\n' + srcJs.slice(arrEnd);
 
   const styleEl = document.querySelector('style');
   const linkEl  = document.querySelector('link[rel="stylesheet"]');
-  const fullHtml =
-    '<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-' +
-    '<meta charset="UTF-8">
-' +
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0">
-' +
-    '<title>מילים | תרגול אנגלית</title>
-' +
-    (linkEl ? linkEl.outerHTML + '
-' : '') +
-    (styleEl ? styleEl.outerHTML + '
-' : '') +
-    '</head>
-<body>
-' +
-    document.body.innerHTML + '
-' +
-    '<script>
-' + updatedJs + '
-<\/script>
-' +
-    '</body>
-</html>';
+  const headExtra = (linkEl ? linkEl.outerHTML : '') + (styleEl ? styleEl.outerHTML : '');
 
-  // Use data URI — works on mobile Chrome where blob URLs don't trigger download
+  // IMPORTANT: body.innerHTML also contains the original <script> tag (it's the
+  // last child of <body>). Clone the body and strip all <script> tags from the
+  // clone before reading innerHTML, otherwise BASE_WORDS gets declared twice
+  // and the browser silently keeps only the OLD (first) declaration.
+  const bodyClone = document.body.cloneNode(true);
+  bodyClone.querySelectorAll('script').forEach(s => s.remove());
+  // Also drop any leftover overlay/modal open state and transient UI bits so the
+  // downloaded file opens clean (modal closed, panels hidden).
+  const bodyHtml = bodyClone.innerHTML;
+
+  const fullHtml = '<!DOCTYPE html>\n<html lang="he" dir="rtl">\n<head>\n'
+    + '<meta charset="UTF-8">\n'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+    + '<title>מילים | תרגול אנגלית</title>\n'
+    + headExtra + '\n'
+    + '</head>\n<body>\n'
+    + bodyHtml + '\n'
+    + '<script>\n' + updatedJs + '\n</' + 'script>\n'
+    + '</body>\n</html>';
+
+  // Use data URI — works on mobile Chrome where blob URLs don't always trigger download
   const encoded = 'data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml);
   const a = document.createElement('a');
   a.href = encoded;
@@ -1433,7 +1756,7 @@ function importWords(event){
       data.forEach(w=>{
         if(!w.en||!w.he){skipped++;return;}
         if(WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase())){skipped++;return;}
-        WORDS.push({en:w.en,he:w.he,explain:w.explain||'',example:w.example||''});
+        WORDS.push({en:w.en,he:w.he,explain:w.explain||'',example:w.example||'',mine:true});
         added++;
       });
       updateCount();saveLocal();buildList();
@@ -1518,7 +1841,7 @@ async function processQueue(){
       const en = item.dir==='he' ? p.en : item.en;
       const he = item.dir==='he' ? item.en : p.he;
       if(!isDuplicate(en,he)){
-        WORDS.push({en, he, explain:p.explain||'', example:p.example||''});
+        WORDS.push({en, he, explain:p.explain||'', example:p.example||'', mine:true});
       }
       await new Promise(r=>setTimeout(r,500)); // small delay between calls
     }catch(e){
@@ -1545,7 +1868,11 @@ setTimeout(()=>{
 function refreshAfterAdd(){
   // Point flashcard to the new word and rebuild quiz pool
   fcIdx = WORDS.length - 1;
-  if(mode==='fc'){
+  if(mode==='game'){
+    // Don't yank the rug out from under an in-progress game — the new word
+    // just joins the pool and shows up on the next question.
+    if(!gActive) showGameStart();
+  } else if(mode==='fc'){
     loadFC();
   } else {
     // Rebuild shuffled with new word included
@@ -1560,7 +1887,7 @@ function refreshAfterAdd(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  loadTheme();loadApiKey();loadLocal();loadQueue();updateCount();loadFC();buildList();updateStatsUI();
+  loadTheme();loadApiKey();loadLocal();loadQueue();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
 });
 </script>
 </body>
