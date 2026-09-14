@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>מילים | תרגול אנגלית</title>
+<title>מילים | אנגלית בריטית</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <meta name="theme-color" content="#3d5afe">
@@ -360,6 +360,44 @@ main {
   border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── CLOZE / SENTENCE COMPLETION ── */
+.cloze-sentence {
+  direction: ltr; text-align: left;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-size: 1.15rem; line-height: 2.2;
+  color: var(--txt); padding: 6px 2px 2px;
+}
+.cloze-input {
+  background: var(--blue-bg);
+  border: none; border-bottom: 2.5px solid var(--blue);
+  border-radius: 4px 4px 0 0;
+  color: var(--blue); font-size: 1.1rem; font-weight: 700;
+  font-family: 'Fraunces', Georgia, serif;
+  text-align: center; outline: none;
+  padding: 2px 6px; margin: 0 3px; direction: ltr;
+  min-width: 90px; vertical-align: baseline;
+}
+.cloze-input:focus { background: var(--blue-bg2); }
+.cloze-input:disabled { opacity: 1; }
+.cloze-hint {
+  font-family: monospace; font-size: 0.85rem; letter-spacing: 3px;
+  color: var(--txt3); font-weight: 600; margin-top: 14px; direction: ltr;
+}
+.cloze-clue {
+  font-size: 0.85rem; color: var(--txt2);
+  margin-top: 8px; font-weight: 500;
+}
+.cloze-clue span { color: var(--blue); font-weight: 600; }
+
+/* British nuance note on the flashcard back */
+.card-brit {
+  font-size: 0.78rem; color: var(--txt2); direction: rtl;
+  line-height: 1.6; max-width: 380px;
+  background: var(--gold-bg); border-right: 3px solid var(--gold);
+  padding: 7px 12px; border-radius: 8px;
+}
+body.dark .card-brit { color: var(--gold); }
+
 /* ── GAME MODE ── */
 .g-hero {
   width: 100%; background: var(--surface);
@@ -582,6 +620,7 @@ body.playing .io-row { display: none !important; }
 <div class="overlay hidden" id="overlay">
   <div class="modal">
     <div class="modal-title">➕ הוסף מילה חדשה</div>
+    <div style="font-size:0.78rem;color:var(--txt3);margin-top:-6px;">🇬🇧 Claude מחזיר איות, אוצר מילים וניואנסים באנגלית בריטית</div>
     <!-- Direction toggle -->
     <div style="display:flex;gap:6px;background:var(--bg2);border-radius:999px;padding:4px;width:fit-content;align-self:center;">
       <button id="dirEnHe" onclick="setDir('en')" style="padding:5px 16px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;">🇬🇧 אנגלית</button>
@@ -620,6 +659,7 @@ body.playing .io-row { display: none !important; }
       <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
       <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
       <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',Georgia,'Times New Roman',serif;"></div></div>
+      <div id="aiBritWrap" style="display:none;"><div class="ai-lbl">🇬🇧 ניואנס בריטי</div><div id="aiBrit" style="color:var(--txt2);font-size:0.82rem;line-height:1.6;direction:rtl;"></div></div>
     </div>
     <div id="modalMsg" class="m-msg hidden"></div>
     <div class="modal-actions">
@@ -634,7 +674,7 @@ body.playing .io-row { display: none !important; }
 
 <!-- HEADER -->
 <header>
-  <div class="logo">📖 מילים</div>
+  <div class="logo">🇬🇧 מילים</div>
   <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
   <div class="hdr-right">
     <span id="offlineBadge" style="display:none;align-items:center;gap:4px;font-size:0.7rem;font-weight:600;color:#8a5a00;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:999px;padding:3px 10px;white-space:nowrap;">📴 לא מקוון</span>
@@ -683,6 +723,7 @@ body.playing .io-row { display: none !important; }
   <button class="mode-btn" onclick="setMode('mc')">🔤 בחירה מרובה</button>
   <button class="mode-btn" onclick="setMode('fill')">✏️ השלמת מילה</button>
   <button class="mode-btn" onclick="setMode('write')">📝 כתיבת תרגום</button>
+  <button class="mode-btn" onclick="setMode('cloze')">🔤 מילה במשפט</button>
   <button class="mode-btn" onclick="setMode('smart')">🧠 מצב חכם</button>
   <button class="mode-btn" onclick="setMode('game')">🎮 משחק</button>
 </div>
@@ -703,6 +744,7 @@ body.playing .io-row { display: none !important; }
           <div class="card-he" id="fcHe"></div>
           <div class="card-explain" id="fcExplain"></div>
           <div class="card-example" id="fcExample"></div>
+          <div class="card-brit" id="fcBrit" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -760,6 +802,39 @@ body.playing .io-row { display: none !important; }
       <span class="smart-badge">🧠 מתמקד במילים שעוד לא שלטת בהן</span>
     </div>
     <div id="smartInner" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>
+  </div>
+
+  <!-- CLOZE / SENTENCE COMPLETION -->
+  <div id="clozeMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="align-self:flex-start;">
+      <span class="smart-badge">🇬🇧 המילה בתוך משפט אמיתי</span>
+    </div>
+
+    <div id="clozeInner" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div class="qcard">
+        <div class="q-lbl">השלם את המילה החסרה במשפט</div>
+        <div class="cloze-sentence">
+          <span id="clozeBefore"></span><input class="cloze-input" id="clozeInput" dir="ltr" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkCloze()"><span id="clozeAfter"></span>
+        </div>
+        <div class="cloze-hint" id="clozeHint"></div>
+        <div class="cloze-clue">רמז: <span id="clozeHe"></span></div>
+        <button class="speak-btn" style="margin-top:12px" onclick="speakClozeSentence()">🔊 השמע את המשפט</button>
+      </div>
+      <button class="btn-submit" id="clozeCheckBtn" onclick="checkCloze()">בדוק</button>
+      <div class="feedback hidden" id="clozeFb"></div>
+      <button class="btn-next hidden" id="clozeNext" onclick="nextCloze()">הבא →</button>
+    </div>
+
+    <div id="clozeEmpty" class="g-hero" style="display:none;">
+      <div style="font-size:2.2rem;margin-bottom:8px;">📝</div>
+      <div class="g-title">אין עדיין משפטי דוגמה</div>
+      <div class="g-sub">
+        המצב הזה מסתיר מילה בתוך משפט אמיתי.<br>
+        מילים שנוספו עם ✨ Claude מקבלות משפט אוטומטית;<br>
+        מתוך <span id="clozeEmptyCount">0</span> המילים שלך אף אחת עדיין לא כוללת משפט.
+      </div>
+      <button class="btn-submit" onclick="openModal()">➕ הוסף מילה עם Claude</button>
+    </div>
   </div>
 
   <!-- GAME -->
@@ -873,41 +948,41 @@ const BASE_WORDS=[
 {en:"Lectern",he:"עמוד נאום, פודיום",explain:"שולחן עמידה עם משטח מוטה לניירות נאום.",example:"The professor placed her notes on the lectern before beginning."},
 {en:"Manuscript",he:"כתב יד, טיוטה מקורית",explain:"הנוסח המקורי של ספר או יצירה לפני הדפסה.",example:"The author submitted his manuscript to the publisher."},
 {en:"Deprivation",he:"מחסור, חסך",explain:"מצב של חוסר בדברים בסיסיים כמו שינה, מזון, חופש.",example:"Years of sleep deprivation had taken a toll on her health."},
-{en:"Shrivelled",he:"מקומט, כמוש, מצומק",explain:"התכווצות ועיוות עקב יובש או גיל.",example:"The forgotten fruit had shrivelled into something unrecognisable."},
+{en:"Shrivelled",he:"מקומט, כמוש, מצומק",explain:"התכווצות ועיוות עקב יובש או גיל.",example:"The forgotten fruit had shrivelled into something unrecognisable.",brit:"איות בריטי עם שתי L. באמריקאית: shriveled. אותו כלל חל על travelled, cancelled, modelled."},
 {en:"Withered",he:"נבול, קמל, יבש",explain:"צמח שאיבד את חיוניותו ויבש.",example:"The flowers had withered after a week without water."},
 {en:"Protruding",he:"בולט, יוצא החוצה",explain:"יוצא ומבצבץ מתוך משטח, בולט לעין.",example:"A nail was protruding from the old wooden floorboard."},
 {en:"Wonders",he:"נפלאות, פלאים",explain:"דברים מרשימים ומדהימים, או הפועל לתהות.",example:"Travelling through Japan, she was filled with a sense of wonders."},
-{en:"Half-hearted",he:"בחצי לב, חסר מוטיבציה",explain:"ביצוע דבר ללא התלהבות אמיתית.",example:"His half-hearted apology didn't convince anyone in the room."},
-{en:"Motorcade",he:"שיירת מכוניות רשמית",explain:"שורה של מכוניות הנוסעות יחד לצורך ביטחון.",example:"The president's motorcade swept through the city streets."},
+{en:"Half-hearted",he:"בחצי לב, חסר מוטיבציה",explain:"ביצוע דבר ללא התלהבות אמיתית.",example:"His half-hearted apology didn't convince anyone in the room.",brit:"בבריטית נכתב עם מקף. באמריקאית לרוב halfhearted במילה אחת."},
+{en:"Motorcade",he:"שיירת מכוניות רשמית",explain:"שורה של מכוניות הנוסעות יחד לצורך ביטחון.",example:"The president's motorcade swept through the city streets.",brit:"מונח אמריקאי בעיקרו. בבריטניה נוטים לומר convoy או cavalcade."},
 {en:"Swung out",he:"נע החוצה בתנועה רחבה",explain:"תנועה רחבה ומעגלית החוצה.",example:"The car door swung out and nearly hit the cyclist."},
 {en:"Thaw out",he:"להפשיר, להיפתח",explain:"להפשיר דבר קפוא, או להירגע ולהיפתח.",example:"It took a while for him to thaw out at the party, but eventually he relaxed."},
 {en:"As it were",he:"כביכול, למעשה",explain:"ביטוי שמצביע שהמילים הן דימוי ולא מדויקות.",example:"He became the engine, as it were, that kept everything moving."},
-{en:"Fall off the twig",he:"למות (סלנג בריטי)",explain:"ביטוי הומוריסטי בריטי שמשמעותו למות.",example:"Old Mr. Jenkins showed no signs of falling off the twig any time soon."},
+{en:"Fall off the twig",he:"למות (סלנג בריטי)",explain:"ביטוי הומוריסטי בריטי שמשמעותו למות.",example:"Old Mr. Jenkins showed no signs of falling off the twig any time soon.",brit:"ביטוי בריטי בלבד, הומוריסטי ועקיף. לא יובן בארה״ב."},
 {en:"Admonitory glare",he:"מבט מזהיר ומייסר",explain:"מבט חד שנועד להזהיר מישהו ללא מילים.",example:"The teacher silenced the class with a single admonitory glare."},
 {en:"Illusory halo",he:"הילה אשלייתית",explain:"תדמית חיובית מוגזמת שאינה משקפת מציאות.",example:"Fame creates an illusory halo around celebrities."},
 {en:"Tame",he:"מאולף, עדין",explain:"מאולף ולא פרוע, או משעמם וחסר עוצמה.",example:"After years of wild adventures, his new routine felt surprisingly tame."}
 ,
 {en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause.",mine:true},
-{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep.",mine:true},
+{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep.",brit:"סלנג בריטי יומיומי. כמעט לא בשימוש בארה״ב — שם יגידו scatterbrained.",mine:true},
 {en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions.",mine:true},
 {en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility.",mine:true},
 {en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend.",mine:true},
 {en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job.",mine:true},
-{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months.",mine:true},
+{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months.",brit:"בהקשר הנדסי בריטי מקובל הקיצור TBM — tunnel boring machine.",mine:true},
 {en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year.",mine:true},
 {en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast.",mine:true},
-{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans.",mine:true},
+{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans.",brit:"נושא גוון של ביישנות מעושה או התחמקות מכוונת, לא ביישנות תמימה.",mine:true},
 {en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell.",mine:true},
 {en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs.",mine:true},
-{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending.",mine:true},
-{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn.",mine:true},
+{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending.",brit:"בבריטניה נפוץ גם האיות karabiner, בהשפעת הגרמנית.",mine:true},
+{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn.",brit:"הומופון של straight. Strait = מיצר ימי, straight = ישר.",mine:true},
 {en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work.",mine:true},
 {en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes.",mine:true},
-{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window.",mine:true},
-{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse.",mine:true},
-{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal.",mine:true},
+{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window.",brit:"שימו לב להומופון: whole (שלם) מול hole (חור). נשמעות זהה.",mine:true},
+{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse.",brit:"בבריטניה זו גם מילת כדורגל מרכזית — חילוץ כדור מיריב.",mine:true},
+{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal.",brit:"נפוץ מאוד בבריטניה ובאירלנד, לרוב בטון קליל ומבוטל.",mine:true},
 {en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident.",mine:true},
-{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",mine:true},
+{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",brit:"תמיד ברבים בצורתה, גם כשמדובר במבנה אחד: 'the premises are'.",mine:true},
 {en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals.",mine:true},
 {en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",mine:true}];
 
@@ -1044,9 +1119,45 @@ function updateApiKeyBtn(){
   btn.style.color = apiKey ? 'var(--green)' : 'var(--txt3)';
   btn.style.borderColor = apiKey ? 'var(--green)' : 'var(--border2)';
 }
+/* The model is pinned here so it is a one-line change when Anthropic retires it.
+   Anthropic retires older models on a schedule; if lookups suddenly start
+   failing with "המודל לא נמצא", update this string. */
+const API_MODEL = 'claude-sonnet-5';
+
 function getApiHeaders(){
   const key = apiKey || '';
-  return { 'Content-Type': 'application/json', ...(key ? {'x-api-key': key, 'anthropic-version': '2023-06-01'} : {}) };
+  return {
+    'Content-Type': 'application/json',
+    // Browsers block api.anthropic.com without this header — the request never
+    // even leaves as a normal CORS call. This is what makes it work from
+    // GitHub Pages. The key stays in this browser only.
+    'anthropic-dangerous-direct-browser-access': 'true',
+    ...(key ? {'x-api-key': key, 'anthropic-version': '2023-06-01'} : {})
+  };
+}
+
+// Turn whatever went wrong into something actionable, instead of one blanket
+// "connection error" that hides four completely different problems.
+function describeApiError(status, data, err){
+  const msg = (data && data.error && data.error.message) ? data.error.message
+            : (err && err.message) ? err.message : '';
+  const low = String(msg).toLowerCase();
+
+  if(!status){
+    if(!navigator.onLine) return 'אין חיבור לאינטרנט.';
+    return 'הבקשה נחסמה על ידי הדפדפן או שהרשת נפלה. בדוק את הקונסול לפרטים.';
+  }
+  if(status === 401){
+    if(low.includes('cors')) return 'הבקשה נחסמה (CORS) — הקובץ שבשימוש הוא גרסה ישנה. העלה את הקובץ המעודכן.';
+    if(!apiKey)              return 'לא הוגדר מפתח API. לחץ 🔑 למעלה והזן מפתח.';
+    return 'מפתח ה-API נדחה. בדוק אותו שוב בלחיצה על 🔑.';
+  }
+  if(status === 403) return 'למפתח אין הרשאה לפעולה הזו.';
+  if(status === 404 || low.includes('model')) return 'המודל "' + API_MODEL + '" לא נמצא — כנראה הוחלף בגרסה חדשה יותר.';
+  if(status === 429) return 'חרגת ממכסת השימוש. נסה שוב בעוד כמה דקות.';
+  if(status === 400) return 'בקשה לא תקינה: ' + msg;
+  if(status >= 500) return 'תקלה זמנית בשרת של Anthropic (' + status + ').';
+  return 'שגיאה ' + status + (msg ? ': ' + msg : '');
 }
 
 function isDuplicate(en, he){
@@ -1087,8 +1198,8 @@ async function lookupWordHe(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
-        messages:[{role:'user',content:'For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"English translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'}]})
+      body:JSON.stringify({model:API_MODEL,max_tokens:300,
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using it","brit":"a SHORT Hebrew note on the British angle, or an empty string if nothing notable"}'}]})
     });
     if(res.status===529||res.status===503){
       btn.disabled=false; btn.textContent='✨ Claude';
@@ -1110,15 +1221,27 @@ async function lookupWordHe(){
       }
       return;
     }
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){
+      let errData=null; try{ errData=await res.json(); }catch(_){}
+      const rich=new Error(describeApiError(res.status, errData, null));
+      rich.status=res.status; rich.apiData=errData; rich.apiMsg=rich.message;
+      throw rich;
+    }
     const data=await res.json();
-    if(data.error)throw new Error(data.error.message||'API error');
+    if(data.error){
+      const rich=new Error(describeApiError(res.status, data, null));
+      rich.status=res.status; rich.apiData=data; rich.apiMsg=rich.message;
+      throw rich;
+    }
     const p=JSON.parse(data.content?.[0]?.text?.trim());
-    aiData={en:p.en,he,explain:p.explain,example:p.example};
+    aiData={en:p.en,he,explain:p.explain,example:p.example,brit:p.brit||''};
     document.getElementById('newHe').value=he;
     document.getElementById('newHe').readOnly=true;
     document.getElementById('aiExplain').textContent=p.explain;
     document.getElementById('aiExample').textContent='"'+p.example+'"';
+    const bw=document.getElementById('aiBritWrap');
+    if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
+    else { bw.style.display='none'; }
     // show translation
     const heInput=document.querySelector('.ai-he-input');
     heInput.value=p.en; heInput.dir='ltr'; heInput.style.color='var(--blue)';
@@ -1126,9 +1249,9 @@ async function lookupWordHe(){
     document.getElementById('aiResult').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
   }catch(e){
-    console.error(e);
-    showMMsg('❌ שגיאה — נסה ידנית','err');
-    setTimeout(showManual,1200);
+    console.error('Claude API error:', e);
+    showMMsg('❌ ' + (e.apiMsg || describeApiError(e.status, e.apiData, e)), 'err');
+    setTimeout(showManual, 1800);
   }
   btn.disabled=false;btn.textContent='✨ Claude';
 }
@@ -1143,9 +1266,13 @@ function speak(text){
   // Try to find English voice, fall back to whatever is available
   var vs=speechSynthesis.getVoices();
   if(vs.length>0){
-    var v=vs.find(function(x){return x.lang==='en-GB';})
-        ||vs.find(function(x){return x.lang==='en-US';})
-        ||vs.find(function(x){return x.lang.startsWith('en');})
+    // British first. en-AU/en-IE/en-NZ sit closer to RP than American does,
+    // so they outrank en-US — American is the last resort, not second choice.
+    var v=vs.find(function(x){return x.lang==='en-GB'&&/UK|British|Daniel|Kate|Serena|Arthur|Sonia|Libby/i.test(x.name||'');})
+        ||vs.find(function(x){return x.lang==='en-GB';})
+        ||vs.find(function(x){return (x.lang||'').replace('_','-').indexOf('en-GB')===0;})
+        ||vs.find(function(x){return /^en-(AU|IE|NZ|ZA)/.test((x.lang||'').replace('_','-'));})
+        ||vs.find(function(x){return (x.lang||'').startsWith('en');})
         ||vs[0];
     if(v) u.voice=v;
     speechSynthesis.speak(u);
@@ -1170,6 +1297,9 @@ function loadFC(){
   document.getElementById('fcHe').textContent=w.he;
   document.getElementById('fcExplain').textContent=w.explain||'';
   document.getElementById('fcExample').textContent=w.example?'"'+w.example+'"':'';
+  const britEl=document.getElementById('fcBrit');
+  if(w.brit){ britEl.textContent='🇬🇧 '+w.brit; britEl.style.display=''; }
+  else { britEl.style.display='none'; }
   document.getElementById('fcI').textContent=fcIdx+1;
   document.getElementById('fcT').textContent=WORDS.length;
   flipped=false;document.getElementById('card').classList.remove('flipped');
@@ -1350,20 +1480,179 @@ function gameEnd(){
   saveLocal();
 }
 
+/* ═══════════ CLOZE: השלמת משפט ═══════════
+   The example sentence is the most under-used asset in the data. Hiding the
+   word inside it tests the word *in context* — collocation and preposition
+   included — which is exactly where Hebrew speakers slip. */
+
+// A word rarely appears in its example in dictionary form ("Accede" → "acceded"),
+// so build plausible inflections and search for any of them.
+function clozeVariants(en){
+  const out = new Set();
+
+  // Inflections of a single word
+  const inflect = (w) => {
+    const r = new Set([w]);
+    r.add(w+'s'); r.add(w+'es'); r.add(w+'ed'); r.add(w+'d'); r.add(w+'ing');
+    if(w.endsWith('e')){ r.add(w.slice(0,-1)+'ing'); r.add(w.slice(0,-1)+'ed'); }
+    if(w.endsWith('y')){ r.add(w.slice(0,-1)+'ied'); r.add(w.slice(0,-1)+'ies'); }
+    if(/[aeiou][bdfglmnprt]$/.test(w)){           // running, stopped …
+      r.add(w + w.slice(-1) + 'ed');
+      r.add(w + w.slice(-1) + 'ing');
+    }
+    if(w.endsWith('ed')){  r.add(w.slice(0,-2)); r.add(w.slice(0,-1)); }
+    if(w.endsWith('ing')){ r.add(w.slice(0,-3)); r.add(w.slice(0,-3)+'e'); }
+    if(w.endsWith('ies')){ r.add(w.slice(0,-3)+'y'); }
+    else if(w.endsWith('s')) r.add(w.slice(0,-1));
+    return r;
+  };
+
+  en.split('/').map(s=>s.trim()).filter(Boolean).forEach(part=>{
+    const w = part.toLowerCase();
+    inflect(w).forEach(v => out.add(v));
+    // Phrasal verbs and idioms carry the tense on the FIRST word
+    // ("fall off the twig" → "falling off the twig"), so inflect that too.
+    const words = w.split(/\s+/);
+    if(words.length > 1){
+      const rest = ' ' + words.slice(1).join(' ');
+      inflect(words[0]).forEach(v => out.add(v + rest));
+    }
+  });
+
+  // longest first, so multi-word phrases beat their own fragments
+  return [...out].filter(v => v.length > 1).sort((a,b) => b.length - a.length);
+}
+
+function findCloze(w){
+  if(!w.example) return null;
+  const s = w.example;
+  for(const v of clozeVariants(w.en)){
+    const esc = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const m = new RegExp('\\b' + esc + '\\b', 'i').exec(s);
+    if(m) return { sentence:s, start:m.index, end:m.index + m[0].length, answer:m[0] };
+  }
+  return null;
+}
+
+// Only words whose example actually contains them can be used here
+function clozePool(){
+  return WORDS.filter(w => findCloze(w) !== null);
+}
+
+let clozeList = [], clozeIdx = 0, clozeScore = 0, clozeTotal = 0, clozeCur = null;
+
+function loadCloze(){
+  const panel = document.getElementById('clozeInner');
+  const empty = document.getElementById('clozeEmpty');
+
+  if(clozeIdx >= clozeList.length){ showClozeDone(); return; }
+  clozeCur = clozeList[clozeIdx];
+  const { word:w, spot } = clozeCur;
+
+  empty.style.display = 'none';
+  panel.style.display = '';
+  setProgress(clozeIdx / clozeList.length * 100);
+
+  const before = spot.sentence.slice(0, spot.start);
+  const after  = spot.sentence.slice(spot.end);
+  const hint   = spot.answer[0] + '·'.repeat(Math.max(0, spot.answer.length - 1));
+
+  document.getElementById('clozeBefore').textContent = before;
+  document.getElementById('clozeAfter').textContent  = after;
+  document.getElementById('clozeHe').textContent     = w.he;
+  document.getElementById('clozeHint').textContent   = hint + '  (' + spot.answer.length + ' אותיות)';
+
+  const inp = document.getElementById('clozeInput');
+  inp.value = ''; inp.disabled = false;
+  inp.style.width = Math.max(90, spot.answer.length * 15) + 'px';
+
+  document.getElementById('clozeFb').classList.add('hidden');
+  document.getElementById('clozeNext').classList.add('hidden');
+  document.getElementById('clozeCheckBtn').classList.remove('hidden');
+  setTimeout(()=>inp.focus(), 60);
+}
+
+function checkCloze(){
+  const inp = document.getElementById('clozeInput');
+  if(!inp || inp.disabled) return;
+  const typed = inp.value.trim().toLowerCase();
+  if(!typed) return;
+
+  const { word:w, spot } = clozeCur;
+  const exact   = typed === spot.answer.toLowerCase();
+  const variant = !exact && clozeVariants(w.en).includes(typed);
+  const ok      = exact || variant;
+
+  inp.disabled = true;
+  clozeTotal++; if(ok) clozeScore++;
+  updateMastery(w.en, ok);
+
+  const fb = document.getElementById('clozeFb');
+  fb.className = 'feedback ' + (ok ? 'ok' : 'no');
+  if(exact){
+    fb.innerHTML = '✅ נכון! <strong>' + spot.answer + '</strong>';
+  } else if(variant){
+    fb.innerHTML = '🟡 כמעט — הצורה הנכונה כאן היא <strong>' + spot.answer + '</strong>';
+  } else {
+    fb.innerHTML = '❌ התשובה: <strong>' + spot.answer + '</strong>';
+  }
+  if(w.brit){
+    fb.innerHTML += '<div style="margin-top:8px;font-size:0.8rem;font-weight:500;opacity:0.9">🇬🇧 ' + w.brit + '</div>';
+  }
+  fb.classList.remove('hidden');
+
+  document.getElementById('clozeCheckBtn').classList.add('hidden');
+  document.getElementById('clozeNext').classList.remove('hidden');
+}
+
+function nextCloze(){ clozeIdx++; loadCloze(); }
+
+function speakClozeSentence(){
+  if(clozeCur) speak(clozeCur.spot.sentence);
+}
+
+function showClozeDone(){
+  document.getElementById('clozeInner').style.display = 'none';
+  const pct = clozeTotal ? Math.round(clozeScore/clozeTotal*100) : 0;
+  document.getElementById('doneScore').textContent = clozeScore + ' / ' + clozeTotal;
+  document.getElementById('doneMsg').textContent =
+    pct>=80 ? '🌟 שליטה מצוינת בהקשר!' : pct>=60 ? '👍 יפה, ההקשר מתחיל להיתפס' : '💪 ההקשר הוא החלק הקשה — עוד סיבוב';
+  document.getElementById('doneScreen').classList.remove('hidden');
+  if(clozeTotal>0) recordSession(pct);
+  setProgress(100);
+}
+
+function startCloze(){
+  const pool = clozePool();
+  const panel = document.getElementById('clozeInner');
+  const empty = document.getElementById('clozeEmpty');
+  clozeIdx = 0; clozeScore = 0; clozeTotal = 0;
+
+  if(pool.length === 0){
+    panel.style.display = 'none';
+    empty.style.display = '';
+    document.getElementById('clozeEmptyCount').textContent = WORDS.length;
+    return;
+  }
+  clozeList = shuffle(pool).map(w => ({ word:w, spot:findCloze(w) }));
+  loadCloze();
+}
+
 function setMode(m){
   gameStop();                       // always kill the game timer when leaving/entering a mode
   mode=m;
-  const ids=['fc','mc','fill','write','smart','game'];
+  const ids=['fc','mc','fill','write','cloze','smart','game'];
   document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
   ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
   document.getElementById(m+'Mode').classList.remove('hidden');
   document.getElementById('doneScreen').classList.add('hidden');
   qIdx=0;score=0;qTotal=0;
-  if(m!=='game') shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
+  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
   if(m==='fc'){fcIdx=0;loadFC();}
   if(m==='mc')loadMC();
   if(m==='fill')loadFill();
   if(m==='write')loadWrite();
+  if(m==='cloze')startCloze();
   if(m==='smart')loadSmart();
   if(m==='game')showGameStart();
   setProgress(0);
@@ -1600,6 +1889,7 @@ function openModal(){
   setDir('en');
   aiData=null;
   updateOnlineStatus();
+  const bwr=document.getElementById('aiBritWrap'); if(bwr) bwr.style.display='none';
   document.getElementById('overlay').classList.remove('hidden');
   setTimeout(()=>document.getElementById('newEn').focus(),100);
 }
@@ -1631,23 +1921,35 @@ async function lookupWord(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
-        messages:[{role:'user',content:'For "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'}]})
+      body:JSON.stringify({model:API_MODEL,max_tokens:300,
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using the word","brit":"a SHORT Hebrew note on the British angle: British vs American spelling, the British word vs its American equivalent, register, or a homophone worth knowing. Return an empty string if there is genuinely nothing notable."}'}]})
     });
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){
+      let errData=null; try{ errData=await res.json(); }catch(_){}
+      const rich=new Error(describeApiError(res.status, errData, null));
+      rich.status=res.status; rich.apiData=errData; rich.apiMsg=rich.message;
+      throw rich;
+    }
     const data=await res.json();
-    if(data.error) throw new Error(data.error.message||'API error');
+    if(data.error){
+      const rich=new Error(describeApiError(res.status, data, null));
+      rich.status=res.status; rich.apiData=data; rich.apiMsg=rich.message;
+      throw rich;
+    }
     const p=JSON.parse(data.content?.[0]?.text?.trim());
-    aiData={en,he:p.he,explain:p.explain,example:p.example};
+    aiData={en,he:p.he,explain:p.explain,example:p.example,brit:p.brit||''};
     document.getElementById('newHe').value=p.he;
     document.getElementById('aiExplain').textContent=p.explain;
     document.getElementById('aiExample').textContent='"'+p.example+'"';
+    const bw=document.getElementById('aiBritWrap');
+    if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
+    else { bw.style.display='none'; }
     document.getElementById('aiResult').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
   }catch(e){
-    console.error('Claude API error:',e);
-    showMMsg('❌ שגיאה בחיבור ל-Claude. עובר להוספה ידנית...','err');
-    setTimeout(showManual, 1200);
+    console.error('Claude API error:', e);
+    showMMsg('❌ ' + (e.apiMsg || describeApiError(e.status, e.apiData, e)), 'err');
+    setTimeout(showManual, 1800);
   }
   btn.disabled=false;btn.textContent='✨ Claude';
 }
@@ -1666,7 +1968,7 @@ function saveAI(){
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
   const dupAI=isDuplicate(en,he);
   if(dupAI){showMMsg('⚠️ '+dupAI,'err');return;}
-  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',mine:true});
+  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',brit:aiData?.brit||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
 function saveManual(){
@@ -1727,7 +2029,7 @@ function downloadUpdatedFile(){
   const fullHtml = '<!DOCTYPE html>\n<html lang="he" dir="rtl">\n<head>\n'
     + '<meta charset="UTF-8">\n'
     + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-    + '<title>מילים | תרגול אנגלית</title>\n'
+    + '<title>מילים | אנגלית בריטית</title>\n'
     + headExtra + '\n'
     + '</head>\n<body>\n'
     + bodyHtml + '\n'
@@ -1823,11 +2125,11 @@ async function processQueue(){
     }
     try{
       const prompt = item.dir==='he'
-        ? 'For the Hebrew word "'+item.en+'", respond ONLY with JSON (no markdown):\n{"en":"English translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}'
-        : 'For "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural English example sentence"}';
+        ? 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+item.en+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","brit":"short Hebrew note on the British angle, or empty string"}'
+        : 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","brit":"short Hebrew note on the British angle, or empty string"}';
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',headers:getApiHeaders(),
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+        body:JSON.stringify({model:API_MODEL,max_tokens:300,
           messages:[{role:'user',content:prompt}]})
       });
       if(res.status===529||res.status===503){
@@ -1841,7 +2143,7 @@ async function processQueue(){
       const en = item.dir==='he' ? p.en : item.en;
       const he = item.dir==='he' ? item.en : p.he;
       if(!isDuplicate(en,he)){
-        WORDS.push({en, he, explain:p.explain||'', example:p.example||'', mine:true});
+        WORDS.push({en, he, explain:p.explain||'', example:p.example||'', brit:p.brit||'', mine:true});
       }
       await new Promise(r=>setTimeout(r,500)); // small delay between calls
     }catch(e){
@@ -1882,6 +2184,7 @@ function refreshAfterAdd(){
     if(mode==='fill') loadFill();
     if(mode==='write') loadWrite();
     if(mode==='smart') loadSmart();
+    if(mode==='cloze') startCloze();
   }
   updateStatsUI();
 }
