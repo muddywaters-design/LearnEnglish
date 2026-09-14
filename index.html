@@ -695,8 +695,10 @@ body.playing .io-row { display: none !important; }
       style="flex:1;min-width:200px;background:#fff;border:1.5px solid #fcd34d;border-radius:10px;color:#1a1d2e;font-size:0.85rem;padding:6px 12px;outline:none;font-family:monospace;">
     <button onclick="saveApiKey()" style="padding:6px 16px;border-radius:999px;border:none;background:#f59e0b;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">שמור</button>
     <button onclick="clearApiKey()" style="padding:6px 14px;border-radius:999px;border:1.5px solid #fcd34d;background:transparent;color:#92400e;font-weight:600;cursor:pointer;font-family:inherit;font-size:0.82rem;">נקה</button>
+    <button onclick="runDiagnostics()" style="padding:6px 14px;border-radius:999px;border:1.5px solid #92400e;background:transparent;color:#92400e;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">🔍 בדוק חיבור</button>
     <span style="font-size:0.72rem;color:#92400e;">נשמר רק במכשיר זה (localStorage)</span>
   </div>
+  <div id="diagOut" style="display:none;max-width:720px;margin:10px auto 0;background:#fff;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 14px;font-size:0.8rem;line-height:1.9;color:#1a1d2e;direction:rtl;"></div>
 </div>
 
 <!-- STATS -->
@@ -1068,6 +1070,56 @@ function updateOnlineStatus(){
 window.addEventListener('online',  ()=>{ updateOnlineStatus(); if(pendingQueue.length>0) processQueue(); });
 window.addEventListener('offline', updateOnlineStatus);
 
+/* Step-by-step connection test. Needed because the browser deliberately hides
+   CORS failure details from JavaScript — a rejected key and a blocked request
+   look identical from here. This narrows it down by elimination. */
+async function runDiagnostics(){
+  const out = document.getElementById('diagOut');
+  out.style.display = '';
+  const lines = [];
+  const push = (icon, txt) => { lines.push(icon + ' ' + txt); out.innerHTML = lines.join('<br>'); };
+
+  push('🌐', 'כתובת הדף: <code dir="ltr">' + location.origin + '</code>');
+  push(navigator.onLine ? '✅' : '❌', 'חיבור לאינטרנט: ' + (navigator.onLine ? 'קיים' : 'אין'));
+
+  if(!apiKey){
+    push('❌', '<strong>לא נמצא מפתח שמור.</strong> הדבק מפתח בשדה למעלה ולחץ "שמור".');
+    return;
+  }
+  push('✅', 'מפתח שמור: <code dir="ltr">' + apiKey.slice(0,14) + '…</code> (' + apiKey.length + ' תווים)');
+  if(!apiKey.startsWith('sk-ant-')){
+    push('⚠️', 'המפתח לא מתחיל ב-<code dir="ltr">sk-ant-</code> — ייתכן שהועתק חלקית.');
+  }
+
+  push('⏳', 'שולח בקשת בדיקה קטנה…');
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: getApiHeaders(),
+      body: JSON.stringify({ model: API_MODEL, max_tokens: 4, messages:[{role:'user', content:'hi'}] })
+    });
+    let data = null; try { data = await res.json(); } catch(_){}
+    if(res.ok){
+      push('✅', '<strong>הכול תקין — Claude עונה.</strong> אפשר להוסיף מילים.');
+    } else {
+      push('❌', 'השרת החזיר סטטוס <strong>' + res.status + '</strong>');
+      const m = (data && data.error && data.error.message) ? data.error.message : 'ללא פירוט';
+      push('📄', '<code dir="ltr">' + m + '</code>');
+      if(res.status === 400 && /credit|balance/i.test(m)){
+        push('💡', 'אין יתרה בחשבון ה-API. יש להוסיף אשראי ב-Console של Anthropic.');
+      }
+      if(res.status === 404) push('💡', 'המודל <code dir="ltr">' + API_MODEL + '</code> כנראה הוחלף. יש לעדכן שורה אחת בקוד.');
+    }
+  } catch(err){
+    push('❌', '<strong>הבקשה לא הגיעה לשרת כלל.</strong>');
+    push('📄', 'הודעת הדפדפן: <code dir="ltr">' + (err && err.message ? err.message : String(err)) + '</code>');
+    push('💡', 'הדפדפן מסתיר את הסיבה המדויקת. שלוש האפשרויות, לפי סבירות:');
+    push('　1.', 'המפתח נדחה או שאין יתרה בחשבון ה-API — בדוק ב-Console של Anthropic שיש אשראי.');
+    push('　2.', 'תוסף חוסם פרסומות / VPN / רשת שחוסמים את <code dir="ltr">api.anthropic.com</code>.');
+    push('　3.', 'תקלת רשת זמנית.');
+  }
+}
+
 function toggleTheme(){
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('vocab_theme', isDark ? 'dark' : 'light');
@@ -1106,6 +1158,8 @@ function toggleApiKeyPanel(){
   const panel = document.getElementById('apiKeyPanel');
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
+  const d = document.getElementById('diagOut');
+  if(d && isOpen){ d.style.display='none'; d.innerHTML=''; }
   if(!isOpen){
     const inp = document.getElementById('apiKeyInput');
     inp.value = apiKey;
@@ -1145,7 +1199,9 @@ function describeApiError(status, data, err){
 
   if(!status){
     if(!navigator.onLine) return 'אין חיבור לאינטרנט.';
-    return 'הבקשה נחסמה על ידי הדפדפן או שהרשת נפלה. בדוק את הקונסול לפרטים.';
+    // A rejected key or an empty API balance often surfaces here rather than as
+    // a clean 401, because the browser strips CORS-blocked error responses.
+    return 'הבקשה לא הגיעה לשרת. לרוב זה מפתח שנדחה או חשבון API בלי יתרה. לחץ 🔑 ואז "בדוק חיבור" לאבחון.';
   }
   if(status === 401){
     if(low.includes('cors')) return 'הבקשה נחסמה (CORS) — הקובץ שבשימוש הוא גרסה ישנה. העלה את הקובץ המעודכן.';
