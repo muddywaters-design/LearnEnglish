@@ -921,6 +921,7 @@ body.playing .io-row { display: none !important; }
 
   <div class="io-row">
     <button class="btn-io" onclick="downloadUpdatedFile()" style="border-color:var(--blue);color:var(--blue);font-weight:600;">💾 הורד קובץ מעודכן</button>
+    <span id="verLabel" style="font-size:0.75rem;color:var(--txt3);font-weight:600;align-self:center;background:var(--bg2);border:1.5px solid var(--border);border-radius:999px;padding:6px 14px;" dir="ltr"></span>
   </div>
 </main>
 
@@ -1079,6 +1080,7 @@ async function runDiagnostics(){
   const lines = [];
   const push = (icon, txt) => { lines.push(icon + ' ' + txt); out.innerHTML = lines.join('<br>'); };
 
+  push('🏷️', 'גרסת האפליקציה: <strong>v' + APP_VERSION + '</strong> (' + APP_BUILD + ')');
   push('🌐', 'כתובת הדף: <code dir="ltr">' + location.origin + '</code>');
   push(navigator.onLine ? '✅' : '❌', 'חיבור לאינטרנט: ' + (navigator.onLine ? 'קיים' : 'אין'));
 
@@ -1113,24 +1115,39 @@ async function runDiagnostics(){
     return;
   }
 
-  push('⏳', 'שולח בקשת בדיקה קטנה…');
+  push('⏳', 'שולח בקשת תרגום אמיתית (כמו הוספת מילה)…');
   try{
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: getApiHeaders(),
-      body: JSON.stringify({ model: API_MODEL, max_tokens: 4, messages:[{role:'user', content:'hi'}] })
+      // Deliberately the real prompt, not a trivial ping — a "hi" would pass
+      // even when actual word lookups fail on parsing or length.
+      body: JSON.stringify({ model: API_MODEL, max_tokens: 800, messages:[{role:'user', content:
+        'For the word "splendid", respond ONLY with JSON (no backticks, no markdown):\n' +
+        '{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew",' +
+        '"example":"one natural British English sentence","brit":"short Hebrew note or empty string"}'}] })
     });
     let data = null; try { data = await res.json(); } catch(_){}
-    if(res.ok){
-      push('✅', '<strong>הכול תקין — Claude עונה.</strong> אפשר להוסיף מילים.');
-    } else {
+    if(!res.ok){
       push('❌', 'השרת החזיר סטטוס <strong>' + res.status + '</strong>');
       const m = (data && data.error && data.error.message) ? data.error.message : 'ללא פירוט';
       push('📄', '<code dir="ltr">' + m + '</code>');
       if(res.status === 400 && /credit|balance/i.test(m)){
         push('💡', 'אין יתרה בחשבון ה-API. יש להוסיף אשראי ב-Console של Anthropic.');
       }
+      if(res.status === 401) push('💡', 'המפתח נדחה. צור מפתח חדש והעתק אותו במלואו.');
       if(res.status === 404) push('💡', 'המודל <code dir="ltr">' + API_MODEL + '</code> כנראה הוחלף. יש לעדכן שורה אחת בקוד.');
+      return;
+    }
+    push('✅', 'השרת ענה בהצלחה (סטטוס 200).');
+    try{
+      const parsed = parseModelJson(data);
+      push('✅', 'התשובה פוענחה: <code dir="ltr">' + (parsed.he || '—') + '</code>');
+      push('🎉', '<strong>הכול תקין — אפשר להוסיף מילים.</strong>');
+    }catch(pe){
+      push('❌', '<strong>' + pe.message + '</strong>');
+      push('📄', 'תחילת התשובה: <code dir="ltr">' + (pe.raw || '—') + '</code>');
+      push('💡', 'זו תקלה בעיבוד התשובה, לא בחיבור. שלח לי את השורה הזו ואתקן.');
     }
   } catch(err){
     push('❌', '<strong>השרת נגיש, אבל הבקשה עצמה נחסמה.</strong>');
@@ -1204,6 +1221,48 @@ function updateApiKeyBtn(){
    Anthropic retires older models on a schedule; if lookups suddenly start
    failing with "המודל לא נמצא", update this string. */
 const API_MODEL = 'claude-sonnet-5';
+
+/* ── VERSION ──────────────────────────────────────────────────────────
+   Bumped on every delivered update. Shown at the bottom of the page, in
+   the connection diagnostics, and baked into the downloaded filename so a
+   file can always be identified without opening it. */
+const APP_VERSION = '1.1';
+const APP_BUILD   = '2026-09-18';
+
+/* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
+   in ``` fences, with a stray sentence around it, or cut off mid-object when the
+   token budget runs out. Parsing it naively throws a SyntaxError that carries no
+   HTTP status — which the error handler then mislabels as a network failure.
+   This parses defensively and reports what actually went wrong. */
+function parseModelJson(data){
+  const raw = ((data && data.content) || [])
+    .filter(b => b && b.type === 'text')
+    .map(b => b.text || '')
+    .join('')
+    .trim();
+
+  const fail = (msg) => {
+    const e = new Error(msg);
+    e.kind = 'parse';
+    e.raw  = raw.slice(0, 200);
+    return e;
+  };
+
+  if(!raw) throw fail('Claude החזיר תשובה ריקה. נסה שוב.');
+
+  let s = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+  const open = s.indexOf('{'), close = s.lastIndexOf('}');
+  if(open >= 0 && close > open) s = s.slice(open, close + 1);
+
+  try {
+    return JSON.parse(s);
+  } catch(_){
+    if(data && data.stop_reason === 'max_tokens'){
+      throw fail('התשובה מ-Claude נקטעה באמצע (חרגה ממגבלת האורך). נסה שוב.');
+    }
+    throw fail('Claude החזיר תשובה בפורמט לא צפוי. נסה שוב.');
+  }
+}
 
 function getApiHeaders(){
   const key = apiKey || '';
@@ -1281,7 +1340,7 @@ async function lookupWordHe(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:API_MODEL,max_tokens:300,
+      body:JSON.stringify({model:API_MODEL,max_tokens:800,
         messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using it","brit":"a SHORT Hebrew note on the British angle, or an empty string if nothing notable"}'}]})
     });
     if(res.status===529||res.status===503){
@@ -1316,7 +1375,7 @@ async function lookupWordHe(){
       rich.status=res.status; rich.apiData=data; rich.apiMsg=rich.message;
       throw rich;
     }
-    const p=JSON.parse(data.content?.[0]?.text?.trim());
+    const p=parseModelJson(data);
     aiData={en:p.en,he,explain:p.explain,example:p.example,brit:p.brit||''};
     document.getElementById('newHe').value=he;
     document.getElementById('newHe').readOnly=true;
@@ -1332,8 +1391,10 @@ async function lookupWordHe(){
     document.getElementById('aiResult').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
   }catch(e){
-    console.error('Claude API error:', e);
-    showMMsg('❌ ' + (e.apiMsg || describeApiError(e.status, e.apiData, e)), 'err');
+    console.error('Claude lookup failed:', e, e.raw ? ('raw reply: ' + e.raw) : '');
+    const why = (e.kind === 'parse') ? e.message
+              : (e.apiMsg || describeApiError(e.status, e.apiData, e));
+    showMMsg('❌ ' + why, 'err');
     setTimeout(showManual, 1800);
   }
   btn.disabled=false;btn.textContent='✨ Claude';
@@ -2004,7 +2065,7 @@ async function lookupWord(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:API_MODEL,max_tokens:300,
+      body:JSON.stringify({model:API_MODEL,max_tokens:800,
         messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using the word","brit":"a SHORT Hebrew note on the British angle: British vs American spelling, the British word vs its American equivalent, register, or a homophone worth knowing. Return an empty string if there is genuinely nothing notable."}'}]})
     });
     if(!res.ok){
@@ -2019,7 +2080,7 @@ async function lookupWord(){
       rich.status=res.status; rich.apiData=data; rich.apiMsg=rich.message;
       throw rich;
     }
-    const p=JSON.parse(data.content?.[0]?.text?.trim());
+    const p=parseModelJson(data);
     aiData={en,he:p.he,explain:p.explain,example:p.example,brit:p.brit||''};
     document.getElementById('newHe').value=p.he;
     document.getElementById('aiExplain').textContent=p.explain;
@@ -2030,8 +2091,10 @@ async function lookupWord(){
     document.getElementById('aiResult').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
   }catch(e){
-    console.error('Claude API error:', e);
-    showMMsg('❌ ' + (e.apiMsg || describeApiError(e.status, e.apiData, e)), 'err');
+    console.error('Claude lookup failed:', e, e.raw ? ('raw reply: ' + e.raw) : '');
+    const why = (e.kind === 'parse') ? e.message
+              : (e.apiMsg || describeApiError(e.status, e.apiData, e));
+    showMMsg('❌ ' + why, 'err');
     setTimeout(showManual, 1800);
   }
   btn.disabled=false;btn.textContent='✨ Claude';
@@ -2123,7 +2186,7 @@ function downloadUpdatedFile(){
   const encoded = 'data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml);
   const a = document.createElement('a');
   a.href = encoded;
-  a.download = 'vocab_' + new Date().toISOString().slice(0,10) + '.html';
+  a.download = 'vocab_v' + APP_VERSION + '_' + new Date().toISOString().slice(0,10) + '.html';
   document.body.appendChild(a);
   a.click();
   setTimeout(()=>document.body.removeChild(a), 500);
@@ -2212,7 +2275,7 @@ async function processQueue(){
         : 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","brit":"short Hebrew note on the British angle, or empty string"}';
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',headers:getApiHeaders(),
-        body:JSON.stringify({model:API_MODEL,max_tokens:300,
+        body:JSON.stringify({model:API_MODEL,max_tokens:800,
           messages:[{role:'user',content:prompt}]})
       });
       if(res.status===529||res.status===503){
@@ -2222,7 +2285,7 @@ async function processQueue(){
       if(!res.ok){ stillPending.push(item); continue; }
       const data=await res.json();
       if(data.error){ stillPending.push(item); continue; }
-      const p=JSON.parse(data.content?.[0]?.text?.trim());
+      const p=parseModelJson(data);
       const en = item.dir==='he' ? p.en : item.en;
       const he = item.dir==='he' ? item.en : p.he;
       if(!isDuplicate(en,he)){
@@ -2274,6 +2337,8 @@ function refreshAfterAdd(){
 
 document.addEventListener('DOMContentLoaded', function(){
   loadTheme();loadApiKey();loadLocal();loadQueue();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
+  const vl=document.getElementById('verLabel');
+  if(vl) vl.textContent='v'+APP_VERSION+' · '+APP_BUILD;
 });
 </script>
 </body>
