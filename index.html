@@ -1086,9 +1086,31 @@ async function runDiagnostics(){
     push('❌', '<strong>לא נמצא מפתח שמור.</strong> הדבק מפתח בשדה למעלה ולחץ "שמור".');
     return;
   }
-  push('✅', 'מפתח שמור: <code dir="ltr">' + apiKey.slice(0,14) + '…</code> (' + apiKey.length + ' תווים)');
+  push('✅', 'מפתח שמור: <code dir="ltr">' + apiKey.slice(0,14) + '…' + apiKey.slice(-4) + '</code>');
+  push('📏', 'אורך המפתח: <strong>' + apiKey.length + '</strong> תווים');
   if(!apiKey.startsWith('sk-ant-')){
     push('⚠️', 'המפתח לא מתחיל ב-<code dir="ltr">sk-ant-</code> — ייתכן שהועתק חלקית.');
+  }
+  if(apiKey.length < 50){
+    push('⚠️', '<strong>המפתח קצר מהצפוי.</strong> מפתחות של Anthropic ארוכים בהרבה — סביר שההעתקה נקטעה. העתק אותו שוב במלואו.');
+  }
+  if(/\s/.test(apiKey)){
+    push('⚠️', 'יש רווח או שורה חדשה בתוך המפתח — זה יגרום לדחייה.');
+  }
+
+  // Probe reachability without CORS rules. An opaque response still proves the
+  // host answered, which cleanly separates "the network blocks it" from
+  // "the API rejected us" — two failures that look identical to JavaScript.
+  push('⏳', 'בודק האם השרת נגיש בכלל…');
+  let reachable = false;
+  try{
+    await fetch('https://api.anthropic.com/v1/messages', { method:'POST', mode:'no-cors', body:'{}' });
+    reachable = true;
+    push('✅', 'השרת <code dir="ltr">api.anthropic.com</code> נגיש מהמכשיר.');
+  }catch(e){
+    push('❌', '<strong>לא ניתן להגיע ל-<code dir="ltr">api.anthropic.com</code> כלל.</strong>');
+    push('💡', 'משהו חוסם את הכתובת: VPN, חוסם פרסומות, סינון של הרשת או של הספק. נסה רשת אחרת או גלישה בסתר.');
+    return;
   }
 
   push('⏳', 'שולח בקשת בדיקה קטנה…');
@@ -1111,12 +1133,12 @@ async function runDiagnostics(){
       if(res.status === 404) push('💡', 'המודל <code dir="ltr">' + API_MODEL + '</code> כנראה הוחלף. יש לעדכן שורה אחת בקוד.');
     }
   } catch(err){
-    push('❌', '<strong>הבקשה לא הגיעה לשרת כלל.</strong>');
+    push('❌', '<strong>השרת נגיש, אבל הבקשה עצמה נחסמה.</strong>');
     push('📄', 'הודעת הדפדפן: <code dir="ltr">' + (err && err.message ? err.message : String(err)) + '</code>');
-    push('💡', 'הדפדפן מסתיר את הסיבה המדויקת. שלוש האפשרויות, לפי סבירות:');
-    push('　1.', 'המפתח נדחה או שאין יתרה בחשבון ה-API — בדוק ב-Console של Anthropic שיש אשראי.');
-    push('　2.', 'תוסף חוסם פרסומות / VPN / רשת שחוסמים את <code dir="ltr">api.anthropic.com</code>.');
-    push('　3.', 'תקלת רשת זמנית.');
+    push('💡', 'מכיוון שהשרת כן נגיש, הסיבה כמעט תמיד היא <strong>מפתח שנדחה</strong>. הדפדפן מסתיר שגיאות הרשאה ומציג אותן כתקלת רשת.');
+    push('　•', 'ודא שהמפתח הועתק במלואו (בדוק את אורך התווים למעלה).');
+    push('　•', 'צור מפתח חדש ב-Console של Anthropic והעתק אותו מיד במלואו.');
+    push('　•', 'ודא שהמפתח שייך לאותו ארגון שבו יש את היתרה.');
   }
 }
 
@@ -1139,8 +1161,13 @@ function loadApiKey(){
   updateApiKeyBtn();
 }
 function saveApiKey(){
-  const val = document.getElementById('apiKeyInput').value.trim();
+  // strip whitespace anywhere, not just the ends — mobile paste often carries
+  // a stray newline that silently invalidates the key
+  const val = document.getElementById('apiKeyInput').value.replace(/\s+/g, '');
   if(!val){ alert('הכנס API key תחילה'); return; }
+  if(val.length < 50){
+    if(!confirm('המפתח נראה קצר מהצפוי (' + val.length + ' תווים).\nייתכן שההעתקה נקטעה.\n\nלשמור בכל זאת?')) return;
+  }
   apiKey = val;
   localStorage.setItem('vocab_api_key', val);
   updateApiKeyBtn();
