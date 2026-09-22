@@ -1226,7 +1226,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1454,9 +1454,54 @@ function fcNav(d){fcIdx=(fcIdx+d+WORDS.length)%WORDS.length;loadFC();}
 
 // Build question list: each word appears twice (en→he and he→en)
 function makeQuestions(words){
-  const qs=[];
-  words.forEach(w=>{qs.push({word:w,dir:'en'});qs.push({word:w,dir:'he'});});
-  return shuffle(qs);
+  if(!words.length) return [];
+  // Every word is asked twice — once per direction. Building one flat list and
+  // shuffling it lets both copies land next to each other, which reads as if the
+  // app is repeating itself. Two halves keep them apart: each half asks every
+  // word exactly once, in opposite directions.
+  const firstDir = new Map();
+  const firstHalf = shuffle(words).map(w => {
+    const d = Math.random() < 0.5 ? 'en' : 'he';
+    firstDir.set(w.en, d);
+    return { word:w, dir:d };
+  });
+  const secondHalf = shuffle(words).map(w => ({
+    word: w,
+    dir: firstDir.get(w.en) === 'en' ? 'he' : 'en'
+  }));
+  const qs = firstHalf.concat(secondHalf);
+
+  // The halves still meet at a seam, so space the whole list: no word should
+  // reappear within `gap` questions. A short list physically cannot hold a wide
+  // gap, so aim wide and then relax — the final pass at 1 guarantees that no
+  // word ever sits directly next to itself, which is the part that reads as a bug.
+  const want = Math.max(1, Math.min(4, words.length - 1));
+
+  const spacingPass = (g) => {
+    // `ignore` is the index being swapped away: its contents are about to
+    // change, so a short list must not see the very item it is moving.
+    const clashes = (idx, word, ignore) => {
+      const from = Math.max(0, idx - g), to = Math.min(qs.length - 1, idx + g);
+      for(let k = from; k <= to; k++){
+        if(k === idx || k === ignore) continue;
+        if(qs[k].word.en === word) return true;
+      }
+      return false;
+    };
+    for(let i = 1; i < qs.length; i++){
+      if(!clashes(i, qs[i].word.en, -1)) continue;
+      for(let j = i + 1; j < qs.length; j++){
+        if(clashes(i, qs[j].word.en, j)) continue;
+        if(clashes(j, qs[i].word.en, i)) continue;
+        const t = qs[i]; qs[i] = qs[j]; qs[j] = t;
+        break;
+      }
+    }
+  };
+
+  for(let g = want; g >= 1; g--) spacingPass(g);
+  spacingPass(1);                       // one more sweep to settle stragglers
+  return qs;
 }
 
 /* ═══════════════ GAME: מירוץ מילים ═══════════════ */
@@ -1496,6 +1541,7 @@ function gameStart(){
   const mine = myWords();
   if(mine.length === 0){ showGameStart(); return; }
   gLeft=GAME_SECONDS; gScore=0; gStreak=0; gMaxStreak=0; gCorrect=0; gWrong=0; gActive=true;
+  gBag=[]; gCurrent=null;
   document.body.classList.add('playing');
   document.getElementById('gameStart').classList.add('hidden');
   document.getElementById('gameOver').classList.add('hidden');
@@ -1531,11 +1577,24 @@ function updateGameHud(){
   }
 }
 
+// Drawing at random each turn means the same word can come up two or three
+// times in a row. A shuffled "bag" hands out every word once before any word
+// repeats, and never repeats across a refill either.
+let gBag = [];
+function drawGameWord(){
+  const mine = myWords();
+  if(!mine.length) return null;
+  if(!gBag.length){
+    gBag = shuffle(mine);
+    if(mine.length > 1 && gCurrent && gBag[0].en === gCurrent.word.en) gBag.push(gBag.shift());
+  }
+  return gBag.shift();
+}
+
 function nextGameQ(){
   if(!gActive) return;
-  const mine = myWords();
-  if(mine.length === 0){ gameEnd(); return; }
-  const w = mine[Math.floor(Math.random()*mine.length)];
+  const w = drawGameWord();
+  if(!w){ gameEnd(); return; }
   const dir = Math.random() < 0.5 ? 'en' : 'he';
   gCurrent = {word:w, dir};
 
@@ -1978,7 +2037,16 @@ function checkSWrite(){
 }
 function appendSmartFB(parent,ok,w){
   const fb=document.createElement('div');fb.className='feedback '+(ok?'ok':'no');
-  fb.textContent=ok?`✅ נכון! ${w.en} = ${w.he}`:`❌ לא נכון. התשובה: ${w.he}`;parent.appendChild(fb);
+  // Always show the full pair. The old version hardcoded w.he as "the answer",
+  // so a Hebrew→English question revealed the Hebrew prompt back at you.
+  fb.textContent=ok?`✅ נכון! ${w.en} = ${w.he}`:`❌ לא נכון. התשובה: ${w.en} = ${w.he}`;
+  parent.appendChild(fb);
+  if(w.brit){
+    const note=document.createElement('div');
+    note.style.cssText='margin-top:8px;font-size:0.8rem;color:var(--txt2);line-height:1.6;direction:rtl;background:var(--gold-bg);border-right:3px solid var(--gold);padding:7px 12px;border-radius:8px;width:100%;';
+    note.textContent='🇬🇧 '+w.brit;
+    parent.appendChild(note);
+  }
   const btn=document.createElement('button');btn.className='btn-next';btn.textContent='הבא →';
   btn.onclick=()=>{smartIdx++;renderSmartQ();};parent.appendChild(btn);
 }
