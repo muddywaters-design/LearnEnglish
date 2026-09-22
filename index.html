@@ -360,6 +360,30 @@ main {
   border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── CEFR LEVEL BADGES ── */
+.cefr {
+  display: inline-block; font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.5px; padding: 2px 7px; border-radius: 999px;
+  border: 1.5px solid; line-height: 1.5; vertical-align: middle;
+  font-family: 'Outfit', 'Rubik', sans-serif; direction: ltr;
+}
+.cefr-A1, .cefr-A2 { color:#0a7d55; border-color:#7fd8b4; background:#e6f9f3; }
+.cefr-B1, .cefr-B2 { color:#2748c8; border-color:#a8bcff; background:#eef0ff; }
+.cefr-C1           { color:#9a6000; border-color:#f5c86a; background:#fef3c7; }
+.cefr-C2           { color:#a01838; border-color:#f4a8bb; background:#fde8ed; }
+body.dark .cefr-A1, body.dark .cefr-A2 { color:#5ee0a0; background:#0e2820; border-color:#1d5c42; }
+body.dark .cefr-B1, body.dark .cefr-B2 { color:#8faeff; background:#1a2340; border-color:#2f3f75; }
+body.dark .cefr-C1                     { color:#f5c842; background:#2a2010; border-color:#5c4718; }
+body.dark .cefr-C2                     { color:#ff8fa8; background:#2a1018; border-color:#6b2436; }
+
+/* level breakdown bar in the word list */
+.lvl-summary {
+  display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+  padding-bottom:14px; margin-bottom:12px; border-bottom:1px solid var(--border);
+}
+.lvl-cell { text-align:center; min-width:46px; }
+.lvl-cell .n { font-family:'Fraunces',Georgia,serif; font-size:1.05rem; font-weight:700; color:var(--txt); }
+
 /* ── CLOZE / SENTENCE COMPLETION ── */
 .cloze-sentence {
   direction: ltr; text-align: left;
@@ -654,11 +678,23 @@ body.playing .io-row { display: none !important; }
         <div class="ai-lbl">תרגום לאנגלית</div>
         <input class="m-input m-input-full" id="manualEn" dir="ltr" placeholder="e.g. Splendid, Magnificent" onkeydown="if(event.key==='Enter')saveManual()">
       </div>
+      <div>
+        <div class="ai-lbl">רמה (לא חובה)</div>
+        <div id="manualLevels" style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button type="button" class="cefr cefr-A1" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('A1')">A1</button>
+          <button type="button" class="cefr cefr-A2" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('A2')">A2</button>
+          <button type="button" class="cefr cefr-B1" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('B1')">B1</button>
+          <button type="button" class="cefr cefr-B2" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('B2')">B2</button>
+          <button type="button" class="cefr cefr-C1" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('C1')">C1</button>
+          <button type="button" class="cefr cefr-C2" style="cursor:pointer;opacity:0.45;" onclick="pickLevel('C2')">C2</button>
+        </div>
+      </div>
     </div>
     <div id="aiResult" class="ai-result hidden">
       <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
       <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
       <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',Georgia,'Times New Roman',serif;"></div></div>
+      <div id="aiCefrWrap" style="display:none;"><div class="ai-lbl">רמה</div><div id="aiCefr"></div></div>
       <div id="aiBritWrap" style="display:none;"><div class="ai-lbl">🇬🇧 ניואנס בריטי</div><div id="aiBrit" style="color:var(--txt2);font-size:0.82rem;line-height:1.6;direction:rtl;"></div></div>
     </div>
     <div id="modalMsg" class="m-msg hidden"></div>
@@ -738,6 +774,7 @@ body.playing .io-row { display: none !important; }
         <div class="face front">
           <div class="card-lbl">מילה באנגלית</div>
           <div class="card-en" id="fcEn"></div>
+          <div id="fcCefr"></div>
           <button class="speak-btn" onclick="event.stopPropagation();speak(document.getElementById('fcEn').textContent)">🔊 האזן</button>
           <div class="flip-hint">לחץ להפוך ↩</div>
         </div>
@@ -917,7 +954,7 @@ body.playing .io-row { display: none !important; }
   </div>
 
   <div class="wl-toggle" onclick="toggleList()">📋 הצג את כל המילים</div>
-  <div class="word-list" id="wordList"><div class="wl-inner" id="wlInner"></div></div>
+  <div class="word-list" id="wordList"><div class="lvl-summary" id="lvlSummary"></div><div class="wl-inner" id="wlInner"></div></div>
 
   <div class="io-row">
     <button class="btn-io" onclick="downloadUpdatedFile()" style="border-color:var(--blue);color:var(--blue);font-weight:600;">💾 הורד קובץ מעודכן</button>
@@ -927,67 +964,67 @@ body.playing .io-row { display: none !important; }
 
 <script>
 const BASE_WORDS=[
-{en:"Splendid",he:"מפואר, נהדר",explain:"מתאר משהו יוצא דופן באיכותו או ביופיו.",example:"The view from the mountaintop was absolutely splendid."},
-{en:"Exploits",he:"מעשי גבורה, ניצול",explain:"כשם עצם: מעשים אמיצים. כפועל: לנצל משהו לטובת עצמך.",example:"The soldiers were celebrated for their wartime exploits."},
-{en:"Indulge",he:"להתפנק, לאפשר לעצמך",explain:"לאפשר לעצמך ליהנות מדבר, לעיתים ביתר שאת.",example:"She decided to indulge in a slice of chocolate cake after dinner."},
-{en:"Reverence",he:"יראת כבוד, הערצה",explain:"כבוד עמוק ומעורב בהערצה כלפי אדם או דבר נעלה.",example:"The students listened in reverence as the professor spoke."},
-{en:"Solemnity",he:"חגיגיות, רצינות",explain:"אווירה רצינית ומכובדת, לרוב בהקשר של טקס.",example:"The solemnity of the funeral was felt by everyone present."},
-{en:"Hunch / Hunched",he:"תחושה עמומה / כפוף",explain:"hunch: תחושת בטן. hunched: לשבת עם הגב כפוף קדימה.",example:"He had a hunch that something was wrong, so he turned back."},
-{en:"Dwelled",he:"שהה, גר, עסק במחשבה",explain:"לגור במקום, או להתעכב על מחשבה זמן רב.",example:"She dwelled on the mistake for days, unable to move on."},
-{en:"Disrupt",he:"לשבש, להפריע",explain:"לגרום להפרעה בתהליך רגיל או להשבית סדר קיים.",example:"The protesters disrupted the city council meeting."},
-{en:"Flanking",he:"מהאגף, מהצד",explain:"להיות ממוקם בצד, או לתקוף מהצד.",example:"The two bodyguards stood flanking the entrance to the hall."},
-{en:"Fatigued",he:"עייף, תשוש, מותש",explain:"מותש מאוד מעייפות פיזית או נפשית.",example:"After the long hike, the group was too fatigued to cook dinner."},
-{en:"Accede",he:"להסכים, להיכנע",explain:"להסכים לבקשה או דרישה, לעיתים בחוסר רצון.",example:"The manager eventually acceded to the team's request."},
-{en:"Premeditation",he:"תכנון מראש, זדון",explain:"תכנון של מעשה לפני ביצועו, בכוונה תחילה.",example:"The crime was committed with clear premeditation."},
-{en:"Secluded",he:"מבודד, שקט, נסתר",explain:"מקום שקט ומרוחק, רחוק מאנשים ומרעש.",example:"They found a secluded beach where they could relax in peace."},
-{en:"Subdued",he:"עמום, מרוסן",explain:"שקט, חסר אנרגיה, או כהה ועמום באווירתו.",example:"The lighting in the restaurant was subdued, creating an intimate mood."},
-{en:"Rankled",he:"הרגיז, ציקצק",explain:"לגרום לתחושה מתמשכת של כעס שלא הולכת.",example:"His dismissive comment rankled her for the rest of the week."},
-{en:"Deemed",he:"נחשב, הוגדר כ",explain:"להחשיב משהו בצורה מסוימת, לרוב על ידי גורם סמכותי.",example:"The plan was deemed too risky by the safety committee."},
-{en:"Affluence",he:"עושר, שפע, אמידות",explain:"מצב של עושר וחיים ברמה גבוהה.",example:"Growing up in affluence, she never understood the value of money."},
-{en:"Oblivious",he:"חסר מודעות, לא שם לב",explain:"לא מודע לדברים שקורים סביבו.",example:"He was completely oblivious to the chaos unfolding behind him."},
-{en:"Distorted",he:"מעוות, מסולף",explain:"שונה מהצורה המקורית, מעוות לרעה.",example:"The media distorted his words to make him look guilty."},
-{en:"Ominously",he:"באופן מאיים",explain:"בדרך שמעוררת תחושת סכנה או אסון קרב.",example:"Dark clouds gathered ominously above the village."},
-{en:"Immensely",he:"עצומות, מאוד",explain:"במידה גדולה מאוד.",example:"I enjoyed the concert immensely — it was one of the best I'd seen."},
-{en:"Lectern",he:"עמוד נאום, פודיום",explain:"שולחן עמידה עם משטח מוטה לניירות נאום.",example:"The professor placed her notes on the lectern before beginning."},
-{en:"Manuscript",he:"כתב יד, טיוטה מקורית",explain:"הנוסח המקורי של ספר או יצירה לפני הדפסה.",example:"The author submitted his manuscript to the publisher."},
-{en:"Deprivation",he:"מחסור, חסך",explain:"מצב של חוסר בדברים בסיסיים כמו שינה, מזון, חופש.",example:"Years of sleep deprivation had taken a toll on her health."},
-{en:"Shrivelled",he:"מקומט, כמוש, מצומק",explain:"התכווצות ועיוות עקב יובש או גיל.",example:"The forgotten fruit had shrivelled into something unrecognisable.",brit:"איות בריטי עם שתי L. באמריקאית: shriveled. אותו כלל חל על travelled, cancelled, modelled."},
-{en:"Withered",he:"נבול, קמל, יבש",explain:"צמח שאיבד את חיוניותו ויבש.",example:"The flowers had withered after a week without water."},
-{en:"Protruding",he:"בולט, יוצא החוצה",explain:"יוצא ומבצבץ מתוך משטח, בולט לעין.",example:"A nail was protruding from the old wooden floorboard."},
-{en:"Wonders",he:"נפלאות, פלאים",explain:"דברים מרשימים ומדהימים, או הפועל לתהות.",example:"Travelling through Japan, she was filled with a sense of wonders."},
-{en:"Half-hearted",he:"בחצי לב, חסר מוטיבציה",explain:"ביצוע דבר ללא התלהבות אמיתית.",example:"His half-hearted apology didn't convince anyone in the room.",brit:"בבריטית נכתב עם מקף. באמריקאית לרוב halfhearted במילה אחת."},
-{en:"Motorcade",he:"שיירת מכוניות רשמית",explain:"שורה של מכוניות הנוסעות יחד לצורך ביטחון.",example:"The president's motorcade swept through the city streets.",brit:"מונח אמריקאי בעיקרו. בבריטניה נוטים לומר convoy או cavalcade."},
-{en:"Swung out",he:"נע החוצה בתנועה רחבה",explain:"תנועה רחבה ומעגלית החוצה.",example:"The car door swung out and nearly hit the cyclist."},
-{en:"Thaw out",he:"להפשיר, להיפתח",explain:"להפשיר דבר קפוא, או להירגע ולהיפתח.",example:"It took a while for him to thaw out at the party, but eventually he relaxed."},
-{en:"As it were",he:"כביכול, למעשה",explain:"ביטוי שמצביע שהמילים הן דימוי ולא מדויקות.",example:"He became the engine, as it were, that kept everything moving."},
-{en:"Fall off the twig",he:"למות (סלנג בריטי)",explain:"ביטוי הומוריסטי בריטי שמשמעותו למות.",example:"Old Mr. Jenkins showed no signs of falling off the twig any time soon.",brit:"ביטוי בריטי בלבד, הומוריסטי ועקיף. לא יובן בארה״ב."},
-{en:"Admonitory glare",he:"מבט מזהיר ומייסר",explain:"מבט חד שנועד להזהיר מישהו ללא מילים.",example:"The teacher silenced the class with a single admonitory glare."},
-{en:"Illusory halo",he:"הילה אשלייתית",explain:"תדמית חיובית מוגזמת שאינה משקפת מציאות.",example:"Fame creates an illusory halo around celebrities."},
-{en:"Tame",he:"מאולף, עדין",explain:"מאולף ולא פרוע, או משעמם וחסר עוצמה.",example:"After years of wild adventures, his new routine felt surprisingly tame."}
+{en:"Splendid",he:"מפואר, נהדר",explain:"מתאר משהו יוצא דופן באיכותו או ביופיו.",example:"The view from the mountaintop was absolutely splendid.",cefr:"B2"},
+{en:"Exploits",he:"מעשי גבורה, ניצול",explain:"כשם עצם: מעשים אמיצים. כפועל: לנצל משהו לטובת עצמך.",example:"The soldiers were celebrated for their wartime exploits.",cefr:"C1"},
+{en:"Indulge",he:"להתפנק, לאפשר לעצמך",explain:"לאפשר לעצמך ליהנות מדבר, לעיתים ביתר שאת.",example:"She decided to indulge in a slice of chocolate cake after dinner.",cefr:"B2"},
+{en:"Reverence",he:"יראת כבוד, הערצה",explain:"כבוד עמוק ומעורב בהערצה כלפי אדם או דבר נעלה.",example:"The students listened in reverence as the professor spoke.",cefr:"C1"},
+{en:"Solemnity",he:"חגיגיות, רצינות",explain:"אווירה רצינית ומכובדת, לרוב בהקשר של טקס.",example:"The solemnity of the funeral was felt by everyone present.",cefr:"C1"},
+{en:"Hunch / Hunched",he:"תחושה עמומה / כפוף",explain:"hunch: תחושת בטן. hunched: לשבת עם הגב כפוף קדימה.",example:"He had a hunch that something was wrong, so he turned back.",cefr:"B2"},
+{en:"Dwelled",he:"שהה, גר, עסק במחשבה",explain:"לגור במקום, או להתעכב על מחשבה זמן רב.",example:"She dwelled on the mistake for days, unable to move on.",cefr:"B2"},
+{en:"Disrupt",he:"לשבש, להפריע",explain:"לגרום להפרעה בתהליך רגיל או להשבית סדר קיים.",example:"The protesters disrupted the city council meeting.",cefr:"B2"},
+{en:"Flanking",he:"מהאגף, מהצד",explain:"להיות ממוקם בצד, או לתקוף מהצד.",example:"The two bodyguards stood flanking the entrance to the hall.",cefr:"C1"},
+{en:"Fatigued",he:"עייף, תשוש, מותש",explain:"מותש מאוד מעייפות פיזית או נפשית.",example:"After the long hike, the group was too fatigued to cook dinner.",cefr:"B2"},
+{en:"Accede",he:"להסכים, להיכנע",explain:"להסכים לבקשה או דרישה, לעיתים בחוסר רצון.",example:"The manager eventually acceded to the team's request.",cefr:"C2"},
+{en:"Premeditation",he:"תכנון מראש, זדון",explain:"תכנון של מעשה לפני ביצועו, בכוונה תחילה.",example:"The crime was committed with clear premeditation.",cefr:"C1"},
+{en:"Secluded",he:"מבודד, שקט, נסתר",explain:"מקום שקט ומרוחק, רחוק מאנשים ומרעש.",example:"They found a secluded beach where they could relax in peace.",cefr:"B2"},
+{en:"Subdued",he:"עמום, מרוסן",explain:"שקט, חסר אנרגיה, או כהה ועמום באווירתו.",example:"The lighting in the restaurant was subdued, creating an intimate mood.",cefr:"C1"},
+{en:"Rankled",he:"הרגיז, ציקצק",explain:"לגרום לתחושה מתמשכת של כעס שלא הולכת.",example:"His dismissive comment rankled her for the rest of the week.",cefr:"C2"},
+{en:"Deemed",he:"נחשב, הוגדר כ",explain:"להחשיב משהו בצורה מסוימת, לרוב על ידי גורם סמכותי.",example:"The plan was deemed too risky by the safety committee.",cefr:"B2"},
+{en:"Affluence",he:"עושר, שפע, אמידות",explain:"מצב של עושר וחיים ברמה גבוהה.",example:"Growing up in affluence, she never understood the value of money.",cefr:"C1"},
+{en:"Oblivious",he:"חסר מודעות, לא שם לב",explain:"לא מודע לדברים שקורים סביבו.",example:"He was completely oblivious to the chaos unfolding behind him.",cefr:"B2"},
+{en:"Distorted",he:"מעוות, מסולף",explain:"שונה מהצורה המקורית, מעוות לרעה.",example:"The media distorted his words to make him look guilty.",cefr:"B2"},
+{en:"Ominously",he:"באופן מאיים",explain:"בדרך שמעוררת תחושת סכנה או אסון קרב.",example:"Dark clouds gathered ominously above the village.",cefr:"B2"},
+{en:"Immensely",he:"עצומות, מאוד",explain:"במידה גדולה מאוד.",example:"I enjoyed the concert immensely — it was one of the best I'd seen.",cefr:"B2"},
+{en:"Lectern",he:"עמוד נאום, פודיום",explain:"שולחן עמידה עם משטח מוטה לניירות נאום.",example:"The professor placed her notes on the lectern before beginning.",cefr:"C1"},
+{en:"Manuscript",he:"כתב יד, טיוטה מקורית",explain:"הנוסח המקורי של ספר או יצירה לפני הדפסה.",example:"The author submitted his manuscript to the publisher.",cefr:"B2"},
+{en:"Deprivation",he:"מחסור, חסך",explain:"מצב של חוסר בדברים בסיסיים כמו שינה, מזון, חופש.",example:"Years of sleep deprivation had taken a toll on her health.",cefr:"C1"},
+{en:"Shrivelled",he:"מקומט, כמוש, מצומק",explain:"התכווצות ועיוות עקב יובש או גיל.",example:"The forgotten fruit had shrivelled into something unrecognisable.",brit:"איות בריטי עם שתי L. באמריקאית: shriveled. אותו כלל חל על travelled, cancelled, modelled.",cefr:"C1"},
+{en:"Withered",he:"נבול, קמל, יבש",explain:"צמח שאיבד את חיוניותו ויבש.",example:"The flowers had withered after a week without water.",cefr:"B2"},
+{en:"Protruding",he:"בולט, יוצא החוצה",explain:"יוצא ומבצבץ מתוך משטח, בולט לעין.",example:"A nail was protruding from the old wooden floorboard.",cefr:"C1"},
+{en:"Wonders",he:"נפלאות, פלאים",explain:"דברים מרשימים ומדהימים, או הפועל לתהות.",example:"Travelling through Japan, she was filled with a sense of wonders.",cefr:"B2"},
+{en:"Half-hearted",he:"בחצי לב, חסר מוטיבציה",explain:"ביצוע דבר ללא התלהבות אמיתית.",example:"His half-hearted apology didn't convince anyone in the room.",brit:"בבריטית נכתב עם מקף. באמריקאית לרוב halfhearted במילה אחת.",cefr:"B2"},
+{en:"Motorcade",he:"שיירת מכוניות רשמית",explain:"שורה של מכוניות הנוסעות יחד לצורך ביטחון.",example:"The president's motorcade swept through the city streets.",brit:"מונח אמריקאי בעיקרו. בבריטניה נוטים לומר convoy או cavalcade.",cefr:"C1"},
+{en:"Swung out",he:"נע החוצה בתנועה רחבה",explain:"תנועה רחבה ומעגלית החוצה.",example:"The car door swung out and nearly hit the cyclist.",cefr:"B2"},
+{en:"Thaw out",he:"להפשיר, להיפתח",explain:"להפשיר דבר קפוא, או להירגע ולהיפתח.",example:"It took a while for him to thaw out at the party, but eventually he relaxed.",cefr:"B2"},
+{en:"As it were",he:"כביכול, למעשה",explain:"ביטוי שמצביע שהמילים הן דימוי ולא מדויקות.",example:"He became the engine, as it were, that kept everything moving.",cefr:"C1"},
+{en:"Fall off the twig",he:"למות (סלנג בריטי)",explain:"ביטוי הומוריסטי בריטי שמשמעותו למות.",example:"Old Mr. Jenkins showed no signs of falling off the twig any time soon.",brit:"ביטוי בריטי בלבד, הומוריסטי ועקיף. לא יובן בארה״ב.",cefr:"C2"},
+{en:"Admonitory glare",he:"מבט מזהיר ומייסר",explain:"מבט חד שנועד להזהיר מישהו ללא מילים.",example:"The teacher silenced the class with a single admonitory glare.",cefr:"C2"},
+{en:"Illusory halo",he:"הילה אשלייתית",explain:"תדמית חיובית מוגזמת שאינה משקפת מציאות.",example:"Fame creates an illusory halo around celebrities.",cefr:"C1"},
+{en:"Tame",he:"מאולף, עדין",explain:"מאולף ולא פרוע, או משעמם וחסר עוצמה.",example:"After years of wild adventures, his new routine felt surprisingly tame.",cefr:"B1"}
 ,
-{en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause.",mine:true},
-{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep.",brit:"סלנג בריטי יומיומי. כמעט לא בשימוש בארה״ב — שם יגידו scatterbrained.",mine:true},
-{en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions.",mine:true},
-{en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility.",mine:true},
-{en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend.",mine:true},
-{en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job.",mine:true},
-{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months.",brit:"בהקשר הנדסי בריטי מקובל הקיצור TBM — tunnel boring machine.",mine:true},
-{en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year.",mine:true},
-{en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast.",mine:true},
-{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans.",brit:"נושא גוון של ביישנות מעושה או התחמקות מכוונת, לא ביישנות תמימה.",mine:true},
-{en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell.",mine:true},
-{en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs.",mine:true},
-{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending.",brit:"בבריטניה נפוץ גם האיות karabiner, בהשפעת הגרמנית.",mine:true},
-{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn.",brit:"הומופון של straight. Strait = מיצר ימי, straight = ישר.",mine:true},
-{en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work.",mine:true},
-{en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes.",mine:true},
-{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window.",brit:"שימו לב להומופון: whole (שלם) מול hole (חור). נשמעות זהה.",mine:true},
-{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse.",brit:"בבריטניה זו גם מילת כדורגל מרכזית — חילוץ כדור מיריב.",mine:true},
-{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal.",brit:"נפוץ מאוד בבריטניה ובאירלנד, לרוב בטון קליל ומבוטל.",mine:true},
-{en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident.",mine:true},
-{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",brit:"תמיד ברבים בצורתה, גם כשמדובר במבנה אחד: 'the premises are'.",mine:true},
-{en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals.",mine:true},
-{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",mine:true}];
+{en:"perimenopause",he:"פריאמנופאוזה",explain:"התקופה לפני המנופאוזה, בה מתחילים שינויים הורמונליים.",example:"Many women experience mood changes during perimenopause.",cefr:"C2",mine:true},
+{en:"Scatty",he:"מפוזר, לא מרוכז",explain:"אדם שכחן ומפוזר, שלא מצליח להתרכז.",example:"She was feeling scatty after a week of poor sleep.",brit:"סלנג בריטי יומיומי. כמעט לא בשימוש בארה״ב — שם יגידו scatterbrained.",cefr:"C2",mine:true},
+{en:"Reliant",he:"בוטח, תלוי",explain:"מי שנסמך על מישהו או משהו אחר.",example:"He became too reliant on his phone for directions.",cefr:"B2",mine:true},
+{en:"Realms",he:"ממלכות, תחומים",explain:"תחומים או ממלכות, לרוב במובן מטפורי.",example:"This discovery opens new realms of scientific possibility.",cefr:"C1",mine:true},
+{en:"Remorse",he:"חרטה",explain:"תחושה עמוקה של צער ואשמה על מעשה שעשית.",example:"He felt deep remorse after lying to his friend.",cefr:"C1",mine:true},
+{en:"audacity",he:"עזות מצח",explain:"העזה לעשות דבר מפתיע או בלתי מקובל.",example:"She had the audacity to ask for a raise after a week on the job.",cefr:"C1",mine:true},
+{en:"Boring machine",he:"מכונת קידוח",explain:"מכונה לקדיחת מנהרות או חורים באדמה.",example:"The boring machine drilled through the mountain over several months.",brit:"בהקשר הנדסי בריטי מקובל הקיצור TBM — tunnel boring machine.",cefr:"C2",mine:true},
+{en:"septuagenarian",he:"בן שבעים",explain:"אדם בגיל שבעים עד שבעים ותשע.",example:"The septuagenarian still ran marathons every year.",cefr:"C2",mine:true},
+{en:"intensifies",he:"מתעצם, מחריף",explain:"הופך חזק, עמוק או חריף יותר.",example:"The storm intensifies as it approaches the coast.",cefr:"B2",mine:true},
+{en:"Coy",he:"ביישן, מתחמק",explain:"מציג ביישנות מלאכותית, או נמנע מלגלות מידע.",example:"She gave a coy smile when asked about her plans.",brit:"נושא גוון של ביישנות מעושה או התחמקות מכוונת, לא ביישנות תמימה.",cefr:"C1",mine:true},
+{en:"Membrane",he:"קרום / ממברנה",explain:"שכבה דקה וגמישה המפרידה בין שני חלקים.",example:"The cell membrane controls what enters and exits the cell.",cefr:"B2",mine:true},
+{en:"Swelled",he:"נפוח / התנפח",explain:"התרחבות עקב לחץ, נוזל, או גאווה.",example:"His ankle swelled after he twisted it on the stairs.",cefr:"B2",mine:true},
+{en:"Carabiner",he:"קרבינר / אטב טיפוס",explain:"טבעת מתכת עם תפס, משמשת בטיפוס ופעילות חוץ.",example:"He clipped the rope to the carabiner before descending.",brit:"בבריטניה נפוץ גם האיות karabiner, בהשפעת הגרמנית.",cefr:"C1",mine:true},
+{en:"Strait",he:"מיצר, צר, מעבר מים",explain:"מעבר מים צר המחבר שני ים, או מצב קשה.",example:"The ship passed through the strait at dawn.",brit:"הומופון של straight. Strait = מיצר ימי, straight = ישר.",cefr:"B2",mine:true},
+{en:"Tend",he:"לטפל, לשמור",explain:"לטפל במישהו או במשהו, או לנטות לכיוון מסוים.",example:"She tends the garden every morning before work.",cefr:"B1",mine:true},
+{en:"Exempt",he:"פטור / מוגן",explain:"משוחרר מחובה או חוק שחל על אחרים.",example:"Non-profit organisations are often exempt from certain taxes.",cefr:"B2",mine:true},
+{en:"Whole",he:"שלם / כולו",explain:"מלא, שלם, ללא חלקים חסרים.",example:"She spent the whole afternoon reading by the window.",brit:"שימו לב להומופון: whole (שלם) מול hole (חור). נשמעות זהה.",cefr:"A2",mine:true},
+{en:"Tackle",he:"להתמודד עם, לטפל ב",explain:"להתמודד עם בעיה, אתגר, או יריב.",example:"We need to tackle this problem before it gets worse.",brit:"בבריטניה זו גם מילת כדורגל מרכזית — חילוץ כדור מיריב.",cefr:"B1",mine:true},
+{en:"Malarkey",he:"שטויות, בלבול",explain:"דברי הבל, שטויות חסרות ערך.",example:"Don't believe that malarkey he told you about the deal.",brit:"נפוץ מאוד בבריטניה ובאירלנד, לרוב בטון קליל ומבוטל.",cefr:"C2",mine:true},
+{en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident.",cefr:"B2",mine:true},
+{en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",brit:"תמיד ברבים בצורתה, גם כשמדובר במבנה אחד: 'the premises are'.",cefr:"B2",mine:true},
+{en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals.",cefr:"B2",mine:true},
+{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",cefr:"C1",mine:true}];
 
 let WORDS=[...BASE_WORDS];
 let mode='fc',fcIdx=0,flipped=false;
@@ -1050,6 +1087,13 @@ function getWeakWords(){
 }
 
 let addDir='en';
+let manualLevel = '';
+function pickLevel(lv){
+  manualLevel = (manualLevel === lv) ? '' : lv;   // tap again to clear
+  document.querySelectorAll('#manualLevels button').forEach(b => {
+    b.style.opacity = (b.textContent === manualLevel) ? '1' : '0.45';
+  });
+}
 let apiKey = '';
 
 /* ═══════════════ OFFLINE HANDLING ═══════════════ */
@@ -1226,7 +1270,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1341,7 +1385,7 @@ async function lookupWordHe(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
       body:JSON.stringify({model:API_MODEL,max_tokens:800,
-        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using it","brit":"a SHORT Hebrew note on the British angle, or an empty string if nothing notable"}'}]})
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using it","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"a SHORT Hebrew note on the British angle, or an empty string if nothing notable"}'}]})
     });
     if(res.status===529||res.status===503){
       btn.disabled=false; btn.textContent='✨ Claude';
@@ -1376,7 +1420,7 @@ async function lookupWordHe(){
       throw rich;
     }
     const p=parseModelJson(data);
-    aiData={en:p.en,he,explain:p.explain,example:p.example,brit:p.brit||''};
+    aiData={en:p.en,he,explain:p.explain,example:p.example,brit:p.brit||'',cefr:p.cefr||''};
     document.getElementById('newHe').value=he;
     document.getElementById('newHe').readOnly=true;
     document.getElementById('aiExplain').textContent=p.explain;
@@ -1384,6 +1428,9 @@ async function lookupWordHe(){
     const bw=document.getElementById('aiBritWrap');
     if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
     else { bw.style.display='none'; }
+    const cw=document.getElementById('aiCefrWrap');
+    if(p.cefr){ document.getElementById('aiCefr').innerHTML=cefrBadge({cefr:p.cefr}); cw.style.display=''; }
+    else { cw.style.display='none'; }
     // show translation
     const heInput=document.querySelector('.ai-he-input');
     heInput.value=p.en; heInput.dir='ltr'; heInput.style.color='var(--blue)';
@@ -1438,6 +1485,7 @@ function updateCount(){document.getElementById('wcount').textContent=WORDS.lengt
 function loadFC(){
   const w=WORDS[fcIdx];
   document.getElementById('fcEn').textContent=w.en;
+  document.getElementById('fcCefr').innerHTML=cefrBadge(w);
   document.getElementById('fcHe').textContent=w.he;
   document.getElementById('fcExplain').textContent=w.explain||'';
   document.getElementById('fcExample').textContent=w.example?'"'+w.example+'"':'';
@@ -1508,6 +1556,11 @@ function makeQuestions(words){
 const GAME_SECONDS = 60;
 let gLeft=0, gScore=0, gStreak=0, gMaxStreak=0, gCorrect=0, gWrong=0;
 let gTimer=null, gCurrent=null, gActive=false;
+
+// Small coloured pill showing the CEFR level, or nothing when unknown
+function cefrBadge(w){
+  return w && w.cefr ? '<span class="cefr cefr-' + w.cefr + '">' + w.cefr + '</span>' : '';
+}
 
 // Only words the user added themselves
 function myWords(){ return WORDS.filter(w => w.mine); }
@@ -2061,6 +2114,7 @@ function showSmartDone(){
 }
 
 function buildList(){
+  renderLevelSummary();
   const el=document.getElementById('wlInner');el.innerHTML='';
   WORDS.forEach((w,i)=>{
     const m=mastery[w.en];
@@ -2068,10 +2122,27 @@ function buildList(){
     const dot=pct===null?'':(pct>=70?'<span style="color:var(--ok);font-size:0.6rem;margin-right:3px">●</span>':'<span style="color:var(--err);font-size:0.6rem;margin-right:3px">●</span>');
     const d=document.createElement('div');d.className='wl-row';
     const mineTag = w.mine ? '<span title="מילה שהוספת — נכללת במשחק" style="color:var(--blue);font-size:0.7rem;margin-left:3px">🎮</span>' : '';
-    d.innerHTML=`<span>${dot}<span class="wl-en">${w.en}</span>${mineTag} <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
+    const lvlTag = cefrBadge(w);
+    d.innerHTML=`<span>${dot}${lvlTag} <span class="wl-en">${w.en}</span>${mineTag} <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
     el.appendChild(d);
   });
 }
+function renderLevelSummary(){
+  const box = document.getElementById('lvlSummary');
+  if(!box) return;
+  const order = ['A1','A2','B1','B2','C1','C2'];
+  const counts = {};
+  WORDS.forEach(w => { if(w.cefr) counts[w.cefr] = (counts[w.cefr]||0) + 1; });
+  const shown = order.filter(l => counts[l]);
+  const untagged = WORDS.filter(w => !w.cefr).length;
+  box.innerHTML = shown.map(l =>
+      '<div class="lvl-cell"><div class="n">' + counts[l] + '</div>'
+    + '<span class="cefr cefr-' + l + '">' + l + '</span></div>'
+    ).join('')
+    + (untagged ? '<div class="lvl-cell"><div class="n">' + untagged + '</div>'
+                + '<span style="font-size:0.62rem;color:var(--txt3);font-weight:600">ללא</span></div>' : '');
+}
+
 function toggleList(){const el=document.getElementById('wordList');el.classList.toggle('open');if(el.classList.contains('open'))buildList();}
 function deleteWord(i){
   if(WORDS.length<=4){alert('חייבות להיות לפחות 4 מילים');return;}
@@ -2100,8 +2171,11 @@ function openModal(){
   heInput.dir='rtl'; heInput.style.color='var(--green)';
   setDir('en');
   aiData=null;
+  manualLevel='';
+  document.querySelectorAll('#manualLevels button').forEach(b=>b.style.opacity='0.45');
   updateOnlineStatus();
   const bwr=document.getElementById('aiBritWrap'); if(bwr) bwr.style.display='none';
+  const cwr=document.getElementById('aiCefrWrap'); if(cwr) cwr.style.display='none';
   document.getElementById('overlay').classList.remove('hidden');
   setTimeout(()=>document.getElementById('newEn').focus(),100);
 }
@@ -2134,7 +2208,7 @@ async function lookupWord(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
       body:JSON.stringify({model:API_MODEL,max_tokens:800,
-        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using the word","brit":"a SHORT Hebrew note on the British angle: British vs American spelling, the British word vs its American equivalent, register, or a homophone worth knowing. Return an empty string if there is genuinely nothing notable."}'}]})
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using the word","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"a SHORT Hebrew note on the British angle: British vs American spelling, the British word vs its American equivalent, register, or a homophone worth knowing. Return an empty string if there is genuinely nothing notable."}'}]})
     });
     if(!res.ok){
       let errData=null; try{ errData=await res.json(); }catch(_){}
@@ -2149,13 +2223,16 @@ async function lookupWord(){
       throw rich;
     }
     const p=parseModelJson(data);
-    aiData={en,he:p.he,explain:p.explain,example:p.example,brit:p.brit||''};
+    aiData={en,he:p.he,explain:p.explain,example:p.example,brit:p.brit||'',cefr:p.cefr||''};
     document.getElementById('newHe').value=p.he;
     document.getElementById('aiExplain').textContent=p.explain;
     document.getElementById('aiExample').textContent='"'+p.example+'"';
     const bw=document.getElementById('aiBritWrap');
     if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
     else { bw.style.display='none'; }
+    const cw=document.getElementById('aiCefrWrap');
+    if(p.cefr){ document.getElementById('aiCefr').innerHTML=cefrBadge({cefr:p.cefr}); cw.style.display=''; }
+    else { cw.style.display='none'; }
     document.getElementById('aiResult').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
   }catch(e){
@@ -2182,7 +2259,7 @@ function saveAI(){
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
   const dupAI=isDuplicate(en,he);
   if(dupAI){showMMsg('⚠️ '+dupAI,'err');return;}
-  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',brit:aiData?.brit||'',mine:true});
+  WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',brit:aiData?.brit||'',cefr:aiData?.cefr||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
 function saveManual(){
@@ -2200,7 +2277,7 @@ function saveManual(){
   }
   const dupMan=isDuplicate(en,he);
   if(dupMan){showMMsg('⚠️ '+dupMan,'err');return;}
-  WORDS.push({en,he,explain:'',example:'',mine:true});
+  WORDS.push({en,he,explain:'',example:'',cefr:manualLevel||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
 
@@ -2339,8 +2416,8 @@ async function processQueue(){
     }
     try{
       const prompt = item.dir==='he'
-        ? 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+item.en+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","brit":"short Hebrew note on the British angle, or empty string"}'
-        : 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","brit":"short Hebrew note on the British angle, or empty string"}';
+        ? 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+item.en+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"short Hebrew note on the British angle, or empty string"}'
+        : 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"short Hebrew note on the British angle, or empty string"}';
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',headers:getApiHeaders(),
         body:JSON.stringify({model:API_MODEL,max_tokens:800,
@@ -2357,7 +2434,7 @@ async function processQueue(){
       const en = item.dir==='he' ? p.en : item.en;
       const he = item.dir==='he' ? item.en : p.he;
       if(!isDuplicate(en,he)){
-        WORDS.push({en, he, explain:p.explain||'', example:p.example||'', brit:p.brit||'', mine:true});
+        WORDS.push({en, he, explain:p.explain||'', example:p.example||'', brit:p.brit||'', cefr:p.cefr||'', mine:true});
       }
       await new Promise(r=>setTimeout(r,500)); // small delay between calls
     }catch(e){
