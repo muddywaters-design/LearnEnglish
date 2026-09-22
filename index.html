@@ -884,10 +884,14 @@ body.playing .io-row { display: none !important; }
       <div style="font-size:2.6rem;margin-bottom:4px;">🎮</div>
       <div class="g-title">מירוץ מילים</div>
       <div class="g-sub">60 שניות. רק המילים <strong>שאתה הוספת</strong>.<br>כמה תספיק?</div>
+      <div id="gScope" style="display:flex;gap:5px;background:var(--bg2);border-radius:999px;padding:4px;width:fit-content;margin:0 auto 16px;">
+        <button data-scope="mine" onclick="setGameScope('mine')" style="padding:6px 16px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">המילים שלי</button>
+        <button data-scope="all" onclick="setGameScope('all')" style="padding:6px 16px;border-radius:999px;border:none;background:transparent;color:var(--txt2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">כל המאגר</button>
+      </div>
       <div class="g-statrow">
         <div class="g-stat">
           <div class="g-stat-v" id="gMyCount">0</div>
-          <div class="g-stat-l">מילים שלי</div>
+          <div class="g-stat-l">במשחק</div>
         </div>
         <div class="g-stat">
           <div class="g-stat-v" id="gBest">0</div>
@@ -941,6 +945,9 @@ body.playing .io-row { display: none !important; }
         </div>
       </div>
       <button class="btn-submit" onclick="gameStart()">🔄 שחק שוב</button>
+      <div style="margin-top:12px;">
+        <button class="btn-next" onclick="showGameStart()">↩ שנה מאגר</button>
+      </div>
     </div>
   </div>
 
@@ -1024,7 +1031,109 @@ const BASE_WORDS=[
 {en:"Limp",he:"צולע / רפוי",explain:"הליכה לא סדירה עקב פציעה, או תכונה של חוסר נוקשות.",example:"He walked with a slight limp after the accident.",cefr:"B2",mine:true},
 {en:"Premises",he:"הנחות / מקום",explain:"מבנה או שטח המשמש לעסק, או הנחות יסוד בלוגיקה.",example:"No smoking is allowed on the premises.",brit:"תמיד ברבים בצורתה, גם כשמדובר במבנה אחד: 'the premises are'.",cefr:"B2",mine:true},
 {en:"Align",he:"ליישר / להתאים",explain:"לסדר בקו ישר, או ליישר עמדות ואינטרסים.",example:"We need to align our strategy with the company's goals.",cefr:"B2",mine:true},
-{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",cefr:"C1",mine:true}];
+{en:"Secretions",he:"הפרשות / הפרשות גוף",explain:"חומרים המופרשים מבלוטות בגוף או בצמחים.",example:"The plant's secretions deter insects from feeding on it.",cefr:"C1",mine:true},
+{en:"Streamline",he:"לייעל, לפשט",explain:"להפוך תהליך ליעיל יותר על ידי הסרת שלבים מיותרים.",example:"We streamlined the ordering process and cut delivery times by a week.",cefr:"B2",pack:"core"},
+{en:"Oversee",he:"לפקח על, לנהל",explain:"לפקח על עבודה או פרויקט ולוודא שהוא מתבצע כראוי.",example:"She oversees all installations across the southern region.",cefr:"B2",pack:"core"},
+{en:"Liaise",he:"לתאם, לעמוד בקשר",explain:"לעמוד בקשר עם גורם אחר כדי לתאם עבודה.",example:"I'll liaise with the hotel's facilities manager about access.",cefr:"C1",brit:"מילה בריטית מובהקת בסביבת עבודה. בארה״ב נוטים לומר coordinate with.",pack:"core"},
+{en:"Chase up",he:"לתזכר, לרדוף אחרי תשובה",explain:"לפנות שוב למישהו שלא ענה או לא סיפק משהו.",example:"Could you chase up the supplier about the missing brackets?",cefr:"B2",brit:"ביטוי בריטי. באמריקאית: follow up on.",pack:"core"},
+{en:"Roll out",he:"להשיק, לפרוס בהדרגה",explain:"להתחיל להפעיל מוצר או שירות, לרוב בשלבים.",example:"We're rolling out the new safety checks across all sites.",cefr:"B2",pack:"core"},
+{en:"Iron out",he:"ליישר הדורים, לפתור תקלות",explain:"לפתור בעיות קטנות שנותרו לפני שמשהו מוכן.",example:"We just need to iron out a few details before signing.",cefr:"C1",pack:"core"},
+{en:"Sign off",he:"לאשר סופית",explain:"לתת אישור רשמי אחרון למשהו.",example:"The client signed off on the design last Thursday.",cefr:"B2",pack:"core"},
+{en:"Follow up",he:"לעקוב, לחזור בהמשך",explain:"לחזור למישהו כדי לקדם עניין שנפתח קודם.",example:"I'll follow up with a written quote tomorrow.",cefr:"B2",pack:"core"},
+{en:"Touch base",he:"ליצור קשר קצר",explain:"ליצור קשר קצר כדי להתעדכן.",example:"Let's touch base early next week.",cefr:"C1",pack:"core"},
+{en:"Turnaround",he:"זמן ביצוע, מפנה",explain:"הזמן שלוקח להשלים משימה, או שינוי חד לטובה.",example:"Our usual turnaround on spare parts is five working days.",cefr:"B2",pack:"core"},
+{en:"Lead time",he:"זמן אספקה",explain:"הזמן בין ההזמנה לאספקה בפועל.",example:"The lead time on imported climbing panels is eight weeks.",cefr:"B2",pack:"core"},
+{en:"Ballpark",he:"הערכה גסה",explain:"מספר משוער שנותן סדר גודל, לא מחיר מדויק.",example:"Can you give me a ballpark figure before we go further?",cefr:"C1",pack:"core"},
+{en:"Bottom line",he:"שורה תחתונה",explain:"המסקנה המעשית או התוצאה הכספית.",example:"The bottom line is that we can't meet that deadline.",cefr:"B2",pack:"core"},
+{en:"Stakeholder",he:"בעל עניין",explain:"כל גורם שיש לו אינטרס בפרויקט.",example:"We need every stakeholder in the room before we decide.",cefr:"B2",pack:"core"},
+{en:"Deliverable",he:"תוצר מחויב",explain:"דבר מוגדר שהוספק בתמורה לתשלום.",example:"The final deliverable includes the maintenance schedule.",cefr:"C1",pack:"core"},
+{en:"Scope creep",he:"התרחבות היקף",explain:"גדילה הדרגתית של דרישות מעבר למה שסוכם.",example:"Scope creep is why that job ran three weeks over.",cefr:"C1",pack:"core"},
+{en:"Backlog",he:"צבר עבודה",explain:"עבודה שהצטברה וממתינה לטיפול.",example:"We've got a backlog of repairs from the summer season.",cefr:"B2",pack:"core"},
+{en:"Upfront",he:"מראש, ישיר",explain:"תשלום מראש, או דיבור גלוי וישיר.",example:"They asked for thirty percent upfront.",cefr:"B2",pack:"core"},
+{en:"Red tape",he:"בירוקרטיה",explain:"נהלים רשמיים מסורבלים שמעכבים התקדמות.",example:"Getting the permit involved a lot of red tape.",cefr:"C1",brit:"ביטוי בריטי במקורו, מהסרט האדום שקשר מסמכים רשמיים.",pack:"core"},
+{en:"In the pipeline",he:"בתהליך, בדרך",explain:"משהו שכבר בתכנון או בביצוע אך טרם הושלם.",example:"We have two more resort projects in the pipeline.",cefr:"C1",pack:"core"},
+{en:"Wear and tear",he:"בלאי",explain:"נזק טבעי שנגרם משימוש רגיל לאורך זמן.",example:"The warranty doesn't cover normal wear and tear.",cefr:"B2",pack:"core"},
+{en:"Snag",he:"תקלה קטנה, מכשול",explain:"בעיה קטנה שמתגלה ודורשת תיקון לפני מסירה.",example:"We hit a snag with the floor levels on the second site.",cefr:"B2",brit:"בבריטניה snagging list הוא מונח תקני בבנייה — רשימת ליקויים לתיקון לפני מסירה.",pack:"core"},
+{en:"Faulty",he:"פגום, לא תקין",explain:"שאינו פועל כראוי בגלל פגם.",example:"Two of the sensors arrived faulty.",cefr:"B2",pack:"core"},
+{en:"Defect",he:"פגם",explain:"ליקוי בייצור או בחומר.",example:"The report flagged a defect in the weld.",cefr:"B2",pack:"core"},
+{en:"Malfunction",he:"תקלה תפקודית",explain:"כשל בפעולה של מכשיר או מערכת.",example:"The interactive wall had a malfunction on opening day.",cefr:"B2",pack:"core"},
+{en:"Compliance",he:"עמידה בתקן",explain:"עמידה בדרישות של חוק או תקן.",example:"Every unit ships with a compliance certificate.",cefr:"B2",pack:"core"},
+{en:"Hazard",he:"מפגע, סכנה",explain:"מקור אפשרי לפגיעה או נזק.",example:"A loose panel is a serious hazard in a play area.",cefr:"B2",pack:"core"},
+{en:"Mitigate",he:"למתן, להפחית סיכון",explain:"להקטין את החומרה של בעיה או סיכון.",example:"Soft flooring mitigates the risk of injury from falls.",cefr:"C1",pack:"core"},
+{en:"Robust",he:"עמיד, חסון",explain:"בנוי חזק ועומד בשימוש קשה.",example:"The frame is robust enough for continuous public use.",cefr:"B2",pack:"core"},
+{en:"Durable",he:"עמיד לאורך זמן",explain:"שורד שימוש ממושך בלי להתבלות.",example:"We chose a durable coating for the coastal sites.",cefr:"B2",pack:"core"},
+{en:"Sturdy",he:"יציב, חזק",explain:"בנוי היטב ולא מתנדנד או נשבר.",example:"It's a sturdy structure that takes a lot of abuse.",cefr:"B2",pack:"core"},
+{en:"Flimsy",he:"רעוע, חלש מדי",explain:"בנוי חלש, נשבר או מתעוות בקלות.",example:"The cheaper netting felt flimsy under load.",cefr:"B2",pack:"core"},
+{en:"Tamper",he:"לחבל, להתעסק שלא כדין",explain:"לגעת במשהו ולשנות אותו ללא רשות.",example:"The locks stop children tampering with the mechanism.",cefr:"C1",pack:"core"},
+{en:"Retrofit",he:"להתקין בדיעבד",explain:"להוסיף רכיב חדש למערכת קיימת.",example:"We can retrofit the older units with the new anchors.",cefr:"C1",pack:"core"},
+{en:"Overhaul",he:"שיפוץ יסודי",explain:"תיקון או חידוש מקיף של מערכת.",example:"The climbing wall is due a full overhaul next spring.",cefr:"C1",pack:"core"},
+{en:"Glitch",he:"תקלה קטנה וזמנית",explain:"תקלה קטנה, לרוב טכנית וחולפת.",example:"There was a glitch in the lighting controller.",cefr:"B2",pack:"core"},
+{en:"Workaround",he:"פתרון עוקף",explain:"דרך זמנית לעקוף בעיה שטרם נפתרה.",example:"Until the part arrives we've got a workaround in place.",cefr:"C1",pack:"core"},
+{en:"Seamless",he:"חלק, ללא תפרים",explain:"מתנהל בצורה חלקה בלי הפרעות או מעברים מורגשים.",example:"The handover to their maintenance team was seamless.",cefr:"B2",pack:"core"},
+{en:"Cumbersome",he:"מסורבל",explain:"כבד, מגושם או מסובך לתפעול.",example:"The old approval process was cumbersome and slow.",cefr:"C1",pack:"core"},
+{en:"Prompt",he:"מהיר, ללא דיחוי",explain:"נעשה מיד או בזמן הנדרש.",example:"Thank you for the prompt reply.",cefr:"B2",pack:"core"},
+{en:"Arguably",he:"ניתן לטעון ש",explain:"מציג טענה כמשהו שאפשר לבסס, בלי לקבוע נחרצות.",example:"It's arguably the best value option on the list.",cefr:"C1",pack:"core"},
+{en:"Presumably",he:"ככל הנראה",explain:"מבטא הנחה סבירה על סמך מה שידוע.",example:"Presumably they'll want to see the safety file first.",cefr:"B2",pack:"core"},
+{en:"Admittedly",he:"יש להודות",explain:"הודאה בנקודה שפועלת נגד הטיעון שלך.",example:"Admittedly, it's more expensive than the alternative.",cefr:"C1",pack:"core"},
+{en:"Bear in mind",he:"לקחת בחשבון",explain:"לזכור עובדה חשובה בעת שקילת החלטה.",example:"Bear in mind that the site closes at four.",cefr:"B2",brit:"בבריטית נפוץ מאוד. שימו לב לאיות bear ולא bare.",pack:"core"},
+{en:"That said",he:"עם זאת",explain:"מסייג את מה שנאמר זה עתה.",example:"It's a tight deadline. That said, we've done tighter.",cefr:"B2",pack:"core"},
+{en:"Broadly speaking",he:"באופן כללי",explain:"הצגת תמונה כללית בלי לרדת לפרטים.",example:"Broadly speaking, the two systems are comparable.",cefr:"B2",pack:"core"},
+{en:"To some extent",he:"במידה מסוימת",explain:"הסכמה חלקית ולא מלאה.",example:"To some extent that's true, but it misses the cost.",cefr:"B2",pack:"core"},
+{en:"By and large",he:"בגדול, על פי רוב",explain:"נכון ברוב המקרים אך לא תמיד.",example:"By and large, hotels prefer a single contractor.",cefr:"C1",pack:"core"},
+{en:"On the face of it",he:"לכאורה",explain:"איך שזה נראה במבט ראשון, אולי בלי להיות מדויק.",example:"On the face of it the quote looks cheaper.",cefr:"C1",pack:"core"},
+{en:"Off the top of my head",he:"מהראש, בלי לבדוק",explain:"אמירה מהזיכרון, בלי בדיקה מדויקת.",example:"Off the top of my head, about fifteen units.",cefr:"C1",pack:"core"},
+{en:"Put off",he:"לדחות למועד אחר",explain:"לדחות אירוע, או לגרום לחוסר חשק.",example:"They've put off the opening until March.",cefr:"B2",pack:"core"},
+{en:"Bring forward",he:"להקדים",explain:"להזיז מועד לתאריך מוקדם יותר.",example:"Can we bring the meeting forward to Tuesday?",cefr:"B2",brit:"בבריטית מקדימים בעזרת bring forward. באמריקאית נפוץ move up.",pack:"core"},
+{en:"Fall through",he:"להתפוצץ, לא לצאת לפועל",explain:"תוכנית או עסקה שנכשלה ברגע האחרון.",example:"The Cyprus deal fell through at the last minute.",cefr:"B2",pack:"core"},
+{en:"Come across",he:"להיתפס כ, להיתקל ב",explain:"איך אדם נתפס בעיני אחרים, או מציאה מקרית.",example:"He comes across as very thorough in meetings.",cefr:"B2",pack:"core"},
+{en:"Get round to",he:"להתפנות לעשות",explain:"סוף סוף לעשות משהו שנדחה שוב ושוב.",example:"I haven't got round to sending the revised drawings.",cefr:"B2",brit:"בבריטית get round to. באמריקאית get around to.",pack:"core"},
+{en:"Sort out",he:"לסדר, לפתור",explain:"לטפל בבעיה ולהביא אותה לפתרון.",example:"We'll sort out the access arrangements this week.",cefr:"B2",brit:"ביטוי בריטי יומיומי מאוד, במקום resolve או fix.",pack:"core"},
+{en:"Take on",he:"לקחת על עצמו",explain:"לקבל אחריות על עבודה, או לגייס עובד.",example:"We've taken on two more fitters for the season.",cefr:"B2",pack:"core"},
+{en:"Turn down",he:"לדחות הצעה",explain:"לסרב להצעה או לבקשה.",example:"They turned down our first quote.",cefr:"B2",pack:"core"},
+{en:"Pull off",he:"להצליח בגדול",explain:"להצליח במשהו קשה שלא היה מובן מאליו.",example:"They pulled off the whole installation in four days.",cefr:"B2",pack:"core"},
+{en:"Run into",he:"להיתקל בבעיה",explain:"להיתקל במשהו במפתיע, לרוב קושי.",example:"We ran into a problem with the drainage.",cefr:"B2",pack:"core"},
+{en:"Carry out",he:"לבצע",explain:"לבצע משימה או בדיקה שתוכננה.",example:"Inspections are carried out twice a year.",cefr:"B2",pack:"core"},
+{en:"Look into",he:"לבדוק, לברר",explain:"לבחון נושא כדי להבין אותו.",example:"I'll look into why the shipment was delayed.",cefr:"B2",pack:"core"},
+{en:"Draw up",he:"לנסח, להכין מסמך",explain:"להכין תוכנית, חוזה או רשימה.",example:"Let's draw up a maintenance schedule.",cefr:"B2",pack:"core"},
+{en:"Set out",he:"לפרט בכתב, לצאת לדרך",explain:"להציג דברים מסודרים, או להתחיל מסע.",example:"The contract sets out who is liable for what.",cefr:"B2",pack:"core"},
+{en:"Hold off",he:"להמתין, להתאפק",explain:"לדחות פעולה עד שיתברר משהו.",example:"Let's hold off ordering until the survey is done.",cefr:"B2",pack:"core"},
+{en:"Crop up",he:"לצוץ במפתיע",explain:"להופיע פתאום, לרוב בהקשר של בעיה.",example:"A few issues cropped up during commissioning.",cefr:"C1",brit:"ביטוי בריטי נפוץ במיוחד.",pack:"core"},
+{en:"Knock back",he:"לדחות, לסרב",explain:"לדחות בקשה או הצעה.",example:"The council knocked back the first application.",cefr:"C1",brit:"שימוש בריטי. פירוש נוסף בסלנג: לגמוע משקה במהירות.",pack:"core"},
+{en:"Marginal",he:"שולי, זניח",explain:"קטן מכדי להיות משמעותי.",example:"The difference in price was marginal.",cefr:"B2",pack:"core"},
+{en:"Substantial",he:"משמעותי, ניכר",explain:"גדול בכמות או בחשיבות.",example:"That's a substantial saving over five years.",cefr:"B2",pack:"core"},
+{en:"Negligible",he:"זניח",explain:"קטן כל כך שאפשר להתעלם ממנו.",example:"The extra weight is negligible.",cefr:"C1",pack:"core"},
+{en:"Feasible",he:"בר ביצוע",explain:"אפשרי מעשית בתנאים הנתונים.",example:"A December handover isn't feasible.",cefr:"B2",pack:"core"},
+{en:"Viable",he:"בר קיימא, כדאי",explain:"יכול לעבוד ולהחזיק לאורך זמן.",example:"It's only viable if they order both sites together.",cefr:"B2",pack:"core"},
+{en:"Meticulous",he:"קפדני מאוד",explain:"מדויק ומקפיד על כל פרט קטן.",example:"Their site manager is meticulous about documentation.",cefr:"C1",pack:"core"},
+{en:"Thorough",he:"יסודי",explain:"מקיף ולא מדלג על שום חלק.",example:"We did a thorough inspection before handover.",cefr:"B2",pack:"core"},
+{en:"Ample",he:"בשפע, די והותר",explain:"יותר מהכמות הנדרשת.",example:"There's ample space for a second climbing unit.",cefr:"B2",pack:"core"},
+{en:"Scarce",he:"נדיר, במחסור",explain:"קשה להשיג כי אין ממנו מספיק.",example:"Qualified fitters are scarce this time of year.",cefr:"B2",pack:"core"},
+{en:"Sizeable",he:"לא מבוטל",explain:"גדול למדי.",example:"They placed a sizeable order for the whole chain.",cefr:"B2",pack:"core"},
+{en:"Modest",he:"צנוע, מתון",explain:"קטן או מתון, בלי הגזמה.",example:"We're expecting a modest increase in enquiries.",cefr:"B2",pack:"core"},
+{en:"Steep",he:"יקר מאוד, תלול",explain:"מחיר גבוה במיוחד, או שיפוע חד.",example:"Their installation fee seemed a bit steep.",cefr:"B2",pack:"core"},
+{en:"Redundant",he:"מיותר, מפוטר",explain:"מיותר, ובבריטית גם מפוטר עקב ייתור משרה.",example:"The second control panel is redundant now.",cefr:"B2",brit:"בבריטית made redundant פירושו לפטר עקב ייתור משרה. באמריקאית laid off.",pack:"core"},
+{en:"Outstanding",he:"שטרם שולם, מצוין",explain:"שנותר פתוח או לא שולם, ולחלופין מצוין.",example:"There are two outstanding invoices from August.",cefr:"B2",brit:"שימו לב לשתי המשמעויות ההפוכות בטון — הקשר קובע.",pack:"core"},
+{en:"Comprehensive",he:"מקיף",explain:"כולל את כל ההיבטים הרלוונטיים.",example:"We offer a comprehensive maintenance package.",cefr:"B2",pack:"core"},
+{en:"Hassle",he:"טרחה, כאב ראש",explain:"מאמץ מעצבן שאפשר היה לחסוך.",example:"Shipping to the islands is a real hassle.",cefr:"B2",brit:"מילה יומיומית מאוד בבריטניה, גם כפועל: don't hassle me.",pack:"core"},
+{en:"Fuss",he:"מהומה מיותרת",explain:"התרגשות או תלונות על דבר קטן.",example:"They made a fuss about the delivery time.",cefr:"B2",pack:"core"},
+{en:"Rule of thumb",he:"כלל אצבע",explain:"כלל מעשי מקורב שעובד ברוב המקרים.",example:"As a rule of thumb, allow two fitters per unit.",cefr:"B2",pack:"core"},
+{en:"Word of mouth",he:"מפה לאוזן",explain:"המלצות שעוברות בין אנשים.",example:"Most of our resort work comes through word of mouth.",cefr:"B2",pack:"core"},
+{en:"At short notice",he:"בהתראה קצרה",explain:"בזמן קצר מאוד מראש.",example:"They needed the repair done at short notice.",cefr:"B2",brit:"בבריטית at short notice. באמריקאית on short notice.",pack:"core"},
+{en:"Ahead of schedule",he:"לפני הזמן",explain:"מוקדם מהמתוכנן.",example:"We finished two days ahead of schedule.",cefr:"B2",pack:"core"},
+{en:"Behind schedule",he:"בפיגור",explain:"מאוחר מהמתוכנן.",example:"The building work is running behind schedule.",cefr:"B2",pack:"core"},
+{en:"Bear with me",he:"סבלנות רגע",explain:"בקשה להמתין רגע בסבלנות.",example:"Bear with me while I check the stock list.",cefr:"B2",brit:"ביטוי בריטי נפוץ מאוד בשיחות טלפון ובפגישות.",pack:"core"},
+{en:"Get to grips with",he:"להשתלט על, להבין לעומק",explain:"להתחיל להבין ולשלוט בנושא מורכב.",example:"It took a month to get to grips with the new system.",cefr:"C1",brit:"ביטוי בריטי. באמריקאית get a handle on.",pack:"core"},
+{en:"In hindsight",he:"בדיעבד",explain:"הבנה שמגיעה רק אחרי שהדברים קרו.",example:"In hindsight we should have ordered spares.",cefr:"C1",pack:"core"},
+{en:"Long-standing",he:"ותיק, ארוך שנים",explain:"נמשך זמן רב.",example:"We have a long-standing arrangement with them.",cefr:"B2",pack:"core"},
+{en:"Ongoing",he:"מתמשך",explain:"ממשיך כרגע ולא הסתיים.",example:"Maintenance is an ongoing commitment, not a one-off.",cefr:"B2",pack:"core"},
+{en:"One-off",he:"חד פעמי",explain:"דבר שקורה פעם אחת בלבד.",example:"It was a one-off payment, not a subscription.",cefr:"B2",brit:"מונח בריטי. באמריקאית one-time.",pack:"core"},
+{en:"Knock-on effect",he:"אפקט שרשרת",explain:"השפעה עקיפה שנגררת מאירוע אחד.",example:"The delay had a knock-on effect on the whole schedule.",cefr:"C1",brit:"ביטוי בריטי. באמריקאית ripple effect.",pack:"core"},
+{en:"Down the line",he:"בהמשך הדרך",explain:"בשלב מאוחר יותר בעתיד.",example:"That could cause problems down the line.",cefr:"B2",pack:"core"},
+{en:"Across the board",he:"בכל התחומים",explain:"באופן גורף, לגבי כולם.",example:"Prices went up across the board this year.",cefr:"C1",pack:"core"},
+{en:"In due course",he:"בבוא העת",explain:"בזמן המתאים, בלי למהר.",example:"We'll send the certificates in due course.",cefr:"C1",brit:"ניסוח בריטי רשמי ומנומס, נפוץ בהתכתבות עסקית.",pack:"core"},
+{en:"On balance",he:"בסך הכול, בשקלול",explain:"לאחר ששקלת את הצדדים.",example:"On balance, the second supplier is the safer choice.",cefr:"C1",pack:"core"},
+{en:"Take precedence",he:"לקבל עדיפות",explain:"להיות חשוב יותר ולבוא קודם.",example:"Safety takes precedence over the timetable.",cefr:"C1",pack:"core"}
+];
 
 let WORDS=[...BASE_WORDS];
 let mode='fc',fcIdx=0,flipped=false;
@@ -1270,7 +1379,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1501,6 +1610,14 @@ function flipCard(){flipped=!flipped;document.getElementById('card').classList.t
 function fcNav(d){fcIdx=(fcIdx+d+WORDS.length)%WORDS.length;loadFC();}
 
 // Build question list: each word appears twice (en→he and he→en)
+/* With a large bank a full pass is hundreds of questions and nobody reaches the
+   end — which also makes the score screen unreachable. Each round draws a
+   random handful instead, so sessions finish and the content varies. */
+const SESSION_WORDS = 20;
+function pickSession(words){
+  return words.length <= SESSION_WORDS ? words : shuffle(words).slice(0, SESSION_WORDS);
+}
+
 function makeQuestions(words){
   if(!words.length) return [];
   // Every word is asked twice — once per direction. Building one flat list and
@@ -1562,8 +1679,26 @@ function cefrBadge(w){
   return w && w.cefr ? '<span class="cefr cefr-' + w.cefr + '">' + w.cefr + '</span>' : '';
 }
 
-// Only words the user added themselves
+// Words the user added themselves
 function myWords(){ return WORDS.filter(w => w.mine); }
+
+// The game defaults to his own curated words — adding a word is how he filters
+// out what he already knows — but the bank is available on request.
+let gameScope = 'mine';
+function gamePool(){
+  const mine = myWords();
+  if(gameScope === 'all') return WORDS;
+  return mine.length ? mine : WORDS;
+}
+function setGameScope(s){
+  gameScope = s;
+  document.querySelectorAll('#gScope button').forEach(b => {
+    const on = b.dataset.scope === s;
+    b.style.background = on ? 'var(--blue)' : 'transparent';
+    b.style.color = on ? '#fff' : 'var(--txt2)';
+  });
+  showGameStart();
+}
 
 function gameBest(){
   try { return parseInt(localStorage.getItem('vocab_game_best')||'0',10) || 0; } catch(e){ return 0; }
@@ -1579,20 +1714,19 @@ function gameMult(){
 
 function showGameStart(){
   gameStop();
-  const mine = myWords();
+  const pool = gamePool();
   document.getElementById('gamePlay').classList.add('hidden');
   document.getElementById('gameOver').classList.add('hidden');
   document.getElementById('gameStart').classList.remove('hidden');
-  document.getElementById('gMyCount').textContent = mine.length;
+  document.getElementById('gMyCount').textContent = pool.length;
   document.getElementById('gBest').textContent = gameBest();
-  const enough = mine.length > 0;
+  const enough = pool.length > 0;
   document.getElementById('gStartBtn').style.display = enough ? '' : 'none';
   document.getElementById('gEmptyMsg').style.display = enough ? 'none' : '';
 }
 
 function gameStart(){
-  const mine = myWords();
-  if(mine.length === 0){ showGameStart(); return; }
+  if(!gamePool().length){ showGameStart(); return; }
   gLeft=GAME_SECONDS; gScore=0; gStreak=0; gMaxStreak=0; gCorrect=0; gWrong=0; gActive=true;
   gBag=[]; gCurrent=null;
   document.body.classList.add('playing');
@@ -1635,11 +1769,11 @@ function updateGameHud(){
 // repeats, and never repeats across a refill either.
 let gBag = [];
 function drawGameWord(){
-  const mine = myWords();
-  if(!mine.length) return null;
+  const pool = gamePool();
+  if(!pool.length) return null;
   if(!gBag.length){
-    gBag = shuffle(mine);
-    if(mine.length > 1 && gCurrent && gBag[0].en === gCurrent.word.en) gBag.push(gBag.shift());
+    gBag = shuffle(pool);
+    if(pool.length > 1 && gCurrent && gBag[0].en === gCurrent.word.en) gBag.push(gBag.shift());
   }
   return gBag.shift();
 }
@@ -1890,7 +2024,7 @@ function startCloze(){
     document.getElementById('clozeEmptyCount').textContent = WORDS.length;
     return;
   }
-  clozeList = shuffle(pool).map(w => ({ word:w, spot:findCloze(w) }));
+  clozeList = pickSession(shuffle(pool)).map(w => ({ word:w, spot:findCloze(w) }));
   loadCloze();
 }
 
@@ -1903,7 +2037,7 @@ function setMode(m){
   document.getElementById(m+'Mode').classList.remove('hidden');
   document.getElementById('doneScreen').classList.add('hidden');
   qIdx=0;score=0;qTotal=0;
-  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(m==='smart'?getWeakWords():WORDS);
+  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(pickSession(m==='smart'?getWeakWords():WORDS));
   if(m==='fc'){fcIdx=0;loadFC();}
   if(m==='mc')loadMC();
   if(m==='fill')loadFill();
@@ -2024,7 +2158,7 @@ function showDone(){
 
 // SMART MODE
 let smartWords=[],smartIdx=0,smartScore=0,smartTotal=0;
-function loadSmart(){smartWords=makeQuestions(getWeakWords());smartIdx=0;smartScore=0;smartTotal=0;renderSmartQ();}
+function loadSmart(){smartWords=makeQuestions(pickSession(getWeakWords()));smartIdx=0;smartScore=0;smartTotal=0;renderSmartQ();}
 function renderSmartQ(){
   if(smartIdx>=smartWords.length){showSmartDone();return;}
   const {word:w,dir}=smartWords[smartIdx];
@@ -2469,7 +2603,7 @@ function refreshAfterAdd(){
     loadFC();
   } else {
     // Rebuild shuffled with new word included
-    shuffled = makeQuestions(mode==='smart' ? getWeakWords() : WORDS);
+    shuffled = makeQuestions(pickSession(mode==='smart' ? getWeakWords() : WORDS));
     qIdx = 0; score = 0; qTotal = 0;
     if(mode==='mc') loadMC();
     if(mode==='fill') loadFill();
