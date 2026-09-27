@@ -1379,7 +1379,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1455,14 +1455,54 @@ function describeApiError(status, data, err){
   return 'שגיאה ' + status + (msg ? ': ' + msg : '');
 }
 
-function isDuplicate(en, he){
-  // Check both English and Hebrew
-  const dupEn = en ? WORDS.find(w=>w.en.toLowerCase()===en.toLowerCase()) : null;
-  const dupHe = he ? WORDS.find(w=>w.he===he || w.he.toLowerCase()===he.toLowerCase()) : null;
-  if(dupEn) return `"${dupEn.en}" כבר קיימת ברשימה`;
-  if(dupHe) return `"${dupHe.he}" (${dupHe.en}) כבר קיימת ברשימה`;
+/* Duplicate detection.
+   Words arrive typed, pasted and copied from dictionaries, so a plain string
+   comparison misses the realistic cases: a trailing full stop, a double space,
+   the dictionary "to liaise" form, or a translation that is simply one sense of
+   an entry already in the list. Two tiers: an exact hit blocks the save, a
+   similar one only warns — a genuinely different word can share a sense. */
+function normEn(s){
+  return (s || '')
+    .toLowerCase()
+    .replace(/[.,;:!?'"()\[\]־–—]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^to\s+/, '');          // "to liaise" → "liaise"
+}
+function heSenses(s){
+  return (s || '').split(/[,\/|;]/).map(x => x.trim().toLowerCase()).filter(x => x.length > 1);
+}
+function whose(w){ return w.mine ? 'מהמילים שלך' : 'מהמאגר'; }
+
+// → { level:'exact'|'similar', word, msg }  or  null
+function findDuplicate(en, he){
+  const nEn = normEn(en);
+  if(nEn){
+    const hit = WORDS.find(w => normEn(w.en) === nEn);
+    if(hit) return { level:'exact', word:hit,
+      msg:`"${hit.en}" כבר קיימת${hit.cefr ? ' · ' + hit.cefr : ''} — ${whose(hit)}` };
+  }
+  if(he && he.trim()){
+    const target = he.trim().toLowerCase();
+    const exact = WORDS.find(w => (w.he || '').trim().toLowerCase() === target);
+    if(exact) return { level:'exact', word:exact,
+      msg:`"${exact.he}" (${exact.en}) כבר קיימת — ${whose(exact)}` };
+    const senses = heSenses(he);
+    const overlap = senses.length
+      ? WORDS.find(w => heSenses(w.he).some(s => senses.includes(s)))
+      : null;
+    if(overlap) return { level:'similar', word:overlap,
+      msg:`יש כבר מילה בתרגום דומה: "${overlap.en}" — ${overlap.he}` };
+  }
   return null;
-} // 'en' = adding English word, 'he' = adding Hebrew word
+}
+
+// Back-compat wrapper: only exact hits block
+function isDuplicate(en, he){
+  const d = findDuplicate(en, he);
+  return (d && d.level === 'exact') ? d.msg : null;
+}
+ // 'en' = adding English word, 'he' = adding Hebrew word
 
 function setDir(dir){
   addDir=dir;
@@ -1484,8 +1524,9 @@ function setDir(dir){
 async function lookupWordHe(){
   const he=document.getElementById('newHeWord').value.trim();
   if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
-  const dupMsgHe=isDuplicate(null,he);
-  if(dupMsgHe){showMMsg('⚠️ '+dupMsgHe,'err');return;}
+  const dupHeLookup = findDuplicate(null, he);
+  if(dupHeLookup && dupHeLookup.level === 'exact'){ showMMsg('⚠️ ' + dupHeLookup.msg, 'err'); return; }
+  if(dupHeLookup) showMMsg('ℹ️ ' + dupHeLookup.msg, 'err');
   if(location.protocol==='file:' && !apiKey){showMMsg('📂 הגדר API Key (לחץ 🔑 למעלה) או הוסף ידנית','err');showManual();return;}
   const btn=document.getElementById('aiBtnHe');
   btn.disabled=true;btn.textContent='⏳';
@@ -2327,7 +2368,8 @@ function showManual(){
 async function lookupWord(){
   const en=document.getElementById('newEn').value.trim();
   if(!en){showMMsg('⚠️ הכנס מילה תחילה','err');return;}
-  if(WORDS.some(w=>w.en.toLowerCase()===en.toLowerCase())){showMMsg('⚠️ המילה כבר קיימת','err');return;}
+  const dupEnLookup = findDuplicate(en, null);
+  if(dupEnLookup){ showMMsg('⚠️ ' + dupEnLookup.msg, 'err'); return; }
 
   // קובץ HTML מקומי בלי API key לא יכול לקרוא API חיצוני — עבור לידני אוטומטית
   if(location.protocol==='file:' && !apiKey){
@@ -2391,8 +2433,9 @@ function saveAI(){
     en=document.querySelector('.ai-he-input').value.trim();
   }
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
-  const dupAI=isDuplicate(en,he);
-  if(dupAI){showMMsg('⚠️ '+dupAI,'err');return;}
+  const dAI = findDuplicate(en, he);
+  if(dAI && dAI.level === 'exact'){ showMMsg('⚠️ ' + dAI.msg, 'err'); return; }
+  if(dAI && !confirm(dAI.msg + '\n\nלהוסיף בכל זאת?')) return;
   WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',brit:aiData?.brit||'',cefr:aiData?.cefr||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
@@ -2409,8 +2452,9 @@ function saveManual(){
     if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
     if(!en){showMMsg('⚠️ הכנס תרגום לאנגלית','err');return;}
   }
-  const dupMan=isDuplicate(en,he);
-  if(dupMan){showMMsg('⚠️ '+dupMan,'err');return;}
+  const dMan = findDuplicate(en, he);
+  if(dMan && dMan.level === 'exact'){ showMMsg('⚠️ ' + dMan.msg, 'err'); return; }
+  if(dMan && !confirm(dMan.msg + '\n\nלהוסיף בכל זאת?')) return;
   WORDS.push({en,he,explain:'',example:'',cefr:manualLevel||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
 }
@@ -2545,7 +2589,7 @@ async function processQueue(){
 
   for(const item of toProcess){
     // Skip if already added
-    if(WORDS.some(w=>w.en.toLowerCase()===item.en.toLowerCase())){
+    if(WORDS.some(w => normEn(w.en) === normEn(item.en))){
       continue; // already exists, drop from queue
     }
     try{
