@@ -360,6 +360,85 @@ main {
   border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── SECTION DRAWER ── */
+.burger {
+  background:none; border:1.5px solid var(--border2); border-radius:10px;
+  color:var(--txt); cursor:pointer; font-size:1rem; line-height:1;
+  padding:6px 10px; flex-shrink:0;
+}
+.burger:hover { border-color:var(--blue); color:var(--blue); }
+.drawer-back { position:fixed; inset:0; background:rgba(26,29,46,.5); backdrop-filter:blur(4px); z-index:300; }
+.drawer-back.hidden { display:none; }
+.drawer {
+  position:fixed; top:0; right:0; bottom:0; width:270px; max-width:82vw;
+  background:var(--surface); border-left:1.5px solid var(--border);
+  z-index:301; padding:22px 18px; display:flex; flex-direction:column; gap:8px;
+  box-shadow:-8px 0 32px rgba(26,29,46,.18);
+}
+.drawer h3 { font-family:'Fraunces',Georgia,serif; font-size:1.15rem; color:var(--txt); margin-bottom:10px; }
+.drawer-item {
+  display:flex; align-items:center; gap:10px; width:100%;
+  padding:13px 14px; border-radius:12px; border:1.5px solid var(--border);
+  background:var(--bg); color:var(--txt); cursor:pointer;
+  font-family:inherit; font-size:0.95rem; font-weight:600; text-align:right;
+  transition:all .2s;
+}
+.drawer-item:hover { border-color:var(--blue); color:var(--blue); }
+.drawer-item.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+.drawer-note { font-size:0.72rem; color:var(--txt3); line-height:1.7; margin-top:auto; }
+
+/* ── GRAMMAR ── */
+.gr-topic {
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:14px; padding:13px 15px; margin-bottom:9px; text-align:right;
+  cursor:pointer; transition:all .2s; display:block; font-family:inherit;
+}
+.gr-topic:hover { border-color:var(--blue); box-shadow:var(--shadow); }
+.gr-topic.muted { opacity:.5; }
+.gr-topic-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.gr-topic-name { font-weight:600; color:var(--txt); font-size:0.93rem; }
+.gr-bar { height:5px; background:var(--blue-bg2); border-radius:999px; overflow:hidden; margin-top:9px; }
+.gr-bar span { display:block; height:100%; border-radius:999px; background:var(--blue); transition:width .4s; }
+.gr-bar span.done { background:var(--green); }
+.gr-meta { font-size:0.7rem; color:var(--txt3); margin-top:5px; font-weight:500; }
+.gr-mastered { color:var(--green); font-weight:700; }
+.gr-why {
+  background:var(--blue-bg); border-right:3px solid var(--blue);
+  border-radius:9px; padding:11px 14px; font-size:0.84rem;
+  line-height:1.75; color:var(--txt2); direction:rtl; width:100%;
+}
+.gr-brit {
+  background:var(--gold-bg); border-right:3px solid var(--gold);
+  border-radius:9px; padding:10px 14px; font-size:0.81rem;
+  line-height:1.7; color:var(--txt2); direction:rtl; width:100%;
+}
+body.dark .gr-brit { color:var(--gold); }
+.gr-sentence {
+  direction:ltr; text-align:left; font-family:'Fraunces',Georgia,serif;
+  font-size:1.15rem; line-height:2; color:var(--txt); padding:4px 2px;
+}
+.gr-opt {
+  padding:14px 18px; border-radius:13px; border:1.5px solid var(--border2);
+  background:var(--bg); color:var(--txt); cursor:pointer; width:100%;
+  font-family:'Fraunces',Georgia,serif; font-size:1.02rem; font-weight:600;
+  direction:ltr; transition:all .18s; margin-bottom:9px;
+}
+.gr-opt:hover:not(:disabled) { border-color:var(--blue); background:var(--blue-bg); }
+.gr-opt.correct { background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.gr-opt.wrong   { background:var(--red-bg);   border-color:var(--red);   color:var(--red); }
+.gr-input {
+  width:100%; background:var(--surface); border:1.5px solid var(--border2);
+  border-radius:13px; color:var(--txt); font-size:1rem; padding:13px 17px;
+  outline:none; font-family:'Fraunces',Georgia,serif; direction:ltr;
+  box-shadow:var(--shadow);
+}
+.gr-input:focus { border-color:var(--blue); }
+.gr-kind {
+  display:inline-block; font-size:0.66rem; font-weight:700; letter-spacing:.5px;
+  padding:3px 10px; border-radius:999px; background:var(--blue-bg);
+  color:var(--blue); border:1.5px solid var(--blue-bg2);
+}
+
 /* ── CEFR LEVEL BADGES ── */
 .cefr {
   display: inline-block; font-size: 0.62rem; font-weight: 700;
@@ -710,7 +789,8 @@ body.playing .io-row { display: none !important; }
 
 <!-- HEADER -->
 <header>
-  <div class="logo">🇬🇧 מילים</div>
+  <button class="burger" onclick="openDrawer()" title="תפריט">☰</button>
+  <div class="logo" id="sectionTitle">🇬🇧 מילים</div>
   <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
   <div class="hdr-right">
     <span id="offlineBadge" style="display:none;align-items:center;gap:4px;font-size:0.7rem;font-weight:600;color:#8a5a00;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:999px;padding:3px 10px;white-space:nowrap;">📴 לא מקוון</span>
@@ -967,6 +1047,38 @@ body.playing .io-row { display: none !important; }
     <button class="btn-io" onclick="downloadUpdatedFile()" style="border-color:var(--blue);color:var(--blue);font-weight:600;">💾 הורד קובץ מעודכן</button>
     <span id="verLabel" style="font-size:0.75rem;color:var(--txt3);font-weight:600;align-self:center;background:var(--bg2);border:1.5px solid var(--border);border-radius:999px;padding:6px 14px;" dir="ltr"></span>
   </div>
+</main>
+
+<div class="drawer-back hidden" id="drawerBack" onclick="closeDrawer()"></div>
+<div class="drawer hidden" id="drawer">
+  <h3>תפריט</h3>
+  <button class="drawer-item on" id="navVocab" onclick="setSection('vocab')">📖 אוצר מילים</button>
+  <button class="drawer-item" id="navGrammar" onclick="setSection('grammar')">🧩 דקדוק וזמנים</button>
+  <div class="drawer-note">
+    שני החלקים חולקים את אותו מפתח API, ערכת הצבעים ומספר הגרסה.<br>
+    הכול נשמר במכשיר הזה בלבד.
+  </div>
+</div>
+
+<main id="grammarMain" class="hidden" style="width:100%;max-width:640px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+
+  <div id="grHome" style="width:100%;display:flex;flex-direction:column;gap:14px;">
+    <div class="g-hero" style="padding:26px 22px;">
+      <div style="font-size:2.2rem;margin-bottom:4px;">🧩</div>
+      <div class="g-title">דקדוק וזמנים</div>
+      <div class="g-sub">12 נושאים שחוסמים דוברי עברית.<br>ככל שתשלוט בנושא, הוא יופיע פחות.</div>
+      <button class="btn-submit" onclick="startDiag()">🎯 התחל אבחון</button>
+      <div class="g-rules" style="margin-top:14px;">
+        האבחון דוגם 2 שאלות מכל נושא — כ-10 דקות.<br>
+        בסיומו המערכת תדע במה להתמקד.
+      </div>
+    </div>
+    <div id="grTopics"></div>
+  </div>
+
+  <div id="grPractice" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>
+
+  <div id="grResult" class="hidden g-hero"></div>
 </main>
 
 <script>
@@ -1379,7 +1491,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '1.5';
+const APP_VERSION = '2.0';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1708,6 +1820,320 @@ function makeQuestions(words){
   for(let g = want; g >= 1; g--) spacingPass(g);
   spacingPass(1);                       // one more sweep to settle stragglers
   return qs;
+}
+
+const GRAMMAR=[{"id":"pp","name":"Present Perfect מול Past Simple","lvl":"B1–B2","trap":"בעברית \"שלחתי\" מכסה את שתי הצורות, ולכן אין ממה לגזור את ההבחנה. באנגלית Past Simple מנתק מההווה, ו-Present Perfect אומר שזה רלוונטי עכשיו.","rule":"ציון זמן שהסתיים (yesterday, last week, in 2019, an hour ago) גורר Past Simple. מילים כמו just, already, yet, ever, never, since, for גוררות Present Perfect.","brit":"בבריטית ההעדפה ל-Present Perfect עם just/already/yet חזקה מאוד. באמריקאית מקובל לומר I just sent it, ובבריטית זה נשמע שגוי.","items":[{"k":"c","q":"I ___ the revised drawings an hour ago.","o":["have sent","sent"],"a":1,"why":"\"an hour ago\" הוא זמן שהסתיים, ולכן Past Simple."},{"k":"c","q":"We ___ this supplier since 2019.","o":["have used","used"],"a":0,"why":"\"since 2019\" מתאר תקופה שנמשכת עד עכשיו, ולכן Present Perfect."},{"k":"c","q":"___ you seen the safety file yet?","o":["Have","Did"],"a":0,"why":"\"yet\" גורר Present Perfect. בבריטית זה כמעט מחייב."},{"k":"f","q":"They ___ (not reply) to my email yet.","a":["haven't replied","have not replied"],"why":"\"yet\" גורר Present Perfect בשלילה."},{"k":"x","q":"I have sent the invoice last Thursday.","a":["I sent the invoice last Thursday"],"why":"אי אפשר לשלב Present Perfect עם ציון זמן שהסתיים."},{"k":"x","q":"We work with them for six years.","a":["We have worked with them for six years","We've worked with them for six years"],"why":"\"for six years\" עד עכשיו דורש Present Perfect, לא הווה פשוט."}]},{"id":"cont","name":"פשוט מול מתמשך","lvl":"B1–B2","trap":"בעברית יש צורת הווה אחת. באנגלית ההבחנה היא בין מה שנכון תמיד לבין מה שקורה בתקופה הזו.","rule":"Present Simple למה שקבוע או חוזר. Present Continuous למה שזמני או מתרחש עכשיו. פעלים של מצב (know, need, mean, own, prefer) לא באים בצורה מתמשכת.","brit":"בבריטית נפוץ להשתמש במתמשך כדי להתלונן בעדינות: The lift is playing up again.","items":[{"k":"c","q":"I ___ with hotels across three countries.","o":["work","am working"],"a":0,"why":"זה תיאור קבוע של העיסוק, ולכן הווה פשוט."},{"k":"c","q":"I ___ on the Limassol site this month.","o":["work","am working"],"a":1,"why":"\"this month\" מסמן תקופה זמנית, ולכן מתמשך."},{"k":"c","q":"I ___ what you mean.","o":["am knowing","know"],"a":1,"why":"know הוא פועל מצב ולא מופיע בצורה מתמשכת."},{"k":"f","q":"We ___ (install) two new units at the moment.","a":["are installing","'re installing"],"why":"\"at the moment\" מסמן פעולה שמתרחשת כעת."},{"k":"x","q":"I am needing the drawings by Friday.","a":["I need the drawings by Friday"],"why":"need הוא פועל מצב ולכן בהווה פשוט."},{"k":"x","q":"The factory is producing these units since 2020.","a":["The factory has been producing these units since 2020","The factory has produced these units since 2020"],"why":"\"since\" דורש צורת perfect, לא מתמשך פשוט."}]},{"id":"pastperf","name":"Past Perfect ורצף סיפורי","lvl":"B2","trap":"בעברית מספרים לפי הסדר ונותנים להקשר לעשות את העבודה. באנגלית מסמנים במפורש מה קרה קודם.","rule":"Past Perfect (had + צורה שלישית) מסמן את המוקדם מבין שני אירועים בעבר. השני נשאר Past Simple.","brit":"","items":[{"k":"c","q":"By the time we arrived, they ___ the flooring.","o":["had already laid","already laid"],"a":0,"why":"הריצוף קרה לפני ההגעה, ולכן Past Perfect."},{"k":"c","q":"She told me she ___ the quote the previous week.","o":["sent","had sent"],"a":1,"why":"השליחה קדמה לאמירה."},{"k":"f","q":"The unit failed because nobody ___ (check) the anchors.","a":["had checked"],"why":"הבדיקה שלא בוצעה קדמה לכשל."},{"k":"x","q":"When I got to the site, the lorry already left.","a":["When I got to the site, the lorry had already left"],"why":"העזיבה קדמה להגעה, ולכן Past Perfect."},{"k":"c","q":"We ___ the contract before the price went up.","o":["had signed","have signed"],"a":0,"why":"שני האירועים בעבר, והחתימה קדמה."},{"k":"x","q":"After we had finished, we had gone home.","a":["After we had finished, we went home"],"why":"רק המוקדם מקבל Past Perfect. השני נשאר Past Simple."}]},{"id":"future","name":"דרכי עתיד","lvl":"B1–B2","trap":"בעברית יש צורת עתיד אחת. באנגלית הבחירה מסגירה אם זו החלטה ברגע, כוונה מוקדמת או פגישה שכבר נקבעה.","rule":"will להחלטה ברגע הדיבור ולהבטחה. going to לכוונה שכבר קיימת ולחיזוי מסימנים. Present Continuous לסידור שכבר נקבע עם מישהו.","brit":"בבריטית shall עדיין חי בהצעות ובשאלות: Shall I give them a ring?","items":[{"k":"c","q":"That box looks heavy — I ___ you.","o":["'ll help","'m helping"],"a":0,"why":"החלטה שנולדת ברגע הדיבור, ולכן will."},{"k":"c","q":"We ___ the client at ten tomorrow.","o":["will meet","'re meeting"],"a":1,"why":"פגישה שכבר נקבעה, ולכן Present Continuous."},{"k":"c","q":"Look at those clouds — it ___ rain.","o":["will","'s going to"],"a":1,"why":"חיזוי על סמך סימן נראה לעין, ולכן going to."},{"k":"f","q":"___ I send them the revised quote? (הצעה מנומסת בבריטית)","a":["Shall"],"why":"Shall I…? היא דרך בריטית טבעית להציע לעשות משהו."},{"k":"x","q":"I think I'm going to call them right now.","a":["I think I'll call them right now","I'll call them right now"],"why":"החלטה ברגע הדיבור לוקחת will ולא going to."},{"k":"c","q":"Our flight ___ at six in the morning.","o":["leaves","will leave"],"a":0,"why":"לוח זמנים קבוע מקבל הווה פשוט."}]},{"id":"cond","name":"משפטי תנאי","lvl":"B2–C1","trap":"בעברית \"אם\" אחד מכסה הכול. באנגלית הצורה מסמנת עד כמה הדבר סביר, וזה קריטי במשא ומתן.","rule":"תנאי ראשון למה שסביר: if + הווה פשוט, ואז will/can. תנאי שני להיפותטי: if + עבר, ואז would. תנאי שלישי לעבר שלא קרה: if + had done, ואז would have done.","brit":"בבריטית רשמית עדיין נפוץ were במקום was: If I were you.","items":[{"k":"c","q":"If they order this week, we ___ deliver by March.","o":["can","could"],"a":0,"why":"תרחיש סביר, ולכן תנאי ראשון."},{"k":"c","q":"If they ordered both sites, we ___ a better price.","o":["will offer","would offer"],"a":1,"why":"הצעה היפותטית, ולכן תנאי שני."},{"k":"f","q":"If we ___ (order) spares in advance, the repair wouldn't have taken a week.","a":["had ordered"],"why":"תנאי שלישי על עבר שלא קרה."},{"k":"x","q":"If I would be you, I'd ask for a discount.","a":["If I were you, I'd ask for a discount","If I was you, I'd ask for a discount"],"why":"אחרי if לא בא would. הצורה הבריטית המקובלת היא If I were you."},{"k":"c","q":"If the survey ___ late, the whole schedule slips.","o":["comes","will come"],"a":0,"why":"אחרי if לא משתמשים ב-will."},{"k":"x","q":"If they had confirmed earlier, we would finish on time.","a":["If they had confirmed earlier, we would have finished on time"],"why":"תנאי שלישי דורש would have + צורה שלישית בשני החלקים."}]},{"id":"modal","name":"מודאלים לנימוס ולהסתייגות","lvl":"B2–C1","trap":"עברית ישירה יותר. תרגום ישיר של \"תשלח לי\" נשמע תובעני באנגלית עסקית בריטית.","rule":"ככל שהניסוח עקיף יותר כך הוא מנומס יותר: Can you → Could you → Would you mind → I was wondering if you could.","brit":"בבריטית העקיפות היא נורמה ולא קישוט. בקשה ישירה מדי נקראת כגסות, גם כשלא התכוונת.","items":[{"k":"c","q":"___ you mind sending the certificates?","o":["Would","Will"],"a":0,"why":"Would you mind היא הצורה המנומסת המקובלת."},{"k":"c","q":"We ___ need to revise the timeline.","o":["might","will"],"a":0,"why":"might מרכך ומשאיר מקום לדיון."},{"k":"f","q":"I was wondering if you ___ send me the floor plans.","a":["could"],"why":"I was wondering if you could הוא מהניסוחים המנומסים ביותר."},{"k":"x","q":"Send me the updated drawings.","a":["Could you send me the updated drawings?","Could you send me the updated drawings"],"why":"ציווי ישיר נקרא כתובעני. Could you… מרכך בלי להחליש."},{"k":"c","q":"You ___ to sign it today — tomorrow is fine.","o":["needn't","mustn't"],"a":0,"why":"needn't פירושו אין צורך. mustn't פירושו אסור, וזה הפוך."},{"k":"c","q":"That ___ be the delivery — they said ten o'clock.","o":["must","should"],"a":1,"why":"should מביע ציפייה סבירה. must מביע ודאות."}]},{"id":"prep","name":"מילות יחס אחרי פעלים ושמות תואר","lvl":"B2","trap":"אין היגיון שאפשר לגזור, והמיפוי מעברית שגוי כמעט תמיד. \"אחראי על\" הופך ל-responsible for ולא responsible on.","rule":"את הצירוף לומדים כיחידה אחת, לא כמילה ועוד מילה.","brit":"בבריטית: different from או different to. אמריקאית מעדיפה different than, שנשמע זר באוזן בריטית.","items":[{"k":"c","q":"We're responsible ___ the installation and the handover.","o":["on","for"],"a":1,"why":"responsible for. תרגום מילולי מעברית מוביל ל-on ושגוי."},{"k":"c","q":"The warranty doesn't apply ___ normal wear and tear.","o":["to","on"],"a":0,"why":"apply to."},{"k":"f","q":"Every unit must comply ___ EN 1176.","a":["with"],"why":"comply with, תמיד."},{"k":"f","q":"The final price depends ___ the number of sites.","a":["on","upon"],"why":"depend on."},{"k":"x","q":"They insisted of a written guarantee.","a":["They insisted on a written guarantee"],"why":"insist on."},{"k":"c","q":"This model is quite different ___ the previous one.","o":["than","from"],"a":1,"why":"בבריטית different from או different to. different than הוא אמריקאי."}]},{"id":"art","name":"יידוע — a / an / the / ללא","lvl":"B1–B2","trap":"בעברית אין תווית ליחיד בלתי מיודע, ולכן היא נשמטת. בנוסף יש ביטויים בריטיים שבהם אין תווית כלל.","rule":"a/an להזכרה ראשונה, the כשידוע לשני הצדדים, ללא תווית להכללות ברבים ולשמות בלתי ספירים.","brit":"בבריטית אומרים in hospital, at university, go to hospital — בלי the. באמריקאית מוסיפים את ה-the.","items":[{"k":"c","q":"We sent them ___ quote yesterday, and they approved it today.","o":["a","the"],"a":0,"why":"הזכרה ראשונה מקבלת a."},{"k":"c","q":"His son is ___ hospital after the fall.","o":["in","in the"],"a":0,"why":"בבריטית in hospital בלי the, כשמדובר באשפוז."},{"k":"c","q":"___ safety standards in Greece are similar to ours.","o":["The","—"],"a":0,"why":"כאן מדובר בתקנים מסוימים וידועים, ולכן the."},{"k":"f","q":"She studied engineering ___ university in Manchester.","a":["at"],"why":"בבריטית at university בלי the."},{"k":"x","q":"We provide the maintenance for hotels across Greece.","a":["We provide maintenance for hotels across Greece"],"why":"maintenance כהכללה בלתי ספירה, ללא תווית."},{"k":"c","q":"It was ___ honest mistake.","o":["a","an"],"a":1,"why":"honest נפתחת בצליל תנועה, ולכן an."}]},{"id":"pass","name":"סביל","lvl":"B2","trap":"בעברית הסביל פחות שכיח בכתיבה עסקית. באנגלית הוא ברירת המחדל בדוחות ובמפרטים.","rule":"be + צורה שלישית. משתמשים כשהמבצע לא חשוב, לא ידוע, או כשרוצים להסיט את הדגש מהאשמה.","brit":"בבריטית רשמית נפוץ מאוד בהתכתבות: Your enquiry is being dealt with.","items":[{"k":"f","q":"The units ___ (install) last week.","a":["were installed"],"why":"סביל בעבר."},{"k":"c","q":"Inspections ___ twice a year.","o":["are carried out","carry out"],"a":0,"why":"הבדיקות מבוצעות, ולכן סביל."},{"k":"f","q":"Your order ___ (process) at the moment.","a":["is being processed"],"why":"סביל מתמשך בהווה."},{"k":"x","q":"The report was wrote by the site manager.","a":["The report was written by the site manager"],"why":"צורה שלישית של write היא written."},{"k":"c","q":"The panels ___ from Italy every spring.","o":["are imported","import"],"a":0,"why":"הפנלים מיובאים, ולכן סביל."},{"k":"x","q":"The mistake was happened during assembly.","a":["The mistake happened during assembly"],"why":"happen הוא פועל עומד ואין לו צורת סביל."}]},{"id":"report","name":"דיבור עקיף","lvl":"B2","trap":"בעברית מצטטים כמעט כמו שנאמר. באנגלית הזמן נסוג אחורה, וגם מילות הזמן משתנות.","rule":"כשהפועל המדווח בעבר, הזמן נסוג צעד אחד: הווה לעבר, will ל-would, can ל-could. tomorrow הופך the next day.","brit":"","items":[{"k":"c","q":"He said he ___ send the certificates.","o":["will","would"],"a":1,"why":"said בעבר גורר נסיגה מ-will ל-would."},{"k":"f","q":"She told me the lorry ___ (be) delayed.","a":["was"],"why":"נסיגה מהווה לעבר."},{"k":"c","q":"They asked ___ we could bring the date forward.","o":["if","that"],"a":0,"why":"שאלה עקיפה נפתחת ב-if או whether."},{"k":"x","q":"He said me that the site is ready.","a":["He told me that the site was ready","He said that the site was ready"],"why":"say לא מקבל מושא ישיר. או told me או said that, ועם נסיגת זמן."},{"k":"x","q":"She asked when will the parts arrive.","a":["She asked when the parts would arrive"],"why":"בשאלה עקיפה חוזרים לסדר של משפט רגיל, בלי היפוך."},{"k":"c","q":"He said he had finished the survey ___.","o":["yesterday","the day before"],"a":1,"why":"בדיבור עקיף yesterday הופך the day before."}]},{"id":"ger","name":"Gerund מול Infinitive","lvl":"B2–C1","trap":"בעברית שתי הצורות נשמעות כמו שם פועל אחד. באנגלית הפועל שלפניהן קובע, ואין כלל שאפשר לגזור.","rule":"פעלים מסוימים גוררים to do (agree, decide, offer, promise), אחרים גוררים doing (suggest, avoid, consider, mind). אחרי מילת יחס תמיד doing.","brit":"בבריטית עסקית: I look forward to hearing from you. אחרי to שהוא מילת יחס באה צורת ing, וזו טעות נפוצה מאוד.","items":[{"k":"f","q":"We agreed ___ (deliver) in March.","a":["to deliver"],"why":"agree גורר to + שם פועל."},{"k":"f","q":"They suggested ___ (wait) until the survey is done.","a":["waiting"],"why":"suggest גורר צורת ing."},{"k":"c","q":"I look forward to ___ from you.","o":["hear","hearing"],"a":1,"why":"ה-to כאן היא מילת יחס ולא סימן שם פועל, ולכן hearing."},{"k":"x","q":"Would you mind to send the invoice?","a":["Would you mind sending the invoice?","Would you mind sending the invoice"],"why":"mind גורר צורת ing."},{"k":"c","q":"We're used to ___ with tight deadlines.","o":["work","working"],"a":1,"why":"be used to היא מילת יחס ולכן working."},{"k":"x","q":"They decided postponing the opening.","a":["They decided to postpone the opening"],"why":"decide גורר to + שם פועל."}]},{"id":"brit","name":"דקדוק בריטי מול אמריקאי","lvl":"B2–C1","trap":"ההבדל בין בריטית לאמריקאית אינו רק איות. יש הבדלי דקדוק ממש, והם מסגירים מיד באיזו אנגלית אתה משתמש.","rule":"ההבדלים העיקריים: have got מול have gotten, at the weekend מול on the weekend, שם קיבוצי ברבים, וצורות עבר כמו learnt מול learned.","brit":"כל הפריטים כאן הם הצורה הבריטית. זו הצורה שתרצה מול מלונות בבריטניה, קפריסין ויוון.","items":[{"k":"c","q":"We're meeting the architect ___ the weekend.","o":["at","on"],"a":0,"why":"בבריטית at the weekend. on the weekend הוא אמריקאי."},{"k":"c","q":"___ you got the latest drawings?","o":["Have","Do"],"a":0,"why":"Have you got היא הצורה הבריטית. Do you have נפוצה בארה״ב."},{"k":"c","q":"The team ___ still discussing the budget.","o":["is","are"],"a":1,"why":"בבריטית שם קיבוצי המתאר אנשים לוקח פועל ברבים."},{"k":"f","q":"I've ___ (learn) a lot from that project. (צורה בריטית)","a":["learnt"],"why":"בבריטית learnt. באמריקאית learned."},{"k":"x","q":"I've gotten three replies already.","a":["I've got three replies already","I have got three replies already"],"why":"gotten היא צורה אמריקאית. בבריטית have got."},{"k":"c","q":"I'll give them ___ later.","o":["a ring","a call"],"a":0,"why":"give someone a ring הוא ניסוח בריטי יומיומי לטלפן."}]}];
+
+/* ═══════════════ GRAMMAR ENGINE ═══════════════ */
+function bidi(s){
+  // Hebrew paragraphs that contain English terms need the Latin runs isolated,
+  // otherwise surrounding commas and colons jump to the wrong side.
+  return String(s == null ? '' : s).replace(
+    /([A-Za-z][A-Za-z'\u2019\-]*(?:\s+[A-Za-z'\u2019\-]+)*)/g,
+    '<span dir="ltr" style="unicode-bidi:isolate">$1</span>');
+}
+
+let section = 'vocab';
+let grMastery = {};          // id -> {correct,total}
+let grMuted   = {};          // id -> true  (retired by hand)
+let grQueue = [], grIdx = 0, grScore = 0, grTotal = 0, grCur = null;
+let grMode = 'mix', grTopicId = null, grIsDiag = false, grDiagScores = {};
+
+function loadGrammar(){
+  try{ grMastery = JSON.parse(localStorage.getItem('gram_mastery')||'{}'); }catch(e){ grMastery={}; }
+  try{ grMuted   = JSON.parse(localStorage.getItem('gram_muted')  ||'{}'); }catch(e){ grMuted={}; }
+}
+function saveGrammar(){
+  try{
+    localStorage.setItem('gram_mastery', JSON.stringify(grMastery));
+    localStorage.setItem('gram_muted',   JSON.stringify(grMuted));
+  }catch(e){}
+}
+
+// A topic counts as mastered once there is enough evidence, not after one lucky round
+function grStats(id){
+  const m = grMastery[id] || {correct:0,total:0};
+  const pct = m.total ? Math.round(m.correct/m.total*100) : 0;
+  return { ...m, pct, mastered: m.total >= 8 && pct >= 85 };
+}
+function grActiveTopics(){
+  return GRAMMAR.filter(t => !grMuted[t.id] && !grStats(t.id).mastered);
+}
+function toggleMute(id, ev){
+  if(ev) ev.stopPropagation();
+  grMuted[id] = !grMuted[id];
+  if(!grMuted[id]) delete grMuted[id];
+  saveGrammar(); renderTopics();
+}
+
+/* ── answer grading ────────────────────────────────────────────────
+   Typed answers arrive with contractions, stray punctuation and odd
+   spacing, so compare on a normalised form rather than character by
+   character. */
+const CONTRACTIONS = [
+  [/\bi'm\b/g,'i am'],[/\bi've\b/g,'i have'],[/\bi'll\b/g,'i will'],[/\bi'd\b/g,'i would'],
+  [/\bwe've\b/g,'we have'],[/\bwe'll\b/g,'we will'],[/\bwe're\b/g,'we are'],[/\bwe'd\b/g,'we would'],
+  [/\bthey've\b/g,'they have'],[/\bthey'll\b/g,'they will'],[/\bthey're\b/g,'they are'],
+  [/\byou've\b/g,'you have'],[/\byou'll\b/g,'you will'],[/\byou're\b/g,'you are'],
+  [/\bdon't\b/g,'do not'],[/\bdoesn't\b/g,'does not'],[/\bdidn't\b/g,'did not'],
+  [/\bhaven't\b/g,'have not'],[/\bhasn't\b/g,'has not'],[/\bhadn't\b/g,'had not'],
+  [/\bwon't\b/g,'will not'],[/\bwouldn't\b/g,'would not'],[/\bcan't\b/g,'cannot'],
+  [/\bcouldn't\b/g,'could not'],[/\bshouldn't\b/g,'should not'],[/\bmustn't\b/g,'must not'],
+  [/\bisn't\b/g,'is not'],[/\baren't\b/g,'are not'],[/\bwasn't\b/g,'was not'],[/\bweren't\b/g,'were not'],
+];
+function normAns(s){
+  let t = (s||'').toLowerCase().replace(/[’`]/g,"'").trim();
+  CONTRACTIONS.forEach(([re,rep]) => { t = t.replace(re,rep); });
+  return t.replace(/[.,!?;:]+$/,'').replace(/\s+/g,' ').trim();
+}
+function graded(typed, accepted){
+  const t = normAns(typed);
+  return accepted.some(a => normAns(a) === t);
+}
+
+/* ── building a round ──────────────────────────────────────────── */
+function grItems(topics, kinds, perTopic){
+  const out = [];
+  topics.forEach(t => {
+    let pool = t.items.filter(it => kinds.includes(it.k));
+    if(!pool.length) pool = t.items;
+    shuffle(pool).slice(0, perTopic).forEach(it => out.push({topic:t, item:it}));
+  });
+  return shuffle(out);
+}
+
+function startDiag(){
+  grIsDiag = true; grDiagScores = {};
+  grQueue = grItems(GRAMMAR, ['c','f','x'], 2);
+  grIdx = 0; grScore = 0; grTotal = 0;
+  document.getElementById('grHome').classList.add('hidden');
+  document.getElementById('grResult').classList.add('hidden');
+  document.getElementById('grPractice').classList.remove('hidden');
+  renderGrQ();
+}
+
+function startTopic(id, mode){
+  grIsDiag = false; grTopicId = id; grMode = mode || 'mix';
+  const topics = id ? GRAMMAR.filter(t => t.id === id)
+                    : (grActiveTopics().length ? grActiveTopics() : GRAMMAR);
+  const kinds = grMode === 'mix' ? ['c','f','x'] : [grMode];
+  grQueue = grItems(topics, kinds, id ? 99 : 2);
+  if(!grQueue.length){ grQueue = grItems(topics, ['c','f','x'], 99); }
+  grIdx = 0; grScore = 0; grTotal = 0;
+  document.getElementById('grHome').classList.add('hidden');
+  document.getElementById('grResult').classList.add('hidden');
+  document.getElementById('grPractice').classList.remove('hidden');
+  renderGrQ();
+}
+
+const KIND_LABEL = { c:'בחר את הצורה הנכונה', f:'השלם את הצורה הנכונה', x:'תקן את המשפט' };
+
+function renderGrQ(){
+  const box = document.getElementById('grPractice');
+  if(grIdx >= grQueue.length){ showGrResult(); return; }
+  grCur = grQueue[grIdx];
+  const { topic:t, item:it } = grCur;
+  box.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+  head.innerHTML = '<span class="gr-kind">' + KIND_LABEL[it.k] + '</span>'
+    + '<span style="font-size:0.72rem;color:var(--txt3);font-weight:600">'
+    + (grIsDiag ? 'אבחון ' : '') + (grIdx+1) + ' / ' + grQueue.length + '</span>';
+  box.appendChild(head);
+
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  card.innerHTML = '<div class="q-lbl">' + (grIsDiag ? 'אבחון' : t.name) + '</div>'
+                 + '<div class="gr-sentence">' + it.q.replace(/___/g,'<strong>___</strong>') + '</div>';
+  box.appendChild(card);
+
+  if(it.k === 'c'){
+    it.o.forEach((opt,i) => {
+      const b = document.createElement('button');
+      b.className = 'gr-opt'; b.textContent = opt;
+      b.onclick = () => answerGr(i === it.a, box, it, t);
+      box.appendChild(b);
+    });
+  } else {
+    const inp = document.createElement('input');
+    inp.className = 'gr-input'; inp.id = 'grInput';
+    inp.placeholder = it.k === 'x' ? 'כתוב את המשפט המתוקן…' : 'הקלד את הצורה…';
+    inp.onkeydown = e => { if(e.key === 'Enter') checkGrTyped(box, it, t); };
+    box.appendChild(inp);
+    const btn = document.createElement('button');
+    btn.className = 'btn-submit'; btn.textContent = 'בדוק';
+    btn.onclick = () => checkGrTyped(box, it, t);
+    box.appendChild(btn);
+    setTimeout(() => inp.focus(), 60);
+  }
+  setProgress(grIdx / grQueue.length * 100);
+}
+
+function checkGrTyped(box, it, t){
+  const inp = document.getElementById('grInput');
+  if(!inp || inp.disabled || !inp.value.trim()) return;
+  inp.disabled = true;
+  answerGr(graded(inp.value, it.a), box, it, t);
+}
+
+function answerGr(ok, box, it, t){
+  box.querySelectorAll('.gr-opt').forEach(b => {
+    b.disabled = true;
+    if(b.textContent === it.o[it.a]) b.classList.add('correct');
+  });
+  if(!ok && it.k === 'c'){
+    box.querySelectorAll('.gr-opt').forEach(b => {
+      if(b.textContent !== it.o[it.a]) b.classList.add('wrong');
+    });
+  }
+  grTotal++; if(ok) grScore++;
+  if(!grMastery[t.id]) grMastery[t.id] = {correct:0,total:0};
+  grMastery[t.id].total++; if(ok) grMastery[t.id].correct++;
+  if(grIsDiag){
+    if(!grDiagScores[t.id]) grDiagScores[t.id] = {c:0,n:0};
+    grDiagScores[t.id].n++; if(ok) grDiagScores[t.id].c++;
+  }
+  saveGrammar();
+
+  const fb = document.createElement('div');
+  fb.className = 'feedback ' + (ok ? 'ok' : 'no');
+  const right = it.k === 'c' ? it.o[it.a] : it.a[0];
+  fb.innerHTML = ok ? '✅ נכון' : '❌ התשובה: <strong dir="ltr">' + right + '</strong>';
+  box.appendChild(fb);
+
+  const why = document.createElement('div');
+  why.className = 'gr-why'; why.innerHTML = bidi(it.why);
+  box.appendChild(why);
+
+  if(!grIsDiag && t.brit){
+    const bn = document.createElement('div');
+    bn.className = 'gr-brit'; bn.innerHTML = '🇬🇧 ' + bidi(t.brit);
+    box.appendChild(bn);
+  }
+
+  const next = document.createElement('button');
+  next.className = 'btn-next';
+  next.textContent = (grIdx + 1 >= grQueue.length) ? 'סיים →' : 'הבא →';
+  next.onclick = () => { grIdx++; renderGrQ(); };
+  box.appendChild(next);
+}
+
+function showGrResult(){
+  document.getElementById('grPractice').classList.add('hidden');
+  const box = document.getElementById('grResult');
+  box.classList.remove('hidden');
+  const pct = grTotal ? Math.round(grScore/grTotal*100) : 0;
+  setProgress(100);
+
+  let html = '<div style="font-size:2.2rem;margin-bottom:4px;">' + (grIsDiag ? '🎯' : '🏁') + '</div>'
+    + '<div class="g-title">' + (grIsDiag ? 'האבחון הושלם' : 'סיימת') + '</div>'
+    + '<div class="done-score">' + grScore + ' / ' + grTotal + '</div>';
+
+  if(grIsDiag){
+    const rows = GRAMMAR.map(t => {
+      const s = grDiagScores[t.id] || {c:0,n:0};
+      const p = s.n ? Math.round(s.c/s.n*100) : 0;
+      return {t, p, n:s.n};
+    }).sort((a,b) => a.p - b.p);
+    const weak = rows.filter(r => r.p < 100);
+    html += '<div class="done-msg">' + (weak.length
+      ? 'הנושאים שבהם טעית מופיעים ראשונים. המערכת תתמקד בהם.'
+      : 'תוצאה מלאה. אפשר לתרגל כל נושא ידנית.') + '</div>'
+      + '<div style="text-align:right;margin-bottom:20px;">'
+      + rows.map(r =>
+          '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:0.86rem;">'
+          + '<span style="color:var(--txt);font-weight:600">' + r.t.name + '</span>'
+          + '<span style="font-weight:700;color:' + (r.p>=100?'var(--green)':r.p>=50?'var(--gold)':'var(--red)') + '">'
+          + r.p + '%</span></div>').join('')
+      + '</div>';
+  } else {
+    html += '<div class="done-msg">' + (pct>=85 ? '🌟 שליטה יפה בנושא' : pct>=60 ? '👍 מתקדם' : '💪 שווה סיבוב נוסף') + '</div>';
+  }
+  html += '<button class="btn-submit" onclick="grHome()">↩ חזרה לנושאים</button>';
+  box.innerHTML = html;
+  grIsDiag = false;
+  renderTopics();
+}
+
+function grHome(){
+  document.getElementById('grPractice').classList.add('hidden');
+  document.getElementById('grResult').classList.add('hidden');
+  document.getElementById('grHome').classList.remove('hidden');
+  renderTopics(); setProgress(0);
+}
+
+function renderTopics(){
+  const box = document.getElementById('grTopics');
+  if(!box) return;
+  const done = GRAMMAR.filter(t => grStats(t.id).mastered).length;
+  box.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px;">'
+    + '<span style="font-size:0.8rem;color:var(--txt3);font-weight:600">' + GRAMMAR.length + ' נושאים</span>'
+    + '<span style="font-size:0.8rem;font-weight:700;color:var(--green)">' + done + ' בשליטה</span></div>'
+    + GRAMMAR.map(t => {
+        const s = grStats(t.id);
+        const muted = !!grMuted[t.id];
+        return '<button class="gr-topic' + (muted ? ' muted' : '') + '" onclick="openTopic(\'' + t.id + '\')">'
+          + '<div class="gr-topic-head"><span class="gr-topic-name">' + t.name + '</span>'
+          + '<span onclick="toggleMute(\'' + t.id + '\',event)" title="הסתר או החזר נושא" '
+          + 'style="font-size:0.9rem;padding:2px 6px;cursor:pointer;">' + (muted ? '🔕' : '🔔') + '</span></div>'
+          + '<div class="gr-bar"><span class="' + (s.mastered ? 'done' : '') + '" style="width:' + s.pct + '%"></span></div>'
+          + '<div class="gr-meta">' + (s.total
+              ? s.pct + '% · ' + s.total + ' תשובות' + (s.mastered ? ' · <span class="gr-mastered">בשליטה</span>' : '')
+              : 'טרם תורגל') + ' · ' + t.lvl + '</div></button>';
+      }).join('');
+}
+
+function openTopic(id){
+  const t = GRAMMAR.find(x => x.id === id); if(!t) return;
+  document.getElementById('grHome').classList.add('hidden');
+  document.getElementById('grResult').classList.add('hidden');
+  const box = document.getElementById('grPractice');
+  box.classList.remove('hidden');
+  const s = grStats(id);
+  box.innerHTML = '<div class="g-hero" style="padding:24px 20px;">'
+    + '<div class="g-title" style="font-size:1.3rem;">' + t.name + '</div>'
+    + '<div style="font-size:0.75rem;color:var(--txt3);font-weight:600;margin-bottom:14px;">' + t.lvl
+    + (s.total ? ' · ' + s.pct + '% מתוך ' + s.total + ' תשובות' : ' · טרם תורגל') + '</div>'
+    + '<div class="gr-why" style="margin-bottom:10px;"><strong>למה זה מלכודת לדובר עברית</strong><br>' + bidi(t.trap) + '</div>'
+    + '<div class="gr-why" style="margin-bottom:10px;"><strong>הכלל</strong><br>' + bidi(t.rule) + '</div>'
+    + (t.brit ? '<div class="gr-brit" style="margin-bottom:14px;">🇬🇧 ' + bidi(t.brit) + '</div>' : '')
+    + '<button class="btn-submit" onclick="startTopic(\'' + id + '\',\'mix\')">תרגל את הנושא</button>'
+    + '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px;">'
+    + '<button class="btn-next" onclick="startTopic(\'' + id + '\',\'c\')">בחירה</button>'
+    + '<button class="btn-next" onclick="startTopic(\'' + id + '\',\'f\')">השלמה</button>'
+    + '<button class="btn-next" onclick="startTopic(\'' + id + '\',\'x\')">תיקון</button></div>'
+    + '<div style="margin-top:14px;"><button class="btn-next" onclick="grHome()">↩ חזרה</button></div></div>';
+}
+
+/* ── section switching ─────────────────────────────────────────── */
+function openDrawer(){
+  document.getElementById('drawer').classList.remove('hidden');
+  document.getElementById('drawerBack').classList.remove('hidden');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.add('hidden');
+  document.getElementById('drawerBack').classList.add('hidden');
+}
+function setSection(s){
+  section = s;
+  gameStop();
+  const vocab = s === 'vocab';
+  document.querySelector('main').classList.toggle('hidden', !vocab);
+  document.querySelector('.stats-bar').classList.toggle('hidden', !vocab);
+  document.querySelector('.modes').classList.toggle('hidden', !vocab);
+  document.getElementById('grammarMain').classList.toggle('hidden', vocab);
+  document.getElementById('sectionTitle').textContent = vocab ? '🇬🇧 מילים' : '🧩 דקדוק';
+  document.getElementById('navVocab').classList.toggle('on', vocab);
+  document.getElementById('navGrammar').classList.toggle('on', !vocab);
+  // the word counter and "add word" belong to the vocabulary side only
+  const wc = document.getElementById('wcount');
+  const ab = document.querySelector('.btn-add');
+  if(wc) wc.style.display = vocab ? '' : 'none';
+  if(ab) ab.style.display = vocab ? '' : 'none';
+  if(!vocab){ grHome(); } else { setProgress(0); }
+  closeDrawer();
+  try{ localStorage.setItem('vocab_section', s); }catch(e){}
 }
 
 /* ═══════════════ GAME: מירוץ מילים ═══════════════ */
@@ -2659,9 +3085,11 @@ function refreshAfterAdd(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  loadTheme();loadApiKey();loadLocal();loadQueue();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
+  loadTheme();loadApiKey();loadLocal();loadQueue();loadGrammar();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
   const vl=document.getElementById('verLabel');
   if(vl) vl.textContent='v'+APP_VERSION+' · '+APP_BUILD;
+  renderTopics();
+  try{ if(localStorage.getItem('vocab_section')==='grammar') setSection('grammar'); }catch(e){}
 });
 </script>
 </body>
