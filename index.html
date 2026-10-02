@@ -746,6 +746,11 @@ body.playing .io-row { display: none !important; }
       </div>
     </div>
 
+    <div>
+      <div class="ai-lbl">המשפט שבו נתקלת במילה (לא חובה — אבל פותר דו־משמעות)</div>
+      <input class="m-input m-input-full" id="newCtx" dir="ltr"
+             placeholder="e.g. They're throwing a party on Friday" style="font-size:0.88rem;">
+    </div>
     <div class="divider">— או —</div>
     <button class="btn-manual" id="manualToggle" onclick="showManual()">✏️ הוסף ידנית (ללא אינטרנט)</button>
     <div id="manualFields" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
@@ -769,10 +774,15 @@ body.playing .io-row { display: none !important; }
         </div>
       </div>
     </div>
+    <div id="aiSenses" style="display:none;">
+      <div class="ai-lbl">למילה יש כמה משמעויות — בחר את הנכונה</div>
+      <div id="aiSenseChips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
     <div id="aiResult" class="ai-result hidden">
       <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
       <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
       <div><div class="ai-lbl">משפט דוגמה</div><div id="aiExample" style="color:var(--gold);font-size:0.85rem;font-style:italic;direction:ltr;line-height:1.55;font-family:'Fraunces',Georgia,'Times New Roman',serif;"></div></div>
+      <div id="aiPhraseWrap" style="display:none;"><div class="ai-lbl">הצירוף המתאים לערך</div><div id="aiPhrase" style="color:var(--blue);font-weight:700;direction:ltr;font-size:0.95rem;"></div></div>
       <div id="aiCefrWrap" style="display:none;"><div class="ai-lbl">רמה</div><div id="aiCefr"></div></div>
       <div id="aiBritWrap" style="display:none;"><div class="ai-lbl">🇬🇧 ניואנס בריטי</div><div id="aiBrit" style="color:var(--txt2);font-size:0.82rem;line-height:1.6;direction:rtl;"></div></div>
     </div>
@@ -1491,7 +1501,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1634,6 +1644,7 @@ function setDir(dir){
 }
 
 async function lookupWordHe(){
+  const ctxNow = (document.getElementById('newCtx')||{value:''}).value.trim();
   const he=document.getElementById('newHeWord').value.trim();
   if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
   const dupHeLookup = findDuplicate(null, he);
@@ -1647,7 +1658,7 @@ async function lookupWordHe(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
       body:JSON.stringify({model:API_MODEL,max_tokens:800,
-        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+'", respond ONLY with JSON (no markdown):\n{"en":"the British English translation, 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using it","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"a SHORT Hebrew note on the British angle, or an empty string if nothing notable"}'}]})
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+''+(ctxNow?' as used in this sentence: "'+ctxNow+'"':'')+', respond ONLY with JSON (no backticks, no markdown):\\n{\"senses\":[{\"en\":\"the British English translation, 2-4 words\",\"explain\":\"short explanation in Hebrew\",\"example\":\"one natural British English sentence using THIS sense\",\"cefr\":\"exactly one of A1, A2, B1, B2, C1, C2\",\"brit\":\"short Hebrew note on the British angle, or empty string\",\"label\":\"2-3 word Hebrew label for this sense\",\"phrase\":\"if this sense belongs to a longer phrase (e.g. throw a party) give that phrase, else empty string\"}]}\\nList every clearly distinct meaning, most common first, at most 3. If a sentence was supplied, put the sense used there FIRST.'}]})
     });
     if(res.status===529||res.status===503){
       btn.disabled=false; btn.textContent='✨ Claude';
@@ -1682,23 +1693,7 @@ async function lookupWordHe(){
       throw rich;
     }
     const p=parseModelJson(data);
-    aiData={en:p.en,he,explain:p.explain,example:p.example,brit:p.brit||'',cefr:p.cefr||''};
-    document.getElementById('newHe').value=he;
-    document.getElementById('newHe').readOnly=true;
-    document.getElementById('aiExplain').textContent=p.explain;
-    document.getElementById('aiExample').textContent='"'+p.example+'"';
-    const bw=document.getElementById('aiBritWrap');
-    if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
-    else { bw.style.display='none'; }
-    const cw=document.getElementById('aiCefrWrap');
-    if(p.cefr){ document.getElementById('aiCefr').innerHTML=cefrBadge({cefr:p.cefr}); cw.style.display=''; }
-    else { cw.style.display='none'; }
-    // show translation
-    const heInput=document.querySelector('.ai-he-input');
-    heInput.value=p.en; heInput.dir='ltr'; heInput.style.color='var(--blue)';
-    document.querySelector('.ai-result div:first-child .ai-lbl').textContent='תרגום לאנגלית (ניתן לעריכה)';
-    document.getElementById('aiResult').classList.remove('hidden');
-    document.getElementById('saveBtn').classList.remove('hidden');
+    renderSenses(p, 'he');
   }catch(e){
     console.error('Claude lookup failed:', e, e.raw ? ('raw reply: ' + e.raw) : '');
     const why = (e.kind === 'parse') ? e.message
@@ -2777,6 +2772,10 @@ function openModal(){
   updateOnlineStatus();
   const bwr=document.getElementById('aiBritWrap'); if(bwr) bwr.style.display='none';
   const cwr=document.getElementById('aiCefrWrap'); if(cwr) cwr.style.display='none';
+  const ctxEl=document.getElementById('newCtx'); if(ctxEl) ctxEl.value='';
+  const sw=document.getElementById('aiSenses'); if(sw) sw.style.display='none';
+  const pw=document.getElementById('aiPhraseWrap'); if(pw) pw.style.display='none';
+  aiSenses=[]; aiSenseIdx=0;
   document.getElementById('overlay').classList.remove('hidden');
   setTimeout(()=>document.getElementById('newEn').focus(),100);
 }
@@ -2792,6 +2791,7 @@ function showManual(){
 }
 
 async function lookupWord(){
+  const ctxNow = (document.getElementById('newCtx')||{value:''}).value.trim();
   const en=document.getElementById('newEn').value.trim();
   if(!en){showMMsg('⚠️ הכנס מילה תחילה','err');return;}
   const dupEnLookup = findDuplicate(en, null);
@@ -2810,7 +2810,7 @@ async function lookupWord(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
       body:JSON.stringify({model:API_MODEL,max_tokens:800,
-        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence using the word","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"a SHORT Hebrew note on the British angle: British vs American spelling, the British word vs its American equivalent, register, or a homophone worth knowing. Return an empty string if there is genuinely nothing notable."}'}]})
+        messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+''+(ctxNow?' as used in this sentence: "'+ctxNow+'"':'')+', respond ONLY with JSON (no backticks, no markdown):\\n{\"senses\":[{\"he\":\"Hebrew translation 2-4 words\",\"explain\":\"short explanation in Hebrew\",\"example\":\"one natural British English sentence using THIS sense\",\"cefr\":\"exactly one of A1, A2, B1, B2, C1, C2\",\"brit\":\"short Hebrew note on the British angle, or empty string\",\"label\":\"2-3 word Hebrew label for this sense\",\"phrase\":\"if this sense belongs to a longer phrase (e.g. throw a party) give that phrase, else empty string\"}]}\\nList every clearly distinct meaning, most common first, at most 3. If a sentence was supplied, put the sense used there FIRST.'}]})
     });
     if(!res.ok){
       let errData=null; try{ errData=await res.json(); }catch(_){}
@@ -2825,18 +2825,7 @@ async function lookupWord(){
       throw rich;
     }
     const p=parseModelJson(data);
-    aiData={en,he:p.he,explain:p.explain,example:p.example,brit:p.brit||'',cefr:p.cefr||''};
-    document.getElementById('newHe').value=p.he;
-    document.getElementById('aiExplain').textContent=p.explain;
-    document.getElementById('aiExample').textContent='"'+p.example+'"';
-    const bw=document.getElementById('aiBritWrap');
-    if(p.brit){ document.getElementById('aiBrit').textContent=p.brit; bw.style.display=''; }
-    else { bw.style.display='none'; }
-    const cw=document.getElementById('aiCefrWrap');
-    if(p.cefr){ document.getElementById('aiCefr').innerHTML=cefrBadge({cefr:p.cefr}); cw.style.display=''; }
-    else { cw.style.display='none'; }
-    document.getElementById('aiResult').classList.remove('hidden');
-    document.getElementById('saveBtn').classList.remove('hidden');
+    renderSenses(p, 'en');
   }catch(e){
     console.error('Claude lookup failed:', e, e.raw ? ('raw reply: ' + e.raw) : '');
     const why = (e.kind === 'parse') ? e.message
@@ -2847,16 +2836,94 @@ async function lookupWord(){
   btn.disabled=false;btn.textContent='✨ Claude';
 }
 
+/* A bare word carries no clue which meaning was meant — "throwing" is far more
+   often לזרוק than לערוך. So ask Claude for every distinct sense, let the typed
+   context pick one automatically, and let the user switch if it guessed wrong. */
+let aiSenses = [], aiSenseIdx = 0, aiDir = 'en';
+
+function senseList(p){
+  if(p && Array.isArray(p.senses) && p.senses.length) return p.senses;
+  return [p];                       // model returned the old flat shape
+}
+
+function showSense(i){
+  aiSenseIdx = i;
+  const s = aiSenses[i] || {};
+  const he = aiDir === 'en' ? (s.he || '') : (document.getElementById('newHeWord').value.trim());
+  const en = aiDir === 'en' ? (document.getElementById('newEn').value.trim()) : (s.en || '');
+
+  aiData = { en, he, explain: s.explain || '', example: s.example || '',
+             brit: s.brit || '', cefr: s.cefr || '', phrase: s.phrase || '' };
+
+  const main = document.querySelector('.ai-he-input');
+  main.value = aiDir === 'en' ? he : en;
+  document.getElementById('aiExplain').textContent = s.explain || '';
+  document.getElementById('aiExample').textContent = s.example ? '"' + s.example + '"' : '';
+
+  const bw = document.getElementById('aiBritWrap');
+  if(s.brit){ document.getElementById('aiBrit').textContent = s.brit; bw.style.display=''; }
+  else bw.style.display='none';
+
+  const cw = document.getElementById('aiCefrWrap');
+  if(s.cefr){ document.getElementById('aiCefr').innerHTML = cefrBadge({cefr:s.cefr}); cw.style.display=''; }
+  else cw.style.display='none';
+
+  const pw = document.getElementById('aiPhraseWrap');
+  if(s.phrase && s.phrase.trim()){
+    document.getElementById('aiPhrase').textContent = s.phrase.trim();
+    pw.style.display='';
+  } else pw.style.display='none';
+
+  document.querySelectorAll('#aiSenseChips button').forEach((b,j) => {
+    const on = j === i;
+    b.style.background = on ? 'var(--blue)' : 'transparent';
+    b.style.color      = on ? '#fff' : 'var(--txt2)';
+    b.style.borderColor= on ? 'var(--blue)' : 'var(--border2)';
+  });
+}
+
+function renderSenses(p, dir){
+  aiDir = dir;
+  aiSenses = senseList(p);
+  const wrap = document.getElementById('aiSenses');
+  const chips = document.getElementById('aiSenseChips');
+  if(aiSenses.length > 1){
+    chips.innerHTML = '';
+    aiSenses.forEach((s,i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = s.label || (dir === 'en' ? (s.he || '') : (s.en || '')) || ('משמעות ' + (i+1));
+      b.style.cssText = 'padding:6px 14px;border-radius:999px;border:1.5px solid var(--border2);'
+        + 'background:transparent;color:var(--txt2);font-family:inherit;font-size:0.8rem;'
+        + 'font-weight:600;cursor:pointer;';
+      b.onclick = () => showSense(i);
+      chips.appendChild(b);
+    });
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+  }
+  showSense(0);
+  document.getElementById('aiResult').classList.remove('hidden');
+  document.getElementById('saveBtn').classList.remove('hidden');
+}
+
 function showMMsg(t,c){const e=document.getElementById('modalMsg');e.textContent=t;e.className='m-msg '+c;e.classList.remove('hidden');}
 
 function saveAI(){
   let en,he;
   if(addDir==='en'){
     en=document.getElementById('newEn').value.trim();
-    he=document.getElementById('newHe').value.trim();
+    he=document.querySelector('.ai-he-input').value.trim();
   } else {
     he=document.getElementById('newHeWord').value.trim();
     en=document.querySelector('.ai-he-input').value.trim();
+  }
+  // An idiomatic sense belongs to its phrase: "throwing" alone is a poor entry
+  // for לערוך, so offer to file it as "throw a party" instead.
+  const ph = (aiData && aiData.phrase || '').trim();
+  if(addDir==='en' && ph && normEn(ph) !== normEn(en)){
+    if(confirm('המשמעות הזו שייכת לצירוף:\n' + ph + '\n\nלשמור את הצירוף במקום "' + en + '"?')) en = ph;
   }
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
   const dAI = findDuplicate(en, he);
