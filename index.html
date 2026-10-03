@@ -360,6 +360,24 @@ main {
   border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── PRACTICE SCOPE ── */
+.scope-row {
+  display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
+  align-items:center; padding:12px 16px 0; width:100%; max-width:720px;
+}
+.scope-row button {
+  padding:5px 13px; border-radius:999px; border:1.5px solid var(--border2);
+  background:var(--surface); color:var(--txt2); cursor:pointer;
+  font-family:inherit; font-size:0.78rem; font-weight:600; transition:all .2s;
+}
+.scope-row button:hover { border-color:var(--blue); color:var(--blue); }
+.scope-row button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+#scopeCount { font-size:0.74rem; color:var(--txt3); font-weight:600; }
+.scope-empty {
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:16px; padding:34px 26px; text-align:center; box-shadow:var(--shadow);
+}
+
 /* ── SECTION DRAWER ── */
 .burger {
   background:none; border:1.5px solid var(--border2); border-radius:10px;
@@ -856,6 +874,14 @@ body.playing .io-row { display: none !important; }
   <button class="mode-btn" onclick="setMode('game')">🎮 משחק</button>
 </div>
 
+<div class="scope-row" id="scopeRow">
+  <button data-s="all"     onclick="setScope('all')">📚 הכול</button>
+  <button data-s="mine"    onclick="setScope('mine')">⭐ שלי</button>
+  <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
+  <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
+  <span id="scopeCount"></span>
+</div>
+
 <main>
   <!-- FLASHCARD -->
   <div id="fcMode" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
@@ -974,9 +1000,11 @@ body.playing .io-row { display: none !important; }
       <div style="font-size:2.6rem;margin-bottom:4px;">🎮</div>
       <div class="g-title">מירוץ מילים</div>
       <div class="g-sub">60 שניות. רק המילים <strong>שאתה הוספת</strong>.<br>כמה תספיק?</div>
-      <div id="gScope" style="display:flex;gap:5px;background:var(--bg2);border-radius:999px;padding:4px;width:fit-content;margin:0 auto 16px;">
-        <button data-scope="mine" onclick="setGameScope('mine')" style="padding:6px 16px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">המילים שלי</button>
-        <button data-scope="all" onclick="setGameScope('all')" style="padding:6px 16px;border-radius:999px;border:none;background:transparent;color:var(--txt2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">כל המאגר</button>
+      <div class="scope-row" id="gScopeRow" style="padding:0 0 16px;">
+        <button data-s="all"     onclick="setScope('all')">📚 הכול</button>
+        <button data-s="mine"    onclick="setScope('mine')">⭐ שלי</button>
+        <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
+        <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
       </div>
       <div class="g-statrow">
         <div class="g-stat">
@@ -1039,6 +1067,14 @@ body.playing .io-row { display: none !important; }
         <button class="btn-next" onclick="showGameStart()">↩ שנה מאגר</button>
       </div>
     </div>
+  </div>
+
+  <div class="scope-empty hidden" id="scopeEmpty">
+    <div style="font-size:2.2rem;margin-bottom:8px;">🕐</div>
+    <div class="g-title" id="scopeEmptyTitle">אין מילים בהיקף הזה</div>
+    <div class="g-sub" id="scopeEmptyMsg"></div>
+    <button class="btn-submit" onclick="setMode('fc')">🃏 עבור לכרטיסיות</button>
+    <div style="margin-top:10px;"><button class="btn-next" onclick="setScope('all')">📚 הצג את הכול</button></div>
   </div>
 
   <!-- DONE -->
@@ -1291,6 +1327,7 @@ function recordSession(pct){
 }
 
 function updateMastery(en,correct){
+  markSeen(en);
   if(!mastery[en])mastery[en]={correct:0,total:0};
   mastery[en].total++;
   if(correct)mastery[en].correct++;
@@ -1313,6 +1350,7 @@ function updateStatsUI(){
 }
 
 function getWeakWords(){
+  const WORDS=practicePool();
   const weak=WORDS.filter(w=>{const m=mastery[w.en];return !m||m.total<1||m.correct/m.total<0.7;});
   return weak.length>=4?weak:WORDS;
 }
@@ -1501,7 +1539,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1754,7 +1792,11 @@ function loadFC(){
   flipped=false;document.getElementById('card').classList.remove('flipped');
   setProgress((fcIdx+1)/WORDS.length*100);
 }
-function flipCard(){flipped=!flipped;document.getElementById('card').classList.toggle('flipped',flipped);}
+function flipCard(){
+  flipped=!flipped;
+  document.getElementById('card').classList.toggle('flipped',flipped);
+  if(flipped && WORDS[fcIdx]){ markSeen(WORDS[fcIdx].en); renderScope(); }
+}
 function fcNav(d){fcIdx=(fcIdx+d+WORDS.length)%WORDS.length;loadFC();}
 
 // Build question list: each word appears twice (en→he and he→en)
@@ -1764,6 +1806,68 @@ function fcNav(d){fcIdx=(fcIdx+d+WORDS.length)%WORDS.length;loadFC();}
 const SESSION_WORDS = 20;
 function pickSession(words){
   return words.length <= SESSION_WORDS ? words : shuffle(words).slice(0, SESSION_WORDS);
+}
+
+/* ═══════════ PRACTICE SCOPE ═══════════
+   Until now nothing recorded that a word had been *seen* — only that it had
+   been answered — so "practise what I went over today" was not expressible.
+   Flipping a flashcard and answering anywhere both count as seeing it. */
+const SESSION_START = Date.now();
+let practiceScope = 'all';            // all | mine | today | session
+let wordSeen = {};                    // en -> timestamp
+
+function loadSeen(){
+  try{ wordSeen = JSON.parse(localStorage.getItem('vocab_seen')||'{}'); }catch(e){ wordSeen={}; }
+  try{ practiceScope = localStorage.getItem('vocab_scope') || 'all'; }catch(e){}
+}
+function saveSeen(){ try{ localStorage.setItem('vocab_seen', JSON.stringify(wordSeen)); }catch(e){} }
+function markSeen(en){ if(!en) return; wordSeen[en] = Date.now(); saveSeen(); }
+function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+
+function practicePool(){
+  if(practiceScope === 'mine')    return WORDS.filter(w => w.mine);
+  if(practiceScope === 'today'){  const t = startOfToday();
+                                  return WORDS.filter(w => (wordSeen[w.en]||0) >= t); }
+  if(practiceScope === 'session') return WORDS.filter(w => (wordSeen[w.en]||0) >= SESSION_START);
+  return WORDS;
+}
+
+const SCOPE_LABEL = { all:'כל המאגר', mine:'המילים שלי', today:'מילים שעברת עליהן היום', session:'מילים מהסשן הנוכחי' };
+
+function renderScope(){
+  const n = practicePool().length;
+  document.querySelectorAll('#scopeRow button').forEach(b =>
+    b.classList.toggle('on', b.dataset.s === practiceScope));
+  const el = document.getElementById('scopeCount');
+  if(el) el.textContent = n + ' מילים';
+  const gs = document.getElementById('gScopeRow');
+  if(gs) gs.querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', b.dataset.s === practiceScope));
+}
+
+function setScope(s){
+  practiceScope = s;
+  try{ localStorage.setItem('vocab_scope', s); }catch(e){}
+  renderScope();
+  setMode(mode);
+}
+
+// Flashcards are where the scope gets filled, so they always show everything
+function scopeBlocks(m){ return m !== 'fc' && practicePool().length === 0; }
+
+function showScopeEmpty(){
+  ['mc','fill','write','cloze','smart','game'].forEach(id => {
+    const el = document.getElementById(id+'Mode'); if(el) el.classList.add('hidden');
+  });
+  document.getElementById('doneScreen').classList.add('hidden');
+  const box = document.getElementById('scopeEmpty');
+  box.classList.remove('hidden');
+  document.getElementById('scopeEmptyMsg').textContent =
+    practiceScope === 'session'
+      ? 'עדיין לא עברת על מילים בסשן הזה. הפוך כמה כרטיסיות וחזור לכאן.'
+      : practiceScope === 'today'
+        ? 'לא עברת היום על אף מילה. הפוך כמה כרטיסיות וחזור לכאן.'
+        : 'אין מילים מסומנות כשלך. הוסף מילה עם ➕ או בחר היקף אחר.';
 }
 
 function makeQuestions(words){
@@ -2049,6 +2153,7 @@ function showGrResult(){
   box.innerHTML = html;
   grIsDiag = false;
   renderTopics();
+  renderScope();
 }
 
 function grHome(){
@@ -2123,6 +2228,7 @@ function setSection(s){
   document.getElementById('navGrammar').classList.toggle('on', !vocab);
   // the word counter and "add word" belong to the vocabulary side only
   const wc = document.getElementById('wcount');
+  const sr = document.getElementById('scopeRow'); if(sr) sr.classList.toggle('hidden', !vocab);
   const ab = document.querySelector('.btn-add');
   if(wc) wc.style.display = vocab ? '' : 'none';
   if(ab) ab.style.display = vocab ? '' : 'none';
@@ -2146,21 +2252,7 @@ function myWords(){ return WORDS.filter(w => w.mine); }
 
 // The game defaults to his own curated words — adding a word is how he filters
 // out what he already knows — but the bank is available on request.
-let gameScope = 'mine';
-function gamePool(){
-  const mine = myWords();
-  if(gameScope === 'all') return WORDS;
-  return mine.length ? mine : WORDS;
-}
-function setGameScope(s){
-  gameScope = s;
-  document.querySelectorAll('#gScope button').forEach(b => {
-    const on = b.dataset.scope === s;
-    b.style.background = on ? 'var(--blue)' : 'transparent';
-    b.style.color = on ? '#fff' : 'var(--txt2)';
-  });
-  showGameStart();
-}
+function gamePool(){ return practicePool(); }
 
 function gameBest(){
   try { return parseInt(localStorage.getItem('vocab_game_best')||'0',10) || 0; } catch(e){ return 0; }
@@ -2388,7 +2480,7 @@ function findCloze(w){
 
 // Only words whose example actually contains them can be used here
 function clozePool(){
-  return WORDS.filter(w => findCloze(w) !== null);
+  return practicePool().filter(w => findCloze(w) !== null);
 }
 
 let clozeList = [], clozeIdx = 0, clozeScore = 0, clozeTotal = 0, clozeCur = null;
@@ -2496,10 +2588,13 @@ function setMode(m){
   const ids=['fc','mc','fill','write','cloze','smart','game'];
   document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
   ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
+  document.getElementById('scopeEmpty').classList.add('hidden');
+  if(scopeBlocks(m)){ renderScope(); showScopeEmpty(); return; }
   document.getElementById(m+'Mode').classList.remove('hidden');
   document.getElementById('doneScreen').classList.add('hidden');
   qIdx=0;score=0;qTotal=0;
-  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(pickSession(m==='smart'?getWeakWords():WORDS));
+  renderScope();
+  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(pickSession(m==='smart'?getWeakWords():practicePool()));
   if(m==='fc'){fcIdx=0;loadFC();}
   if(m==='mc')loadMC();
   if(m==='fill')loadFill();
@@ -3140,7 +3235,7 @@ function refreshAfterAdd(){
     loadFC();
   } else {
     // Rebuild shuffled with new word included
-    shuffled = makeQuestions(pickSession(mode==='smart' ? getWeakWords() : WORDS));
+    shuffled = makeQuestions(pickSession(mode==='smart' ? getWeakWords() : practicePool()));
     qIdx = 0; score = 0; qTotal = 0;
     if(mode==='mc') loadMC();
     if(mode==='fill') loadFill();
@@ -3152,10 +3247,13 @@ function refreshAfterAdd(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  loadTheme();loadApiKey();loadLocal();loadQueue();loadGrammar();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
+  loadTheme();loadApiKey();loadLocal();loadQueue();loadGrammar();loadSeen();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
   const vl=document.getElementById('verLabel');
   if(vl) vl.textContent='v'+APP_VERSION+' · '+APP_BUILD;
   renderTopics();
+  renderScope();
+  // a saved scope can be empty on a new day, so fall back rather than open a dead quiz
+  if(mode !== 'fc' && practicePool().length === 0) setScope('all');
   try{ if(localStorage.getItem('vocab_section')==='grammar') setSection('grammar'); }catch(e){}
 });
 </script>
