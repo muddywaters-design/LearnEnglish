@@ -360,6 +360,53 @@ main {
   border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── AUDIO / HANDS-FREE ── */
+.au-stage {
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:20px; padding:38px 24px; text-align:center;
+  box-shadow:var(--shadow-lg); min-height:230px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+}
+.au-en {
+  font-family:'Fraunces',Georgia,serif; font-size:2.5rem; font-weight:700;
+  color:var(--blue); line-height:1.15; direction:ltr; word-break:break-word;
+}
+.au-he { font-size:1.4rem; font-weight:600; color:var(--green); direction:rtl; }
+.au-he.veiled { color:var(--border2); filter:blur(7px); user-select:none; }
+.au-ex { font-size:0.85rem; color:var(--txt2); font-style:italic; direction:ltr; line-height:1.6; max-width:360px; }
+.au-pos { font-size:0.74rem; color:var(--txt3); font-weight:600; }
+.au-controls { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.au-big {
+  width:68px; height:68px; border-radius:50%; border:none;
+  background:var(--blue); color:#fff; font-size:1.6rem; cursor:pointer;
+  box-shadow:0 4px 18px rgba(61,90,254,.35); transition:all .2s;
+}
+.au-big:hover { transform:translateY(-2px); }
+.au-side {
+  width:50px; height:50px; border-radius:50%; border:1.5px solid var(--border2);
+  background:var(--surface); color:var(--txt); font-size:1.1rem; cursor:pointer; transition:all .2s;
+}
+.au-side:hover { border-color:var(--blue); color:var(--blue); }
+.au-judge { display:flex; gap:10px; width:100%; }
+.au-judge button {
+  flex:1; padding:17px 10px; border-radius:15px; border:1.5px solid;
+  font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer; transition:all .2s;
+}
+.au-yes { background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.au-no  { background:var(--red-bg);   border-color:var(--red);   color:var(--red); }
+.au-set { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.au-set button {
+  padding:6px 14px; border-radius:999px; border:1.5px solid var(--border2);
+  background:var(--surface); color:var(--txt2); cursor:pointer;
+  font-family:inherit; font-size:0.78rem; font-weight:600; transition:all .2s;
+}
+.au-set button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+.au-warn {
+  background:var(--gold-bg); border-right:3px solid var(--gold); border-radius:10px;
+  padding:11px 14px; font-size:0.8rem; line-height:1.7; color:var(--txt2); width:100%; direction:rtl;
+}
+body.dark .au-warn { color:var(--gold); }
+
 /* ── PRACTICE SCOPE ── */
 .scope-row {
   display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
@@ -872,6 +919,7 @@ body.playing .io-row { display: none !important; }
   <button class="mode-btn" onclick="setMode('cloze')">🔤 מילה במשפט</button>
   <button class="mode-btn" onclick="setMode('smart')">🧠 מצב חכם</button>
   <button class="mode-btn" onclick="setMode('game')">🎮 משחק</button>
+  <button class="mode-btn" onclick="setMode('audio')">🎧 האזנה</button>
 </div>
 
 <div class="scope-row" id="scopeRow">
@@ -879,6 +927,7 @@ body.playing .io-row { display: none !important; }
   <button data-s="mine"    onclick="setScope('mine')">⭐ שלי</button>
   <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
   <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
+  <button data-s="heard"   onclick="setScope('heard')">🎧 ששמעתי</button>
   <span id="scopeCount"></span>
 </div>
 
@@ -1005,6 +1054,7 @@ body.playing .io-row { display: none !important; }
         <button data-s="mine"    onclick="setScope('mine')">⭐ שלי</button>
         <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
         <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
+        <button data-s="heard"   onclick="setScope('heard')">🎧 ששמעתי</button>
       </div>
       <div class="g-statrow">
         <div class="g-stat">
@@ -1075,6 +1125,52 @@ body.playing .io-row { display: none !important; }
     <div class="g-sub" id="scopeEmptyMsg"></div>
     <button class="btn-submit" onclick="setMode('fc')">🃏 עבור לכרטיסיות</button>
     <div style="margin-top:10px;"><button class="btn-next" onclick="setScope('all')">📚 הצג את הכול</button></div>
+  </div>
+
+  <!-- AUDIO / HANDS-FREE -->
+  <div id="audioMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+
+    <div id="auSetup" style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <div class="au-set">
+        <button data-m="passive" class="on" onclick="setAuMode('passive')">🚗 האזנה רצופה</button>
+        <button data-m="active" onclick="setAuMode('active')">🛏️ תרגול בהאזנה</button>
+      </div>
+      <div class="au-set">
+        <span style="font-size:0.75rem;color:var(--txt3);font-weight:600;">השהייה לחשיבה:</span>
+        <button data-g="2500" onclick="setAuGap(2500)">קצרה</button>
+        <button data-g="4000" class="on" onclick="setAuGap(4000)">בינונית</button>
+        <button data-g="6500" onclick="setAuGap(6500)">ארוכה</button>
+      </div>
+      <div class="au-set">
+        <button data-x="0" class="on" onclick="setAuEx(0)">מילה ותרגום</button>
+        <button data-x="1" onclick="setAuEx(1)">+ משפט דוגמה</button>
+        <button data-l="1" id="auLoopBtn" onclick="toggleAuLoop()">🔁 חזרה אינסופית</button>
+      </div>
+      <div id="auVoices" class="au-warn" style="display:none;"></div>
+      <div id="auHint" class="au-warn">
+        🚗 במצב האזנה רצופה אין צורך לגעת במסך — המילה והתרגום מושמעים אחד אחרי השני.<br>
+        📱 כדי שההקראה לא תיפסק, השאר את המסך דולק והטלפון במעמד.
+      </div>
+    </div>
+
+    <div class="au-stage" id="auStage">
+      <div class="au-pos" id="auPos">מוכן</div>
+      <div class="au-en" id="auEn">—</div>
+      <div class="au-he" id="auHe"></div>
+      <div class="au-ex" id="auEx"></div>
+    </div>
+
+    <div class="au-judge hidden" id="auJudge">
+      <button class="au-yes" onclick="auJudge(true)">✅ ידעתי</button>
+      <button class="au-no"  onclick="auJudge(false)">❌ לא ידעתי</button>
+    </div>
+
+    <div class="au-controls">
+      <button class="au-side" onclick="auPrev()" title="הקודם">⏮</button>
+      <button class="au-big" id="auPlay" onclick="auToggle()">▶</button>
+      <button class="au-side" onclick="auNext()" title="הבא">⏭</button>
+    </div>
+    <div id="auSummary" style="width:100%;"></div>
   </div>
 
   <!-- DONE -->
@@ -1539,7 +1635,7 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.2';
+const APP_VERSION = '2.4';
 const APP_BUILD   = '2026-09-18';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
@@ -1814,13 +1910,21 @@ function pickSession(words){
    Flipping a flashcard and answering anywhere both count as seeing it. */
 const SESSION_START = Date.now();
 let practiceScope = 'all';            // all | mine | today | session
-let wordSeen = {};                    // en -> timestamp
+let wordSeen = {};                    // en -> timestamp (seen anywhere)
+let wordHeard = {};                   // en -> timestamp (heard in audio mode)
 
 function loadSeen(){
   try{ wordSeen = JSON.parse(localStorage.getItem('vocab_seen')||'{}'); }catch(e){ wordSeen={}; }
+  try{ wordHeard = JSON.parse(localStorage.getItem('vocab_heard')||'{}'); }catch(e){ wordHeard={}; }
   try{ practiceScope = localStorage.getItem('vocab_scope') || 'all'; }catch(e){}
 }
-function saveSeen(){ try{ localStorage.setItem('vocab_seen', JSON.stringify(wordSeen)); }catch(e){} }
+function saveSeen(){
+  try{
+    localStorage.setItem('vocab_seen', JSON.stringify(wordSeen));
+    localStorage.setItem('vocab_heard', JSON.stringify(wordHeard));
+  }catch(e){}
+}
+function markHeard(en){ if(!en) return; wordHeard[en] = Date.now(); markSeen(en); }
 function markSeen(en){ if(!en) return; wordSeen[en] = Date.now(); saveSeen(); }
 function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 
@@ -1829,10 +1933,12 @@ function practicePool(){
   if(practiceScope === 'today'){  const t = startOfToday();
                                   return WORDS.filter(w => (wordSeen[w.en]||0) >= t); }
   if(practiceScope === 'session') return WORDS.filter(w => (wordSeen[w.en]||0) >= SESSION_START);
+  if(practiceScope === 'heard'){  const t = startOfToday();
+                                  return WORDS.filter(w => (wordHeard[w.en]||0) >= t); }
   return WORDS;
 }
 
-const SCOPE_LABEL = { all:'כל המאגר', mine:'המילים שלי', today:'מילים שעברת עליהן היום', session:'מילים מהסשן הנוכחי' };
+const SCOPE_LABEL = { all:'כל המאגר', mine:'המילים שלי', today:'מילים שעברת עליהן היום', session:'מילים מהסשן הנוכחי', heard:'מילים ששמעת היום' };
 
 function renderScope(){
   const n = practicePool().length;
@@ -1856,7 +1962,7 @@ function setScope(s){
 function scopeBlocks(m){ return m !== 'fc' && practicePool().length === 0; }
 
 function showScopeEmpty(){
-  ['mc','fill','write','cloze','smart','game'].forEach(id => {
+  ['mc','fill','write','cloze','smart','game','audio'].forEach(id => {
     const el = document.getElementById(id+'Mode'); if(el) el.classList.add('hidden');
   });
   document.getElementById('doneScreen').classList.add('hidden');
@@ -1865,9 +1971,189 @@ function showScopeEmpty(){
   document.getElementById('scopeEmptyMsg').textContent =
     practiceScope === 'session'
       ? 'עדיין לא עברת על מילים בסשן הזה. הפוך כמה כרטיסיות וחזור לכאן.'
+      : practiceScope === 'heard'
+        ? 'עדיין לא שמעת מילים היום. פתח 🎧 האזנה, הקשב בנסיעה או באימון, וחזור לכאן לתרגל אותן.'
       : practiceScope === 'today'
         ? 'לא עברת היום על אף מילה. הפוך כמה כרטיסיות וחזור לכאן.'
         : 'אין מילים מסומנות כשלך. הוסף מילה עם ➕ או בחר היקף אחר.';
+}
+
+/* ═══════════ AUDIO / HANDS-FREE ═══════════
+   Two sub-modes on purpose: "passive" never needs a touch or a glance, which is
+   the only thing that is safe in a car; "active" waits for a self-rating and is
+   meant for sitting still. A browser suspends speech when the screen sleeps, so
+   we also hold a wake lock while playing. */
+let auMode = 'passive', auGap = 4000, auWithEx = 0, auLoop = 0;
+let auList = [], auIdx = 0, auPlaying = false, auAbort = 0;
+let auRight = 0, auWrong = 0, auJudging = false, auWake = null;
+
+function setAuMode(m){
+  auMode = m; auStop();
+  document.querySelectorAll('#audioMode .au-set button[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  document.getElementById('auHint').innerHTML = m === 'passive'
+    ? '🚗 במצב האזנה רצופה אין צורך לגעת במסך — המילה והתרגום מושמעים אחד אחרי השני.<br>📱 כדי שההקראה לא תיפסק, השאר את המסך דולק והטלפון במעמד.'
+    : '🛏️ המילה מושמעת, יש לך זמן להיזכר, ואז מגיע התרגום. דרג את עצמך והניקוד ייכנס למעקב השליטה.<br>⚠️ המצב הזה דורש נגיעה במסך — לא לשימוש בנהיגה.';
+}
+function setAuGap(ms){
+  auGap = ms;
+  document.querySelectorAll('#audioMode .au-set button[data-g]').forEach(b => b.classList.toggle('on', +b.dataset.g === ms));
+}
+function setAuEx(x){
+  auWithEx = x;
+  document.querySelectorAll('#audioMode .au-set button[data-x]').forEach(b => b.classList.toggle('on', +b.dataset.x === x));
+}
+
+function toggleAuLoop(){
+  auLoop = auLoop ? 0 : 1;
+  document.getElementById('auLoopBtn').classList.toggle('on', !!auLoop);
+}
+
+function voiceFor(prefix){
+  const vs = (window.speechSynthesis ? speechSynthesis.getVoices() : []) || [];
+  const p = prefix.toLowerCase();
+  return vs.find(v => (v.lang||'').replace('_','-').toLowerCase().startsWith(p)) || null;
+}
+
+function auCheckVoices(){
+  const box = document.getElementById('auVoices');
+  if(!box) return;
+  if(!window.speechSynthesis){
+    box.style.display=''; box.textContent = '⚠️ הדפדפן הזה לא תומך בהקראה.'; return;
+  }
+  const en = voiceFor('en-gb') || voiceFor('en');
+  const he = voiceFor('he');
+  const msgs = [];
+  if(!en) msgs.push('לא נמצא קול אנגלי במכשיר.');
+  else if(!voiceFor('en-gb')) msgs.push('אין קול בריטי מותקן — ההקראה תהיה במבטא אנגלי אחר.');
+  if(!he) msgs.push('אין קול עברי מותקן, ולכן התרגום יוצג על המסך בלבד. אפשר להוסיף עברית בהגדרות המכשיר תחת טקסט לדיבור.');
+  if(msgs.length){ box.style.display=''; box.innerHTML = '🔊 ' + msgs.join('<br>'); }
+  else { box.style.display='none'; }
+}
+
+async function auWakeLock(on){
+  try{
+    if(on && 'wakeLock' in navigator && !auWake){ auWake = await navigator.wakeLock.request('screen'); }
+    else if(!on && auWake){ await auWake.release(); auWake = null; }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && auPlaying) auWakeLock(true);
+});
+
+function auSay(text, lang, token){
+  return new Promise(resolve => {
+    if(!window.speechSynthesis || !text){ resolve(); return; }
+    const v = lang === 'he' ? voiceFor('he') : (voiceFor('en-gb') || voiceFor('en'));
+    if(lang === 'he' && !v){ resolve(); return; }      // no Hebrew voice: show it, don't mangle it
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === 'he' ? 'he-IL' : 'en-GB';
+    u.rate = lang === 'he' ? 0.95 : 0.85;
+    if(v) u.voice = v;
+    let done = false;
+    const fin = () => { if(!done){ done = true; resolve(); } };
+    u.onend = fin; u.onerror = fin;
+    setTimeout(fin, 9000);                              // never hang on a stuck voice
+    speechSynthesis.speak(u);
+  }).then(() => { if(token !== auAbort) throw 'abort'; });
+}
+const auWait = (ms, token) => new Promise(r => setTimeout(r, ms)).then(() => { if(token !== auAbort) throw 'abort'; });
+
+function auRender(veil){
+  const w = auList[auIdx]; if(!w) return;
+  document.getElementById('auEn').textContent = w.en;
+  const he = document.getElementById('auHe');
+  he.textContent = w.he;
+  he.classList.toggle('veiled', !!veil);
+  document.getElementById('auEx').textContent = (auWithEx && w.example) ? '"' + w.example + '"' : '';
+  document.getElementById('auPos').textContent = (auIdx+1) + ' / ' + auList.length
+    + (auMode === 'active' ? '   ·   ✅ ' + auRight + '  ❌ ' + auWrong : '');
+}
+
+async function auRun(){
+  const token = auAbort;
+  try{
+    while(auPlaying && auIdx < auList.length){
+      const w = auList[auIdx];
+      markHeard(w.en);
+      auRender(auMode === 'active');
+      await auSay(w.en, 'en', token);
+      await auWait(auGap, token);
+      auRender(false);
+      await auSay(w.he, 'he', token);
+      if(auWithEx && w.example){
+        await auWait(500, token);
+        await auSay(w.example, 'en', token);
+      }
+      if(auMode === 'active'){
+        auJudging = true;
+        document.getElementById('auJudge').classList.remove('hidden');
+        return;                                        // wait for the self-rating
+      }
+      await auWait(1100, token);
+      auIdx++;
+      if(auIdx >= auList.length){
+        if(auLoop){ auIdx = 0; auList = shuffle(auList); continue; }   // keep going on a long drive
+        auFinish(); return;
+      }
+    }
+  }catch(e){ /* aborted by stop/skip */ }
+}
+
+function auJudge(ok){
+  if(!auJudging) return;
+  auJudging = false;
+  document.getElementById('auJudge').classList.add('hidden');
+  const w = auList[auIdx];
+  if(w){ updateMastery(w.en, ok); ok ? auRight++ : auWrong++; }
+  auIdx++;
+  if(auIdx >= auList.length){
+    if(auLoop){ auIdx = 0; auList = shuffle(auList); }
+    else { auFinish(); return; }
+  }
+  auRender(true);
+  if(auPlaying) auRun();
+}
+
+function auFinish(){
+  auPlaying = false; auAbort++;
+  auWakeLock(false);
+  document.getElementById('auPlay').textContent = '▶';
+  document.getElementById('auJudge').classList.add('hidden');
+  document.getElementById('auPos').textContent = 'סיימת';
+  const s = document.getElementById('auSummary');
+  s.innerHTML = auMode === 'active'
+    ? '<div class="feedback ok">סיימת ' + auList.length + ' מילים · ✅ ' + auRight + ' · ❌ ' + auWrong + '</div>'
+    : '<div class="feedback ok">עברת על ' + auList.length + ' מילים</div>';
+  updateStatsUI();
+}
+
+function auStart(){
+  if(!auList.length) return;
+  auPlaying = true; auAbort++;
+  document.getElementById('auPlay').textContent = '⏸';
+  document.getElementById('auSummary').innerHTML = '';
+  auWakeLock(true);
+  auRun();
+}
+function auStop(){
+  auPlaying = false; auAbort++; auJudging = false;
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  auWakeLock(false);
+  const p = document.getElementById('auPlay'); if(p) p.textContent = '▶';
+  const j = document.getElementById('auJudge'); if(j) j.classList.add('hidden');
+}
+function auToggle(){ auPlaying ? auStop() : auStart(); }
+function auNext(){ const was = auPlaying; auStop(); if(auIdx < auList.length-1) auIdx++; auRender(auMode==='active'); if(was) auStart(); }
+function auPrev(){ const was = auPlaying; auStop(); if(auIdx > 0) auIdx--; auRender(auMode==='active'); if(was) auStart(); }
+
+function loadAudio(){
+  auStop();
+  auList = shuffle(practicePool());
+  auIdx = 0; auRight = 0; auWrong = 0;
+  document.getElementById('auSummary').innerHTML = '';
+  auCheckVoices();
+  if(!auList.length){ document.getElementById('auEn').textContent = '—'; return; }
+  auRender(auMode === 'active');
 }
 
 function makeQuestions(words){
@@ -2583,9 +2869,10 @@ function startCloze(){
 }
 
 function setMode(m){
-  gameStop();                       // always kill the game timer when leaving/entering a mode
+  gameStop();
+  if(typeof auStop==='function') auStop();                       // always kill the game timer when leaving/entering a mode
   mode=m;
-  const ids=['fc','mc','fill','write','cloze','smart','game'];
+  const ids=['fc','mc','fill','write','cloze','smart','game','audio'];
   document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
   ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
   document.getElementById('scopeEmpty').classList.add('hidden');
@@ -2602,6 +2889,7 @@ function setMode(m){
   if(m==='cloze')startCloze();
   if(m==='smart')loadSmart();
   if(m==='game')showGameStart();
+  if(m==='audio')loadAudio();
   setProgress(0);
 }
 function restartMode(){setMode(mode);}
