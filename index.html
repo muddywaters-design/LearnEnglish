@@ -1531,7 +1531,7 @@ async function runDiagnostics(){
       headers: getApiHeaders(),
       // Deliberately the real prompt, not a trivial ping — a "hi" would pass
       // even when actual word lookups fail on parsing or length.
-      body: JSON.stringify({ model: API_MODEL, max_tokens: 800, messages:[{role:'user', content:
+      body: JSON.stringify({ model: API_MODEL, max_tokens: 2000, messages:[{role:'user', content:
         'For the word "splendid", respond ONLY with JSON (no backticks, no markdown):\n' +
         '{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew",' +
         '"example":"one natural British English sentence","brit":"short Hebrew note or empty string"}'}] })
@@ -1635,8 +1635,8 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.4';
-const APP_BUILD   = '2026-09-18';
+const APP_VERSION = '2.5';
+const APP_BUILD   = '2026-10-15';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
    in ``` fences, with a stray sentence around it, or cut off mid-object when the
@@ -1772,8 +1772,10 @@ function setDir(dir){
   document.getElementById('manualFieldEnHe').style.display=dir==='en'?'block':'none';
   document.getElementById('manualFieldHeEn').style.display=dir==='he'?'block':'none';
   // reset results
+  cancelManualTimer();
   document.getElementById('aiResult').classList.add('hidden');
   document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('manualSaveBtn').classList.add('hidden');
   document.getElementById('modalMsg').classList.add('hidden');
 }
 
@@ -1787,11 +1789,12 @@ async function lookupWordHe(){
   if(location.protocol==='file:' && !apiKey){showMMsg('📂 הגדר API Key (לחץ 🔑 למעלה) או הוסף ידנית','err');showManual();return;}
   const btn=document.getElementById('aiBtnHe');
   btn.disabled=true;btn.textContent='⏳';
+  cancelManualTimer();
   document.getElementById('modalMsg').classList.add('hidden');
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:API_MODEL,max_tokens:800,
+      body:JSON.stringify({model:API_MODEL,max_tokens:2000,
         messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the Hebrew word "'+he+''+(ctxNow?' as used in this sentence: "'+ctxNow+'"':'')+', respond ONLY with JSON (no backticks, no markdown):\\n{\"senses\":[{\"en\":\"the British English translation, 2-4 words\",\"explain\":\"short explanation in Hebrew\",\"example\":\"one natural British English sentence using THIS sense\",\"cefr\":\"exactly one of A1, A2, B1, B2, C1, C2\",\"brit\":\"short Hebrew note on the British angle, or empty string\",\"label\":\"2-3 word Hebrew label for this sense\",\"phrase\":\"if this sense belongs to a longer phrase (e.g. throw a party) give that phrase, else empty string\"}]}\\nList every clearly distinct meaning, most common first, at most 3. If a sentence was supplied, put the sense used there FIRST.'}]})
     });
     if(res.status===529||res.status===503){
@@ -1807,7 +1810,7 @@ async function lookupWordHe(){
         qBtn.textContent='📋 הוסף לתור';
         qBtn.style.marginTop='4px';
         qBtn.onclick=()=>{
-          addToQueue(en,'en');
+          addToQueue(he,'he');
           closeModal();
         };
         document.querySelector('.modal-actions').prepend(qBtn);
@@ -1833,7 +1836,9 @@ async function lookupWordHe(){
     const why = (e.kind === 'parse') ? e.message
               : (e.apiMsg || describeApiError(e.status, e.apiData, e));
     showMMsg('❌ ' + why, 'err');
-    setTimeout(showManual, 1800);
+    document.getElementById('aiResult').classList.add('hidden');    // never leave a good-looking card under an error
+    document.getElementById('saveBtn').classList.add('hidden');
+    scheduleManual();
   }
   btn.disabled=false;btn.textContent='✨ Claude';
 }
@@ -1856,7 +1861,7 @@ function speak(text){
         ||vs.find(function(x){return /^en-(AU|IE|NZ|ZA)/.test((x.lang||'').replace('_','-'));})
         ||vs.find(function(x){return (x.lang||'').startsWith('en');})
         ||vs[0];
-    if(v) u.voice=v;
+    if(v) try{ u.voice=v; }catch(_){}   // a rejected voice must not silence the utterance
     speechSynthesis.speak(u);
   } else {
     // voices not loaded yet — speak without specifying voice (browser picks default)
@@ -2048,7 +2053,7 @@ function auSay(text, lang, token){
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang === 'he' ? 'he-IL' : 'en-GB';
     u.rate = lang === 'he' ? 0.95 : 0.85;
-    if(v) u.voice = v;
+    if(v) try{ u.voice = v; }catch(_){}  // a rejected voice must not silence the utterance
     let done = false;
     const fin = () => { if(!done){ done = true; resolve(); } };
     u.onend = fin; u.onerror = fin;
@@ -3130,6 +3135,7 @@ function deleteWord(i){
 }
 
 function openModal(){
+  cancelManualTimer();
   document.getElementById('newEn').value='';
   document.getElementById('newHe').value='';
   document.getElementById('newHe').readOnly=false;
@@ -3167,8 +3173,10 @@ document.getElementById('overlay').addEventListener('click',e=>{if(e.target===do
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 function showManual(){
+  cancelManualTimer();
   document.getElementById('manualFields').classList.remove('hidden');
   document.getElementById('manualSaveBtn').classList.remove('hidden');
+  document.getElementById('saveBtn').classList.add('hidden');       // only one save path at a time
   document.getElementById('manualToggle').classList.add('hidden');
   setTimeout(()=>document.getElementById('manualHe').focus(),50);
 }
@@ -3188,13 +3196,28 @@ async function lookupWord(){
   }
 
   const btn=document.getElementById('aiBtn');btn.disabled=true;btn.textContent='⏳';
+  cancelManualTimer();
   document.getElementById('modalMsg').classList.add('hidden');
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:getApiHeaders(),
-      body:JSON.stringify({model:API_MODEL,max_tokens:800,
+      body:JSON.stringify({model:API_MODEL,max_tokens:2000,
         messages:[{role:'user',content:'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+en+''+(ctxNow?' as used in this sentence: "'+ctxNow+'"':'')+', respond ONLY with JSON (no backticks, no markdown):\\n{\"senses\":[{\"he\":\"Hebrew translation 2-4 words\",\"explain\":\"short explanation in Hebrew\",\"example\":\"one natural British English sentence using THIS sense\",\"cefr\":\"exactly one of A1, A2, B1, B2, C1, C2\",\"brit\":\"short Hebrew note on the British angle, or empty string\",\"label\":\"2-3 word Hebrew label for this sense\",\"phrase\":\"if this sense belongs to a longer phrase (e.g. throw a party) give that phrase, else empty string\"}]}\\nList every clearly distinct meaning, most common first, at most 3. If a sentence was supplied, put the sense used there FIRST.'}]})
     });
+    if(res.status===529||res.status===503){
+      btn.disabled=false; btn.textContent='\u2728 Claude';
+      showMMsg('\u26a0\ufe0f \u05d4\u05e9\u05e8\u05ea \u05e2\u05de\u05d5\u05e1 \u05db\u05e8\u05d2\u05e2. \u05e9\u05de\u05d5\u05e8 \u05dc\u05ea\u05d5\u05e8 \u05d5\u05d9\u05d9\u05ea\u05d5\u05e1\u05e3 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea \u05db\u05e9\u05d9\u05ea\u05e4\u05e0\u05d4.','err');
+      if(!document.getElementById('queueAddBtn')){
+        const qBtn=document.createElement('button');
+        qBtn.id='queueAddBtn';
+        qBtn.className='btn-save';
+        qBtn.textContent='\ud83d\udccb \u05d4\u05d5\u05e1\u05e3 \u05dc\u05ea\u05d5\u05e8';
+        qBtn.style.marginTop='4px';
+        qBtn.onclick=()=>{ addToQueue(en,'en'); closeModal(); };
+        document.querySelector('.modal-actions').prepend(qBtn);
+      }
+      return;
+    }
     if(!res.ok){
       let errData=null; try{ errData=await res.json(); }catch(_){}
       const rich=new Error(describeApiError(res.status, errData, null));
@@ -3214,7 +3237,9 @@ async function lookupWord(){
     const why = (e.kind === 'parse') ? e.message
               : (e.apiMsg || describeApiError(e.status, e.apiData, e));
     showMMsg('❌ ' + why, 'err');
-    setTimeout(showManual, 1800);
+    document.getElementById('aiResult').classList.add('hidden');    // never leave a good-looking card under an error
+    document.getElementById('saveBtn').classList.add('hidden');
+    scheduleManual();
   }
   btn.disabled=false;btn.textContent='✨ Claude';
 }
@@ -3223,6 +3248,16 @@ async function lookupWord(){
    often לזרוק than לערוך. So ask Claude for every distinct sense, let the typed
    context pick one automatically, and let the user switch if it guessed wrong. */
 let aiSenses = [], aiSenseIdx = 0, aiDir = 'en';
+
+/* A failed lookup schedules showManual() 1.8s later. If the user retries and
+   succeeds inside that window - or the first attempt already drew a result -
+   that stale timer used to fire anyway and reveal a SECOND save button beside
+   the AI one. Keep the handle so every new attempt and every success cancels
+   it, and let the two save paths hide each other. */
+let manualTimer = null;
+function cancelManualTimer(){ if(manualTimer){ clearTimeout(manualTimer); manualTimer = null; } }
+function scheduleManual(){ cancelManualTimer(); manualTimer = setTimeout(() => { manualTimer = null; showManual(); }, 1800); }
+function hideMMsg(){ const e = document.getElementById('modalMsg'); if(e) e.classList.add('hidden'); }
 
 function senseList(p){
   if(p && Array.isArray(p.senses) && p.senses.length) return p.senses;
@@ -3287,8 +3322,13 @@ function renderSenses(p, dir){
     wrap.style.display = 'none';
   }
   showSense(0);
+  cancelManualTimer();                                              // a success cancels a pending fallback
+  hideMMsg();                                                       // no stale error above a good result
   document.getElementById('aiResult').classList.remove('hidden');
   document.getElementById('saveBtn').classList.remove('hidden');
+  document.getElementById('manualFields').classList.add('hidden');
+  document.getElementById('manualSaveBtn').classList.add('hidden'); // only one save path at a time
+  document.getElementById('manualToggle').classList.remove('hidden');
 }
 
 function showMMsg(t,c){const e=document.getElementById('modalMsg');e.textContent=t;e.className='m-msg '+c;e.classList.remove('hidden');}
@@ -3474,7 +3514,7 @@ async function processQueue(){
         : 'You are helping a Hebrew speaker learn BRITISH English. Rules: (1) Use British spelling everywhere (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). (2) The example sentence must sound natural to a British speaker and use British vocabulary (flat, lift, lorry, holiday, autumn, queue, rubbish). (3) Never use American spelling or American-only vocabulary. For the word "'+item.en+'", respond ONLY with JSON (no backticks, no markdown):\n{"he":"Hebrew translation 2-4 words","explain":"short explanation in Hebrew","example":"one natural British English sentence","cefr":"the CEFR level of this word for a learner — exactly one of A1, A2, B1, B2, C1, C2, judged on how frequent and specialised it is","brit":"short Hebrew note on the British angle, or empty string"}';
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',headers:getApiHeaders(),
-        body:JSON.stringify({model:API_MODEL,max_tokens:800,
+        body:JSON.stringify({model:API_MODEL,max_tokens:2000,
           messages:[{role:'user',content:prompt}]})
       });
       if(res.status===529||res.status===503){
