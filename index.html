@@ -407,6 +407,40 @@ main {
 }
 body.dark .au-warn { color:var(--gold); }
 
+/* ---- word search ---- */
+.wl-search { display:flex; gap:8px; align-items:center; margin-bottom:14px; }
+.wl-search input {
+  flex:1; padding:9px 15px; border-radius:999px;
+  border:1.5px solid var(--border2); background:var(--bg);
+  color:var(--txt); font-family:inherit; font-size:0.85rem;
+  font-weight:500; outline:none; transition:border-color .2s;
+}
+.wl-search input:focus { border-color:var(--blue); }
+.wl-search input::placeholder { color:var(--txt3); font-weight:500; }
+.wl-clear {
+  border:none; background:transparent; color:var(--txt3);
+  font-size:1rem; cursor:pointer; padding:4px 6px; line-height:1;
+}
+.wl-count { font-size:0.74rem; color:var(--txt3); font-weight:700; white-space:nowrap; }
+.wl-empty { text-align:center; color:var(--txt3); font-size:0.86rem; padding:20px 4px; font-weight:500; line-height:1.7; }
+.wl-hit { background:var(--gold-bg); border-radius:4px; padding:0 2px; }
+
+/* ---- "you already have this word" card ---- */
+.dup-head {
+  display:flex; align-items:center; gap:8px;
+  background:var(--gold-bg); border:1.5px solid var(--gold);
+  border-radius:12px; padding:11px 14px;
+  font-size:0.85rem; font-weight:700; color:#8a5a00;
+  line-height:1.5; direction:rtl;
+}
+body.dark .dup-head { color:var(--gold); }
+.btn-practise {
+  padding:11px 22px; border-radius:999px; border:none;
+  background:var(--gold); color:#2a1f00; font-family:inherit;
+  font-size:0.92rem; font-weight:700; cursor:pointer;
+}
+body.dark .btn-practise { color:#1a1400; }
+
 /* ── PRACTICE SCOPE ── */
 .scope-row {
   display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
@@ -816,7 +850,7 @@ body.playing .io-row { display: none !important; }
       <input class="m-input m-input-full" id="newCtx" dir="ltr"
              placeholder="e.g. They're throwing a party on Friday" style="font-size:0.88rem;">
     </div>
-    <div class="divider">— או —</div>
+    <div class="divider" id="manualDivider">— או —</div>
     <button class="btn-manual" id="manualToggle" onclick="showManual()">✏️ הוסף ידנית (ללא אינטרנט)</button>
     <div id="manualFields" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
       <div id="manualFieldEnHe">
@@ -843,6 +877,7 @@ body.playing .io-row { display: none !important; }
       <div class="ai-lbl">למילה יש כמה משמעויות — בחר את הנכונה</div>
       <div id="aiSenseChips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
     </div>
+    <div id="dupHead" class="dup-head hidden"></div>
     <div id="aiResult" class="ai-result hidden">
       <div><div class="ai-lbl">תרגום (ניתן לעריכה)</div><input class="ai-he-input" id="newHe" dir="rtl" placeholder="תרגום..."></div>
       <div><div class="ai-lbl">הסבר</div><div id="aiExplain" style="color:var(--txt2);font-size:0.88rem;line-height:1.6;direction:rtl;font-weight:500;"></div></div>
@@ -856,6 +891,7 @@ body.playing .io-row { display: none !important; }
       <button class="btn-cancel" onclick="closeModal()">ביטול</button>
       <button class="btn-save hidden" id="saveBtn" onclick="saveAI()">שמור ✓</button>
       <button class="btn-save hidden" id="manualSaveBtn" onclick="saveManual()">שמור ✓</button>
+      <button class="btn-practise hidden" id="practiseBtn" onclick="practiseForgotten()">🔁 תרגל אותה עכשיו</button>
     </div>
   </div>
 </div>
@@ -928,6 +964,7 @@ body.playing .io-row { display: none !important; }
   <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
   <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
   <button data-s="heard"   onclick="setScope('heard')">🎧 ששמעתי</button>
+  <button data-s="forgot"  onclick="setScope('forgot')">🔁 שכחתי</button>
   <span id="scopeCount"></span>
 </div>
 
@@ -1055,6 +1092,7 @@ body.playing .io-row { display: none !important; }
         <button data-s="today"   onclick="setScope('today')">🕐 מהיום</button>
         <button data-s="session" onclick="setScope('session')">⚡ מהסשן</button>
         <button data-s="heard"   onclick="setScope('heard')">🎧 ששמעתי</button>
+        <button data-s="forgot"  onclick="setScope('forgot')">🔁 שכחתי</button>
       </div>
       <div class="g-statrow">
         <div class="g-stat">
@@ -1183,7 +1221,7 @@ body.playing .io-row { display: none !important; }
   </div>
 
   <div class="wl-toggle" onclick="toggleList()">📋 הצג את כל המילים</div>
-  <div class="word-list" id="wordList"><div class="lvl-summary" id="lvlSummary"></div><div class="wl-inner" id="wlInner"></div></div>
+  <div class="word-list" id="wordList"><div class="wl-search"><input id="wlSearch" type="search" placeholder="חפש מילה באנגלית או בעברית..." oninput="buildList()" autocomplete="off"><button class="wl-clear" id="wlClear" onclick="clearWlSearch()" style="display:none" title="נקה">✕</button><span class="wl-count" id="wlCount"></span></div><div class="lvl-summary" id="lvlSummary"></div><div class="wl-inner" id="wlInner"></div></div>
 
   <div class="io-row">
     <button class="btn-io" onclick="downloadUpdatedFile()" style="border-color:var(--blue);color:var(--blue);font-weight:600;">💾 הורד קובץ מעודכן</button>
@@ -1635,8 +1673,8 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.5';
-const APP_BUILD   = '2026-10-15';
+const APP_VERSION = '2.6';
+const APP_BUILD   = '2026-10-29';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
    in ``` fences, with a stray sentence around it, or cut off mid-object when the
@@ -1773,6 +1811,10 @@ function setDir(dir){
   document.getElementById('manualFieldHeEn').style.display=dir==='he'?'block':'none';
   // reset results
   cancelManualTimer();
+  dupWord = null;
+  document.getElementById('dupHead').classList.add('hidden');
+  document.getElementById('practiseBtn').classList.add('hidden');
+  document.querySelector('.ai-he-input').readOnly = false;
   document.getElementById('aiResult').classList.add('hidden');
   document.getElementById('saveBtn').classList.add('hidden');
   document.getElementById('manualSaveBtn').classList.add('hidden');
@@ -1784,7 +1826,7 @@ async function lookupWordHe(){
   const he=document.getElementById('newHeWord').value.trim();
   if(!he){showMMsg('⚠️ הכנס מילה בעברית','err');return;}
   const dupHeLookup = findDuplicate(null, he);
-  if(dupHeLookup && dupHeLookup.level === 'exact'){ showMMsg('⚠️ ' + dupHeLookup.msg, 'err'); return; }
+  if(dupHeLookup && dupHeLookup.level === 'exact'){ showExistingWord(dupHeLookup, he); return; }
   if(dupHeLookup) showMMsg('ℹ️ ' + dupHeLookup.msg, 'err');
   if(location.protocol==='file:' && !apiKey){showMMsg('📂 הגדר API Key (לחץ 🔑 למעלה) או הוסף ידנית','err');showManual();return;}
   const btn=document.getElementById('aiBtnHe');
@@ -1917,19 +1959,34 @@ const SESSION_START = Date.now();
 let practiceScope = 'all';            // all | mine | today | session
 let wordSeen = {};                    // en -> timestamp (seen anywhere)
 let wordHeard = {};                   // en -> timestamp (heard in audio mode)
+let wordForgot = {};                  // en -> timestamp (tried to re-add it)
 
 function loadSeen(){
   try{ wordSeen = JSON.parse(localStorage.getItem('vocab_seen')||'{}'); }catch(e){ wordSeen={}; }
   try{ wordHeard = JSON.parse(localStorage.getItem('vocab_heard')||'{}'); }catch(e){ wordHeard={}; }
+  try{ wordForgot = JSON.parse(localStorage.getItem('vocab_forgot')||'{}'); }catch(e){ wordForgot={}; }
   try{ practiceScope = localStorage.getItem('vocab_scope') || 'all'; }catch(e){}
 }
 function saveSeen(){
   try{
     localStorage.setItem('vocab_seen', JSON.stringify(wordSeen));
+    localStorage.setItem('vocab_forgot', JSON.stringify(wordForgot));
     localStorage.setItem('vocab_heard', JSON.stringify(wordHeard));
   }catch(e){}
 }
 function markHeard(en){ if(!en) return; wordHeard[en] = Date.now(); markSeen(en); }
+
+/* A re-add means the word was forgotten. Stamp it, and clear its mastery so the
+   smart mode and the weak-word picker treat it as unlearned again. */
+function markForgot(en){
+  if(!en) return;
+  wordForgot[en] = Date.now();
+  mastery[en] = {correct:0, total:0};
+  try{ localStorage.setItem('vocab_forgot', JSON.stringify(wordForgot)); }catch(e){}
+  saveLocal();
+  markSeen(en);
+}
+function forgotCount(){ return Object.keys(wordForgot).length; }
 function markSeen(en){ if(!en) return; wordSeen[en] = Date.now(); saveSeen(); }
 function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 
@@ -1938,6 +1995,7 @@ function practicePool(){
   if(practiceScope === 'today'){  const t = startOfToday();
                                   return WORDS.filter(w => (wordSeen[w.en]||0) >= t); }
   if(practiceScope === 'session') return WORDS.filter(w => (wordSeen[w.en]||0) >= SESSION_START);
+  if(practiceScope === 'forgot')  return WORDS.filter(w => wordForgot[w.en]);
   if(practiceScope === 'heard'){  const t = startOfToday();
                                   return WORDS.filter(w => (wordHeard[w.en]||0) >= t); }
   return WORDS;
@@ -1973,6 +2031,11 @@ function showScopeEmpty(){
   document.getElementById('doneScreen').classList.add('hidden');
   const box = document.getElementById('scopeEmpty');
   box.classList.remove('hidden');
+  if(practiceScope === 'forgot'){
+    document.getElementById('scopeEmptyMsg').textContent =
+      'עוד לא סומנה מילה כנשכחה. זה קורה מעצמו כשאתה מנסה להוסיף מילה שכבר קיימת.';
+    return;
+  }
   document.getElementById('scopeEmptyMsg').textContent =
     practiceScope === 'session'
       ? 'עדיין לא עברת על מילים בסשן הזה. הפוך כמה כרטיסיות וחזור לכאן.'
@@ -3097,17 +3160,52 @@ function showSmartDone(){
   recordSession(pct);setProgress(100);
 }
 
+function wlQuery(){
+  const el = document.getElementById('wlSearch');
+  return el ? el.value.trim().toLowerCase() : '';
+}
+function clearWlSearch(){
+  const el = document.getElementById('wlSearch');
+  if(el){ el.value=''; el.focus(); }
+  buildList();
+}
+/* Matches English, Hebrew, the explanation, the example and the level, so
+   "B2", "lift" and "מפואר" all find something. */
+function wordMatches(w, q){
+  if(!q) return true;
+  return [w.en, w.he, w.explain, w.example, w.brit, w.cefr]
+    .some(f => (f||'').toLowerCase().includes(q));
+}
+
 function buildList(){
   renderLevelSummary();
   const el=document.getElementById('wlInner');el.innerHTML='';
-  WORDS.forEach((w,i)=>{
+  const q = wlQuery();
+  const clr = document.getElementById('wlClear');
+  if(clr) clr.style.display = q ? '' : 'none';
+
+  // Pair every word with its REAL index in WORDS before filtering - deleteWord
+  // splices by that index, so a filtered position would delete the wrong word.
+  const rows = WORDS.map((w,i) => ({w,i})).filter(r => wordMatches(r.w, q));
+
+  const cnt = document.getElementById('wlCount');
+  if(cnt) cnt.textContent = q ? (rows.length + ' / ' + WORDS.length) : (WORDS.length + ' מילים');
+
+  if(!rows.length){
+    el.innerHTML = '<div class="wl-empty">לא נמצאה מילה שמתאימה ל־<strong>' + esc(q) + '</strong>'
+      + '<br>אפשר להוסיף אותה דרך ➕ למעלה</div>';
+    return;
+  }
+
+  rows.forEach(({w,i})=>{
     const m=mastery[w.en];
     const pct=m&&m.total>0?Math.round(m.correct/m.total*100):null;
     const dot=pct===null?'':(pct>=70?'<span style="color:var(--ok);font-size:0.6rem;margin-right:3px">●</span>':'<span style="color:var(--err);font-size:0.6rem;margin-right:3px">●</span>');
     const d=document.createElement('div');d.className='wl-row';
     const mineTag = w.mine ? '<span title="מילה שהוספת — נכללת במשחק" style="color:var(--blue);font-size:0.7rem;margin-left:3px">🎮</span>' : '';
+    const forgotTag = wordForgot[w.en] ? '<span title="ניסית להוסיף אותה שוב — סומנה כנשכחה" style="font-size:0.7rem;margin-left:3px">🔁</span>' : '';
     const lvlTag = cefrBadge(w);
-    d.innerHTML=`<span>${dot}${lvlTag} <span class="wl-en">${w.en}</span>${mineTag} <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
+    d.innerHTML=`<span>${dot}${lvlTag} <span class="wl-en">${w.en}</span>${mineTag}${forgotTag} <span class="wl-he">— ${w.he}</span></span><button class="del-btn" onclick="deleteWord(${i})">✕</button>`;
     el.appendChild(d);
   });
 }
@@ -3136,6 +3234,10 @@ function deleteWord(i){
 
 function openModal(){
   cancelManualTimer();
+  dupWord = null;
+  document.getElementById('dupHead').classList.add('hidden');
+  document.getElementById('practiseBtn').classList.add('hidden');
+  document.querySelector('.ai-he-input').readOnly = false;
   document.getElementById('newEn').value='';
   document.getElementById('newHe').value='';
   document.getElementById('newHe').readOnly=false;
@@ -3147,6 +3249,7 @@ function openModal(){
   document.getElementById('saveBtn').classList.add('hidden');
   document.getElementById('manualSaveBtn').classList.add('hidden');
   document.getElementById('manualToggle').classList.remove('hidden');
+  document.getElementById('manualDivider').classList.remove('hidden');
   document.getElementById('modalMsg').classList.add('hidden');
   const oldQBtn=document.getElementById('queueAddBtn');
   if(oldQBtn)oldQBtn.remove();
@@ -3174,10 +3277,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 function showManual(){
   cancelManualTimer();
+  document.getElementById('dupHead').classList.add('hidden');
+  document.getElementById('practiseBtn').classList.add('hidden');
   document.getElementById('manualFields').classList.remove('hidden');
   document.getElementById('manualSaveBtn').classList.remove('hidden');
   document.getElementById('saveBtn').classList.add('hidden');       // only one save path at a time
   document.getElementById('manualToggle').classList.add('hidden');
+  document.getElementById('manualDivider').classList.add('hidden');
   setTimeout(()=>document.getElementById('manualHe').focus(),50);
 }
 
@@ -3186,7 +3292,7 @@ async function lookupWord(){
   const en=document.getElementById('newEn').value.trim();
   if(!en){showMMsg('⚠️ הכנס מילה תחילה','err');return;}
   const dupEnLookup = findDuplicate(en, null);
-  if(dupEnLookup){ showMMsg('⚠️ ' + dupEnLookup.msg, 'err'); return; }
+  if(dupEnLookup){ showExistingWord(dupEnLookup, en); return; }
 
   // קובץ HTML מקומי בלי API key לא יכול לקרוא API חיצוני — עבור לידני אוטומטית
   if(location.protocol==='file:' && !apiKey){
@@ -3322,6 +3428,10 @@ function renderSenses(p, dir){
     wrap.style.display = 'none';
   }
   showSense(0);
+  dupWord = null;
+  document.getElementById('dupHead').classList.add('hidden');
+  document.getElementById('practiseBtn').classList.add('hidden');
+  document.querySelector('.ai-he-input').readOnly = false;
   cancelManualTimer();                                              // a success cancels a pending fallback
   hideMMsg();                                                       // no stale error above a good result
   document.getElementById('aiResult').classList.remove('hidden');
@@ -3329,7 +3439,65 @@ function renderSenses(p, dir){
   document.getElementById('manualFields').classList.add('hidden');
   document.getElementById('manualSaveBtn').classList.add('hidden'); // only one save path at a time
   document.getElementById('manualToggle').classList.remove('hidden');
+  document.getElementById('manualDivider').classList.remove('hidden');
 }
+
+/* The word is already in the bank, so there is nothing to save - but the fact
+   that he reached for it means he no longer remembers it. Show the whole entry
+   so it can be re-learned on the spot, and mark it as forgotten. */
+let dupWord = null;
+function showExistingWord(hit, typed){
+  if(!hit || !hit.word) return;
+  const w = hit.word;
+  dupWord = w;
+  markForgot(w.en);
+
+  document.getElementById('aiSenses').style.display = 'none';
+  const head = document.getElementById('dupHead');
+  head.innerHTML = '⚠️ <span>כבר למדת את <strong dir="ltr">' + esc(w.en) + '</strong>'
+    + (w.cefr ? ' · ' + esc(w.cefr) : '') + ' — ' + esc(whose(w)) + '.<br>'
+    + 'סימנתי אותה כנשכחה כדי שתחזור לתרגול.</span>';
+  head.classList.remove('hidden');
+
+  // Reuse the result card so an existing word looks exactly like a new one.
+  const main = document.querySelector('.ai-he-input');
+  main.value = w.he || '';
+  main.readOnly = true;
+  document.getElementById('aiExplain').textContent = w.explain || '';
+  document.getElementById('aiExample').textContent = w.example ? '"' + w.example + '"' : '';
+
+  const pw = document.getElementById('aiPhraseWrap'); if(pw) pw.style.display = 'none';
+  const cw = document.getElementById('aiCefrWrap');
+  if(w.cefr){ document.getElementById('aiCefr').innerHTML = cefrBadge(w); cw.style.display=''; }
+  else cw.style.display='none';
+  const bw = document.getElementById('aiBritWrap');
+  if(w.brit){ document.getElementById('aiBrit').textContent = w.brit; bw.style.display=''; }
+  else bw.style.display='none';
+
+  cancelManualTimer();
+  hideMMsg();
+  document.getElementById('aiResult').classList.remove('hidden');
+  document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('manualSaveBtn').classList.add('hidden');
+  document.getElementById('manualFields').classList.add('hidden');
+  document.getElementById('manualToggle').classList.add('hidden');
+  document.getElementById('manualDivider').classList.add('hidden');
+  document.getElementById('practiseBtn').classList.remove('hidden');
+  buildList();
+  renderScope();
+}
+
+/* Jump straight into practising the words he has forgotten. */
+function practiseForgotten(){
+  closeModal();
+  setSection('vocab');
+  setScope('forgot');
+  setMode('fc');
+  showSync('🔁 תרגול מילים שנשכחו');
+}
+
+function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 function showMMsg(t,c){const e=document.getElementById('modalMsg');e.textContent=t;e.className='m-msg '+c;e.classList.remove('hidden');}
 
@@ -3350,7 +3518,7 @@ function saveAI(){
   }
   if(!en||!he){showMMsg('⚠️ חסרים פרטים','err');return;}
   const dAI = findDuplicate(en, he);
-  if(dAI && dAI.level === 'exact'){ showMMsg('⚠️ ' + dAI.msg, 'err'); return; }
+  if(dAI && dAI.level === 'exact'){ showExistingWord(dAI, en); return; }
   if(dAI && !confirm(dAI.msg + '\n\nלהוסיף בכל זאת?')) return;
   WORDS.push({en,he,explain:aiData?.explain||'',example:aiData?.example||'',brit:aiData?.brit||'',cefr:aiData?.cefr||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
@@ -3369,7 +3537,7 @@ function saveManual(){
     if(!en){showMMsg('⚠️ הכנס תרגום לאנגלית','err');return;}
   }
   const dMan = findDuplicate(en, he);
-  if(dMan && dMan.level === 'exact'){ showMMsg('⚠️ ' + dMan.msg, 'err'); return; }
+  if(dMan && dMan.level === 'exact'){ showExistingWord(dMan, en); return; }
   if(dMan && !confirm(dMan.msg + '\n\nלהוסיף בכל זאת?')) return;
   WORDS.push({en,he,explain:'',example:'',cefr:manualLevel||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
