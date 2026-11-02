@@ -407,6 +407,73 @@ main {
 }
 body.dark .au-warn { color:var(--gold); }
 
+/* ---- story mode ---- */
+.st-bar { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; width:100%; }
+.st-btn-main {
+  padding:12px 26px; border-radius:999px; border:none;
+  background:var(--blue); color:#fff; font-family:inherit;
+  font-size:0.95rem; font-weight:700; cursor:pointer;
+}
+.st-btn-main:disabled { opacity:0.55; cursor:default; }
+.st-btn {
+  padding:10px 18px; border-radius:999px; border:1.5px solid var(--border2);
+  background:var(--surface); color:var(--txt2); font-family:inherit;
+  font-size:0.82rem; font-weight:600; cursor:pointer;
+}
+.st-btn.on { background:var(--blue-bg); border-color:var(--blue); color:var(--blue); }
+.st-msg { font-size:0.85rem; font-weight:600; text-align:center; line-height:1.6; padding:4px 8px; }
+.st-msg.err { color:var(--red); }
+.st-msg.ok  { color:var(--txt3); }
+.st-card {
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:18px; padding:22px 20px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:14px;
+}
+.st-title {
+  font-family:'Fraunces',Georgia,'Times New Roman',serif;
+  font-size:1.5rem; font-weight:700; color:var(--txt);
+  direction:ltr; text-align:left; line-height:1.3;
+}
+.st-title-he { font-size:0.85rem; color:var(--txt3); font-weight:600; direction:rtl; margin-top:5px; }
+.st-body {
+  direction:ltr; text-align:left; color:var(--txt);
+  font-family:'Fraunces',Georgia,'Times New Roman',serif;
+  font-size:1.06rem; line-height:1.95; font-weight:500;
+}
+.st-body p { margin:0 0 14px; }
+.st-body p:last-child { margin-bottom:0; }
+.st-w {
+  color:var(--blue); font-weight:700; cursor:pointer;
+  border-bottom:2px dotted var(--blue); padding-bottom:1px;
+}
+.st-w.seen { background:var(--blue-bg); border-radius:4px; padding:0 3px; }
+.st-sent { background:var(--gold-bg); border-radius:4px; }
+.st-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.st-gist {
+  background:var(--bg2); border-radius:12px; padding:12px 14px;
+  font-size:0.88rem; color:var(--txt2); direction:rtl; line-height:1.7; font-weight:500;
+}
+.st-word {
+  background:var(--blue-bg); border:1.5px solid var(--blue);
+  border-radius:14px; padding:14px 16px; direction:rtl;
+  display:flex; flex-direction:column; gap:7px;
+}
+.st-word .w-en { direction:ltr; text-align:left; font-size:1.15rem; font-weight:700; color:var(--blue); font-family:'Fraunces',Georgia,serif; }
+.st-word .w-he { font-size:1rem; font-weight:700; color:var(--green); }
+.st-word .w-ex { font-size:0.84rem; color:var(--txt2); line-height:1.6; }
+.st-nav { display:flex; gap:10px; align-items:center; justify-content:center; }
+.st-pos { font-size:0.8rem; color:var(--txt3); font-weight:700; min-width:54px; text-align:center; }
+.st-bank { width:100%; display:flex; flex-direction:column; gap:8px; }
+.st-bank-row {
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:12px; padding:11px 14px; cursor:pointer;
+}
+.st-bank-row:hover { border-color:var(--blue); }
+.st-bank-t { direction:ltr; text-align:left; font-weight:700; font-size:0.9rem; color:var(--txt); }
+.st-bank-m { font-size:0.72rem; color:var(--txt3); font-weight:600; direction:rtl; }
+.st-empty { text-align:center; color:var(--txt3); font-size:0.9rem; line-height:1.8; font-weight:500; padding:12px 6px; }
+
 /* ---- word search ---- */
 .wl-search { display:flex; gap:8px; align-items:center; margin-bottom:14px; }
 .wl-search input {
@@ -948,14 +1015,15 @@ body.playing .io-row { display: none !important; }
 
 <!-- MODES -->
 <div class="modes">
-  <button class="mode-btn active" onclick="setMode('fc')">🃏 כרטיסיות</button>
-  <button class="mode-btn" onclick="setMode('mc')">🔤 בחירה מרובה</button>
-  <button class="mode-btn" onclick="setMode('fill')">✏️ השלמת מילה</button>
-  <button class="mode-btn" onclick="setMode('write')">📝 כתיבת תרגום</button>
-  <button class="mode-btn" onclick="setMode('cloze')">🔤 מילה במשפט</button>
-  <button class="mode-btn" onclick="setMode('smart')">🧠 מצב חכם</button>
-  <button class="mode-btn" onclick="setMode('game')">🎮 משחק</button>
-  <button class="mode-btn" onclick="setMode('audio')">🎧 האזנה</button>
+  <button class="mode-btn active" data-m="fc"    onclick="setMode('fc')">🃏 כרטיסיות</button>
+  <button class="mode-btn" data-m="mc"    onclick="setMode('mc')">🔤 בחירה מרובה</button>
+  <button class="mode-btn" data-m="fill"  onclick="setMode('fill')">✏️ השלמת מילה</button>
+  <button class="mode-btn" data-m="write" onclick="setMode('write')">📝 כתיבת תרגום</button>
+  <button class="mode-btn" data-m="cloze" onclick="setMode('cloze')">🔤 מילה במשפט</button>
+  <button class="mode-btn" data-m="smart" onclick="setMode('smart')">🧠 מצב חכם</button>
+  <button class="mode-btn" data-m="game"  onclick="setMode('game')">🎮 משחק</button>
+  <button class="mode-btn" data-m="audio" onclick="setMode('audio')">🎧 האזנה</button>
+  <button class="mode-btn" data-m="story" onclick="setMode('story')">📖 סיפור</button>
 </div>
 
 <div class="scope-row" id="scopeRow">
@@ -1212,6 +1280,35 @@ body.playing .io-row { display: none !important; }
   </div>
 
   <!-- DONE -->
+  <div id="storyMode" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div class="st-bar">
+      <button class="st-btn-main" id="stNewBtn" onclick="stGenerate()">✨ צור סיפור חדש</button>
+      <button class="st-btn" id="stBankBtn" onclick="stToggleBank()">📚 מקבץ</button>
+      <button class="st-btn" id="stTripBtn" onclick="stPrefetch()">🚗 הכן לנסיעה</button>
+    </div>
+    <div id="stMsg" class="st-msg hidden"></div>
+    <div id="stEmpty" class="st-empty"></div>
+    <div id="stBank" class="st-bank hidden"></div>
+    <div id="stCard" class="st-card hidden">
+      <div>
+        <div class="st-title" id="stTitle"></div>
+        <div class="st-title-he" id="stTitleHe"></div>
+      </div>
+      <div class="st-body" id="stBody"></div>
+      <div class="st-actions">
+        <button class="st-btn" id="stPlayBtn" onclick="stToggleSpeak()">🔊 האזן</button>
+        <button class="st-btn" id="stGistBtn" onclick="stToggleGist()">🇮🇱 מה קרה בסיפור?</button>
+      </div>
+      <div id="stGist" class="st-gist hidden"></div>
+      <div id="stWordPanel" class="st-word hidden"></div>
+      <div class="st-nav">
+        <button class="st-btn" onclick="stPrev()">→ הקודם</button>
+        <span class="st-pos" id="stPos"></span>
+        <button class="st-btn" onclick="stNext()">הבא ←</button>
+      </div>
+    </div>
+  </div>
+
   <div class="done-wrap hidden" id="doneScreen">
     <div style="font-size:2.5rem;margin-bottom:6px;">🎉</div>
     <div style="font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:1.8rem;font-weight:700;color:var(--txt);margin-bottom:4px;">סיימת!</div>
@@ -1673,8 +1770,8 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.6';
-const APP_BUILD   = '2026-10-29';
+const APP_VERSION = '2.7';
+const APP_BUILD   = '2026-11-02';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
    in ``` fences, with a stray sentence around it, or cut off mid-object when the
@@ -1965,6 +2062,8 @@ function loadSeen(){
   try{ wordSeen = JSON.parse(localStorage.getItem('vocab_seen')||'{}'); }catch(e){ wordSeen={}; }
   try{ wordHeard = JSON.parse(localStorage.getItem('vocab_heard')||'{}'); }catch(e){ wordHeard={}; }
   try{ wordForgot = JSON.parse(localStorage.getItem('vocab_forgot')||'{}'); }catch(e){ wordForgot={}; }
+  try{ stBank = JSON.parse(localStorage.getItem('vocab_stories')||'[]'); }catch(e){ stBank=[]; }
+  if(!Array.isArray(stBank)) stBank = [];
   try{ practiceScope = localStorage.getItem('vocab_scope') || 'all'; }catch(e){}
 }
 function saveSeen(){
@@ -2025,7 +2124,7 @@ function setScope(s){
 function scopeBlocks(m){ return m !== 'fc' && practicePool().length === 0; }
 
 function showScopeEmpty(){
-  ['mc','fill','write','cloze','smart','game','audio'].forEach(id => {
+  ['mc','fill','write','cloze','smart','game','audio','story'].forEach(id => {
     const el = document.getElementById(id+'Mode'); if(el) el.classList.add('hidden');
   });
   document.getElementById('doneScreen').classList.add('hidden');
@@ -2939,9 +3038,10 @@ function startCloze(){
 function setMode(m){
   gameStop();
   if(typeof auStop==='function') auStop();                       // always kill the game timer when leaving/entering a mode
+  if(typeof stStopSpeak==='function') stStopSpeak();             // and stop any story being read aloud
   mode=m;
-  const ids=['fc','mc','fill','write','cloze','smart','game','audio'];
-  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===m));
+  const ids=['fc','mc','fill','write','cloze','smart','game','audio','story'];
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active', b.dataset.m === m));
   ids.forEach(id=>document.getElementById(id+'Mode').classList.add('hidden'));
   document.getElementById('scopeEmpty').classList.add('hidden');
   if(scopeBlocks(m)){ renderScope(); showScopeEmpty(); return; }
@@ -2949,7 +3049,7 @@ function setMode(m){
   document.getElementById('doneScreen').classList.add('hidden');
   qIdx=0;score=0;qTotal=0;
   renderScope();
-  if(m!=='game' && m!=='cloze') shuffled=makeQuestions(pickSession(m==='smart'?getWeakWords():practicePool()));
+  if(m!=='game' && m!=='cloze' && m!=='story') shuffled=makeQuestions(pickSession(m==='smart'?getWeakWords():practicePool()));
   if(m==='fc'){fcIdx=0;loadFC();}
   if(m==='mc')loadMC();
   if(m==='fill')loadFill();
@@ -2958,6 +3058,7 @@ function setMode(m){
   if(m==='smart')loadSmart();
   if(m==='game')showGameStart();
   if(m==='audio')loadAudio();
+  if(m==='story')loadStory();
   setProgress(0);
 }
 function restartMode(){setMode(mode);}
@@ -3541,6 +3642,413 @@ function saveManual(){
   if(dMan && !confirm(dMan.msg + '\n\nלהוסיף בכל זאת?')) return;
   WORDS.push({en,he,explain:'',example:'',cefr:manualLevel||'',mine:true});
   updateCount();saveLocal();buildList();showSync('💾 נשמר');refreshAfterAdd();closeModal();
+}
+
+
+/* ═══════════════ STORY MODE ═══════════════
+   Drilling a word teaches the translation pair; meeting it inside a situation
+   teaches when to reach for it. Each story is built from words actually
+   practised, and every story generated while online is banked so there is
+   something real to read with no connection. */
+
+const ST_PER_STORY = 7;      // more than this and the story stops reading like one
+const ST_BANK_MAX  = 10;     // keep the ten most recent, drop the rest
+let stStories = [];          // what is on screen now (this session's run)
+let stBank    = [];          // what survives offline
+let stIdx     = 0;
+let stBankOpen = false;
+let stBusy    = false;
+let stAbort   = 0;           // bumped to cancel narration
+
+function stLoadBank(){
+  try{ stBank = JSON.parse(localStorage.getItem('vocab_stories')||'[]'); }
+  catch(e){ stBank = []; }
+  if(!Array.isArray(stBank)) stBank = [];
+}
+function stSaveBank(){
+  try{ localStorage.setItem('vocab_stories', JSON.stringify(stBank.slice(0, ST_BANK_MAX))); }
+  catch(e){}
+}
+function stRemember(story){
+  stBank = stBank.filter(x => x.id !== story.id);
+  stBank.unshift(story);
+  if(stBank.length > ST_BANK_MAX) stBank = stBank.slice(0, ST_BANK_MAX);
+  stSaveBank();
+}
+
+/* Which words feed the next story: the practice scope decides, so "מהסשן"
+   gives exactly the words practised just now. Words he has forgotten or
+   answered worst come first - those are the ones worth meeting again. */
+function stCandidates(){
+  const pool = practicePool();
+  const score = w => {
+    const m = mastery[w.en];
+    const base = (!m || !m.total) ? 0.5 : (m.correct / m.total);
+    return (wordForgot[w.en] ? -1 : 0) + base;   // forgotten first, then weakest
+  };
+  return pool.slice().sort((a,b) => score(a) - score(b));
+}
+function stNextGroup(){
+  const used = {};
+  stStories.forEach(st => (st.words||[]).forEach(w => used[w] = 1));
+  const fresh = stCandidates().filter(w => !used[w.en]);
+  const take  = (fresh.length >= 3 ? fresh : stCandidates()).slice(0, ST_PER_STORY);
+  return take;
+}
+
+function stMsg(t, cls){
+  const el = document.getElementById('stMsg');
+  if(!el) return;
+  if(!t){ el.classList.add('hidden'); return; }
+  el.textContent = t; el.className = 'st-msg ' + (cls||'ok'); el.classList.remove('hidden');
+}
+
+function stPrompt(words){
+  const list = words.map(w => w.en).join(', ');
+  return 'You are writing a very short story for a Hebrew speaker learning BRITISH English. '
+    + 'Rules: (1) British spelling throughout (-ise/-isation, colour, realise, travelled, centre, programme, licence as noun). '
+    + '(2) British vocabulary and settings (flat, lift, lorry, holiday, autumn, queue, rubbish, the Tube, a village pub, a corner shop). '
+    + '(3) Never American spelling or American-only vocabulary. '
+    + '(4) Use EVERY one of these target words at least once: ' + list + '. '
+    + '(5) Around each target word, write a sentence that makes its meaning guessable from context. '
+    + '(6) The prose AROUND the target words must be simpler than the target words themselves, so the story stays readable. '
+    + '(7) It must work as a story - one small situation with a beginning and an end. Build the situation around the words; never force a word in awkwardly. '
+    + '(8) 120-180 words, 2 or 3 short paragraphs. '
+    + 'Respond ONLY with JSON (no backticks, no markdown):\n'
+    + '{"title":"short English title","titleHe":"the same title in Hebrew",'
+    + '"paragraphs":["paragraph one","paragraph two"],'
+    + '"used":[{"word":"the target word exactly as it was given to you","as":"the exact form you wrote in the story, with any inflection"}],'
+    + '"gist":"one sentence in Hebrew saying what happened"}';
+}
+
+async function stFetchStory(words){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:getApiHeaders(),
+    body: JSON.stringify({model:API_MODEL, max_tokens:2000,
+      messages:[{role:'user', content: stPrompt(words)}]})
+  });
+  if(res.status===529||res.status===503){
+    const e = new Error('השרת עמוס כרגע. נסה שוב בעוד רגע.'); e.soft = true; throw e;
+  }
+  if(!res.ok){
+    let d=null; try{ d=await res.json(); }catch(_){}
+    const e=new Error(describeApiError(res.status,d,null)); e.status=res.status; e.apiMsg=e.message; throw e;
+  }
+  const data = await res.json();
+  if(data.error){
+    const e=new Error(describeApiError(res.status,data,null)); e.apiMsg=e.message; throw e;
+  }
+  const p = parseModelJson(data);
+  const paras = Array.isArray(p.paragraphs) ? p.paragraphs.filter(x => x && x.trim())
+              : (p.story ? String(p.story).split(/\n{2,}/) : []);
+  if(!paras.length){ const e=new Error('הסיפור חזר ריק. נסה שוב.'); e.kind='parse'; throw e; }
+  return {
+    id: 's' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    title:   p.title   || 'A short story',
+    titleHe: p.titleHe || '',
+    paragraphs: paras.map(String),
+    gist:    p.gist || '',
+    used:    Array.isArray(p.used) ? p.used.filter(u => u && u.word) : [],
+    words:   words.map(w => w.en),
+    createdAt: Date.now()
+  };
+}
+
+async function stGenerate(){
+  if(stBusy) return;
+  const words = stNextGroup();
+  if(words.length < 3){
+    stMsg('צריך לפחות 3 מילים בהיקף התרגול כדי לבנות סיפור. תרגל כמה מילים או החלף היקף.', 'err');
+    return;
+  }
+  if(!navigator.onLine){
+    stMsg('אין חיבור — אפשר לקרוא סיפורים שכבר נשמרו דרך 📚 מקבץ.', 'err');
+    stBankOpen = true; stRenderBank();
+    return;
+  }
+  stBusy = true;
+  const btn = document.getElementById('stNewBtn');
+  btn.disabled = true; btn.textContent = '⏳ כותב...';
+  stMsg('בונה סיפור מ-' + words.length + ' מילים שתרגלת...', 'ok');
+  try{
+    const story = await stFetchStory(words);
+    stStories.push(story);
+    stRemember(story);
+    stIdx = stStories.length - 1;
+    stBankOpen = false;
+    stMsg('');
+    stRender();
+    words.forEach(w => markSeen(w.en));
+  }catch(e){
+    console.error('story generation failed:', e, e.raw ? ('raw: ' + e.raw) : '');
+    const why = (e.kind === 'parse' || e.soft) ? e.message
+              : (e.apiMsg || describeApiError(e.status, e.apiData, e));
+    stMsg('❌ ' + why, 'err');
+  }
+  btn.disabled = false; btn.textContent = '✨ צור סיפור חדש';
+  stBusy = false;
+  stSyncButtons();
+}
+
+/* Before a drive: fill the bank in one go, so there is a stack to listen to. */
+async function stPrefetch(){
+  if(stBusy) return;
+  if(!navigator.onLine){ stMsg('אין חיבור כרגע — אי אפשר להכין סיפורים חדשים.', 'err'); return; }
+  const want = Math.max(0, Math.min(3, ST_BANK_MAX - stBank.length)) || 3;
+  stBusy = true;
+  const btn = document.getElementById('stTripBtn');
+  btn.disabled = true;
+  let made = 0;
+  for(let i = 0; i < want; i++){
+    const words = stNextGroup();
+    if(words.length < 3) break;
+    btn.textContent = '⏳ ' + (i+1) + '/' + want;
+    stMsg('מכין סיפור ' + (i+1) + ' מתוך ' + want + '...', 'ok');
+    try{
+      const story = await stFetchStory(words);
+      stStories.push(story); stRemember(story); made++;
+      words.forEach(w => markSeen(w.en));
+    }catch(e){
+      stMsg('❌ ' + (e.apiMsg || e.message), 'err');
+      break;
+    }
+  }
+  btn.disabled = false; btn.textContent = '🚗 הכן לנסיעה';
+  stBusy = false;
+  if(made){
+    stIdx = stStories.length - 1;
+    stMsg('✅ ' + made + ' סיפורים מוכנים — זמינים גם בלי חיבור.', 'ok');
+    stBankOpen = false; stRender();
+  }
+  stSyncButtons();
+}
+
+/* ---------- rendering ---------- */
+
+/* Escape first, then wrap the target words, so nothing in the story can inject
+   markup. The model returns the exact surface form it used ("liaised" for
+   "liaise"), which is far more reliable than guessing the inflection here. */
+function stHighlight(text, used){
+  const src = String(text == null ? '' : text);
+  const forms = [];
+  (used||[]).forEach(u => {
+    const base = String(u.word||'').trim();
+    const form = String(u.as||u.word||'').trim();
+    if(base && form) forms.push({base, form});
+  });
+  // Longest first so "sleep deprivation" beats the "deprivation" inside it.
+  forms.sort((a,b) => b.form.length - a.form.length);
+
+  // Collect every match against the PLAIN text before writing any markup. An
+  // earlier version replaced into the HTML form by form, which let a short word
+  // match inside the data-w attribute of a longer one and corrupt the output.
+  const hits = [];
+  forms.forEach(({base, form}) => {
+    const safe = form.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('(^|[^A-Za-z0-9_])(' + safe + ')(?![A-Za-z0-9_])', 'gi');
+    let m;
+    while((m = re.exec(src)) !== null){
+      const start = m.index + m[1].length;
+      hits.push({start, end: start + m[2].length, base});
+      re.lastIndex = start + m[2].length;     // keep scanning after this hit
+    }
+  });
+
+  // Earlier (longer) forms win any overlap; the rest are dropped.
+  hits.sort((a,b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+  const kept = [];
+  let guard = -1;
+  hits.forEach(h => { if(h.start >= guard){ kept.push(h); guard = h.end; } });
+
+  // Build once, escaping every plain segment as it goes.
+  let out = '', at = 0;
+  kept.forEach(h => {
+    out += esc(src.slice(at, h.start));
+    out += '<span class="st-w" data-w="' + esc(h.base) + '" onclick="stTapWord(this)">'
+         + esc(src.slice(h.start, h.end)) + '</span>';
+    at = h.end;
+  });
+  out += esc(src.slice(at));
+  return out;
+}
+
+function stRender(){
+  const card = document.getElementById('stCard');
+  const empty = document.getElementById('stEmpty');
+  const bank = document.getElementById('stBank');
+  bank.classList.add('hidden');
+  const st = stStories[stIdx];
+  if(!st){ card.classList.add('hidden'); stShowEmpty(); stSyncButtons(); return; }
+  empty.textContent = '';
+  card.classList.remove('hidden');
+  document.getElementById('stTitle').textContent = st.title;
+  document.getElementById('stTitleHe').textContent = st.titleHe || '';
+  document.getElementById('stBody').innerHTML =
+    st.paragraphs.map(p => '<p>' + stHighlight(p, st.used) + '</p>').join('');
+  const g = document.getElementById('stGist');
+  g.textContent = st.gist || 'אין תקציר לסיפור הזה.';
+  g.classList.add('hidden');
+  document.getElementById('stGistBtn').textContent = '🇮🇱 מה קרה בסיפור?';
+  document.getElementById('stWordPanel').classList.add('hidden');
+  document.getElementById('stPos').textContent = (stIdx+1) + ' / ' + stStories.length;
+  stSyncButtons();
+}
+
+function stShowEmpty(){
+  const n = practicePool().length;
+  document.getElementById('stEmpty').innerHTML = stBank.length
+    ? 'אין סיפור פתוח. אפשר ליצור חדש, או לפתוח אחד מ־📚 המקבץ (' + stBank.length + ').'
+    : 'כאן נבנה סיפור קצר מהמילים שתרגלת, כדי לפגוש אותן בהקשר ולא ברשימה.<br>'
+      + 'כרגע יש ' + n + ' מילים בהיקף התרגול.';
+}
+
+function stSyncButtons(){
+  const bb = document.getElementById('stBankBtn');
+  if(bb){
+    bb.textContent = '📚 מקבץ' + (stBank.length ? ' (' + stBank.length + ')' : '');
+    bb.classList.toggle('on', stBankOpen);
+  }
+  const tb = document.getElementById('stTripBtn');
+  if(tb) tb.style.display = navigator.onLine ? '' : 'none';
+  const nb = document.getElementById('stNewBtn');
+  if(nb) nb.style.opacity = navigator.onLine ? '1' : '0.55';
+}
+
+function stToggleBank(){
+  stBankOpen = !stBankOpen;
+  if(stBankOpen) stRenderBank(); else stRender();
+}
+
+function stRenderBank(){
+  stStopSpeak();
+  const bank = document.getElementById('stBank');
+  document.getElementById('stCard').classList.add('hidden');
+  stLoadBank();
+  if(!stBank.length){
+    bank.classList.add('hidden');
+    document.getElementById('stEmpty').textContent =
+      'המקבץ ריק. כל סיפור שייווצר כשיש חיבור יישמר כאן אוטומטית וזמין גם בלי רשת.';
+    stSyncButtons();
+    return;
+  }
+  document.getElementById('stEmpty').textContent = '';
+  bank.classList.remove('hidden');
+  bank.innerHTML = stBank.map(st => {
+    const d = new Date(st.createdAt||Date.now());
+    const when = d.toLocaleDateString('he-IL', {day:'numeric', month:'numeric'});
+    return '<div class="st-bank-row" onclick="stOpen(\'' + st.id + '\')">'
+      + '<div><div class="st-bank-t">' + esc(st.title) + '</div>'
+      + '<div class="st-bank-m">' + when + ' · ' + (st.words||[]).length + ' מילים</div></div>'
+      + '<div class="st-bank-m">›</div></div>';
+  }).join('');
+  stSyncButtons();
+}
+
+function stOpen(id){
+  stLoadBank();
+  const st = stBank.find(x => x.id === id);
+  if(!st) return;
+  const at = stStories.findIndex(x => x.id === id);
+  if(at >= 0){ stIdx = at; } else { stStories.push(st); stIdx = stStories.length - 1; }
+  stBankOpen = false;
+  stMsg('');
+  stRender();
+}
+
+function stPrev(){ stStopSpeak(); if(stIdx > 0){ stIdx--; stRender(); } }
+function stNext(){
+  stStopSpeak();
+  if(stIdx < stStories.length - 1){ stIdx++; stRender(); }
+  else stGenerate();                     // past the last one, write the next
+}
+
+function stToggleGist(){
+  const g = document.getElementById('stGist');
+  const hidden = g.classList.contains('hidden');
+  g.classList.toggle('hidden', !hidden);
+  document.getElementById('stGistBtn').textContent = hidden ? '🙈 הסתר תקציר' : '🇮🇱 מה קרה בסיפור?';
+}
+
+/* Tapping a word in the story opens what he already knows about it, and
+   counts as meeting the word again. */
+function stTapWord(el){
+  const en = el.getAttribute('data-w');
+  const w = WORDS.find(x => normEn(x.en) === normEn(en));
+  const panel = document.getElementById('stWordPanel');
+  if(!w){ panel.classList.add('hidden'); return; }
+  el.classList.add('seen');
+  panel.innerHTML =
+      '<div class="w-en">' + esc(w.en) + ' ' + cefrBadge(w) + '</div>'
+    + '<div class="w-he">' + esc(w.he) + '</div>'
+    + (w.explain ? '<div class="w-ex">' + esc(w.explain) + '</div>' : '')
+    + (w.brit ? '<div class="w-ex">🇬🇧 ' + esc(w.brit) + '</div>' : '')
+    + '<div><button class="st-btn" onclick="speak(' + JSON.stringify(w.en).replace(/"/g,'&quot;') + ')">🔊 הקראה</button></div>';
+  panel.classList.remove('hidden');
+  markSeen(w.en);
+}
+
+/* ---------- narration ---------- */
+/* Long texts choke mobile speech engines, so read it sentence by sentence and
+   mark the one being read. */
+function stSentences(st){
+  const out = [];
+  (st.paragraphs||[]).forEach(p => {
+    // No lookbehind here on purpose: an engine that cannot parse it would throw
+    // at load time and take the whole app down, not just the narration.
+    (String(p).match(/[^.!?]+[.!?]*/g) || [String(p)])
+      .forEach(x => { if(x.trim()) out.push(x.trim()); });
+  });
+  return out;
+}
+
+function stStopSpeak(){
+  stAbort++;
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  const b = document.getElementById('stPlayBtn');
+  if(b) b.textContent = '🔊 האזן';
+  document.querySelectorAll('#stBody .st-sent').forEach(e => e.classList.remove('st-sent'));
+}
+
+function stSpeakOne(text, token){
+  return new Promise(resolve => {
+    if(!window.speechSynthesis || !text){ resolve(); return; }
+    const v = voiceFor('en-gb') || voiceFor('en');
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; u.rate = 0.88;
+    if(v) try{ u.voice = v; }catch(_){}
+    let done = false;
+    const fin = () => { if(!done){ done = true; resolve(); } };
+    u.onend = fin; u.onerror = fin;
+    setTimeout(fin, Math.max(9000, text.length * 160));   // scale with length, never hang
+    speechSynthesis.speak(u);
+  }).then(() => { if(token !== stAbort) throw 'abort'; });
+}
+
+async function stToggleSpeak(){
+  const btn = document.getElementById('stPlayBtn');
+  if(btn.textContent.indexOf('עצור') >= 0){ stStopSpeak(); return; }
+  const st = stStories[stIdx];
+  if(!st) return;
+  if(typeof auStop === 'function') auStop();    // never two voices at once
+  stAbort++;
+  const token = stAbort;
+  btn.textContent = '⏹ עצור';
+  const parts = stSentences(st);
+  try{
+    for(const part of parts){
+      if(token !== stAbort) break;
+      await stSpeakOne(part, token);
+    }
+    if(token === stAbort) stStopSpeak();
+  }catch(_){ /* aborted on purpose */ }
+}
+
+function loadStory(){
+  stLoadBank();
+  stMsg('');
+  if(stBankOpen) stRenderBank();
+  else if(stStories[stIdx]) stRender();
+  else { document.getElementById('stCard').classList.add('hidden'); stShowEmpty(); stSyncButtons(); }
 }
 
 function downloadUpdatedFile(){
