@@ -101,7 +101,18 @@ header {
   transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
 }
 .hdr-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-#syncMsg { font-size: 0.7rem; color: var(--green); white-space: nowrap; font-weight: 500; }
+/* Status messages float above the page instead of sitting in the header row.
+   In the header even "נשמר" pushed the page wider than a phone screen for
+   2.5 s, so the whole page jumped sideways after every save. */
+#syncMsg {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%); z-index: 500; pointer-events: none;
+  width: max-content; max-width: calc(100vw - 32px);
+  padding: 9px 16px; border-radius: 999px;
+  background: var(--surface); border: 1.5px solid var(--border2); box-shadow: var(--shadow-lg);
+  font-size: 0.82rem; font-weight: 600; color: var(--green); line-height: 1.45; text-align: center;
+}
+#syncMsg:empty { display: none; }
 .wcount { font-size: 0.75rem; color: var(--txt3); white-space: nowrap; font-weight: 500; }
 .btn-add {
   padding: 7px 16px; border-radius: 999px;
@@ -552,6 +563,9 @@ body.dark .btn-practise { color:#1a1400; }
 .drawer-item:hover { border-color:var(--blue); color:var(--blue); }
 .drawer-item.on { background:var(--blue); color:#fff; border-color:var(--blue); }
 .drawer-note { font-size:0.72rem; color:var(--txt3); line-height:1.7; margin-top:auto; }
+.drawer-sec { display:flex; flex-direction:column; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.drawer-sec-t { font-size:0.75rem; font-weight:700; color:var(--txt3); letter-spacing:0.02em; }
+.drawer-stat { font-size:0.8rem; color:var(--txt2); font-weight:500; line-height:1.5; }
 
 /* ── GRAMMAR ── */
 .gr-topic {
@@ -1331,9 +1345,17 @@ body.playing .io-row { display: none !important; }
   <h3>תפריט</h3>
   <button class="drawer-item on" id="navVocab" onclick="setSection('vocab')">📖 אוצר מילים</button>
   <button class="drawer-item" id="navGrammar" onclick="setSection('grammar')">🧩 דקדוק וזמנים</button>
+  <div class="drawer-sec">
+    <div class="drawer-sec-t">הנתונים שלך</div>
+    <div class="drawer-stat" id="drOffline"></div>
+    <div class="drawer-stat" id="drEvents"></div>
+    <button class="drawer-item" onclick="downloadBackup()">💾 הורד גיבוי של כל הנתונים</button>
+    <button class="drawer-item" onclick="document.getElementById('restoreFile').click()">♻️ שחזר מגיבוי</button>
+    <input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="restoreBackup(event)">
+  </div>
   <div class="drawer-note">
     שני החלקים חולקים את אותו מפתח API, ערכת הצבעים ומספר הגרסה.<br>
-    הכול נשמר במכשיר הזה בלבד.
+    הכול נשמר במכשיר הזה בלבד — כדאי להוריד גיבוי מדי פעם.
   </div>
 </div>
 
@@ -1531,20 +1553,218 @@ let aiData=null;
 let mastery={};
 let stats={sessions:0,bestPct:0,streak:0,lastDate:''};
 
+/* ═══════════════ DATA LAYER (v3) ═══════════════
+   Every word is identified by its normalised English - the same rule duplicate
+   detection uses. Until v3.0 the words added by hand were saved by POSITION
+   (everything after the words baked into the file), so deleting a baked word
+   shifted the list: the newest added word silently stopped being saved, and the
+   deleted word came back on the next reload. Words are now saved by identity,
+   and a deleted baked word is remembered as deleted. */
+const SCHEMA = 3;
+let BASE_IDS = new Set();
+let wordDeleted = {};          // id -> time it was deleted
+let deviceId = '';
+let justMigrated = false;
+const NOT_IN_BACKUP = ['vocab_api_key', 'vocab_device', 'vocab_backup_v27', 'vocab_backup_prerestore'];
+
+function wordId(w){ return (w && w.id) || normEn(w ? w.en : ''); }
+function ensureIds(){ WORDS.forEach(w => { if(!w.id) w.id = normEn(w.en); }); }
+
 function saveLocal(){
   try{
-    localStorage.setItem('vocab_extra',JSON.stringify(WORDS.slice(BASE_WORDS.length)));
-    localStorage.setItem('vocab_mastery',JSON.stringify(mastery));
-    localStorage.setItem('vocab_stats',JSON.stringify(stats));
+    ensureIds();
+    const extra = WORDS.filter(w => !BASE_IDS.has(w.id));
+    extra.forEach(w => { if(!w.u) w.u = Date.now(); });
+    WORDS.forEach(w => { if(wordDeleted[w.id]) delete wordDeleted[w.id]; });   // present = not deleted
+    localStorage.setItem('vocab_extra',   JSON.stringify(extra));
+    localStorage.setItem('vocab_deleted', JSON.stringify(wordDeleted));
+    localStorage.setItem('vocab_mastery', JSON.stringify(mastery));
+    localStorage.setItem('vocab_stats',   JSON.stringify(stats));
   }catch(e){}
 }
 function loadLocal(){
   try{
-    const extra=JSON.parse(localStorage.getItem('vocab_extra')||'[]');
-    extra.forEach(w=>{if(w.en&&w.he&&!WORDS.some(x=>x.en.toLowerCase()===w.en.toLowerCase()))WORDS.push(Object.assign({},w,{mine:true}));});
+    deviceId = localStorage.getItem('vocab_device') || '';
+    if(!deviceId){ deviceId = 'd' + Math.random().toString(36).slice(2, 10); localStorage.setItem('vocab_device', deviceId); }
+  }catch(e){ deviceId = 'd0'; }
+  migrateIfNeeded();
+  try{ wordDeleted = JSON.parse(localStorage.getItem('vocab_deleted')||'{}') || {}; }catch(e){ wordDeleted = {}; }
+  ensureIds();
+  BASE_IDS = new Set(BASE_WORDS.map(w => w.id || normEn(w.en)));
+  if(Object.keys(wordDeleted).length) WORDS = WORDS.filter(w => !wordDeleted[w.id]);
+  try{
+    const extra = JSON.parse(localStorage.getItem('vocab_extra')||'[]');
+    const have = new Set(WORDS.map(w => w.id));
+    extra.forEach(w => {
+      if(!w || !w.en || !w.he) return;
+      const id = w.id || normEn(w.en);
+      if(have.has(id) || wordDeleted[id]) return;
+      have.add(id);
+      WORDS.push(Object.assign({}, w, {id, mine: true}));
+    });
     mastery=JSON.parse(localStorage.getItem('vocab_mastery')||'{}');
     stats=Object.assign({sessions:0,bestPct:0,streak:0,lastDate:''},JSON.parse(localStorage.getItem('vocab_stats')||'{}'));
   }catch(e){}
+}
+
+/* Every learning key, as stored. The API key never goes into a backup file. */
+function collectData(){
+  const out = {};
+  evFlush();                       // answers still waiting in memory belong in the copy
+  try{
+    for(let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(!k || !(k.startsWith('vocab_') || k.startsWith('gram_'))) continue;
+      if(NOT_IN_BACKUP.includes(k)) continue;
+      out[k] = localStorage.getItem(k);
+    }
+  }catch(e){}
+  return out;
+}
+
+/* Nothing about the v2 data is changed until a full copy of it is safe. If the
+   copy cannot be written, the schema mark is not set either and the next load
+   tries again. */
+function migrateIfNeeded(){
+  let v = 0;
+  try{ v = parseInt(localStorage.getItem('vocab_schema')||'0', 10) || 0; }catch(e){}
+  if(v >= SCHEMA) return;
+  try{
+    const d = collectData();
+    if(Object.keys(d).length && !localStorage.getItem('vocab_backup_v27')){
+      localStorage.setItem('vocab_backup_v27', JSON.stringify({created: new Date().toISOString(), from: 'v2', data: d}));
+      justMigrated = true;
+    }
+    localStorage.setItem('vocab_schema', String(SCHEMA));
+  }catch(e){}
+}
+
+/* ═══════════════ ANSWER LOG ═══════════════
+   Every answer, in every mode. The SRS (v3.2) and the dynamic grammar (v3.3)
+   both read from here. d: 'r' = recognition (the answer was Hebrew),
+   'p' = production (the answer was English). */
+const EV_MAX = 5000;
+let events = null;
+function evLoad(){
+  if(events) return events;
+  try{ events = JSON.parse(localStorage.getItem('vocab_events')||'[]'); }catch(e){ events = []; }
+  if(!Array.isArray(events)) events = [];
+  return events;
+}
+/* A full log is ~750KB. Rewriting it on every answer would stall the phone in
+   fast modes like the game, so answers collect in memory and are written at
+   most every 1.5 s - and at once whenever the app is left. */
+let evTimer = null, evBlocked = false;
+function evFlush(){
+  if(evTimer){ clearTimeout(evTimer); evTimer = null; }
+  if(!events || evBlocked) return;
+  try{ localStorage.setItem('vocab_events', JSON.stringify(events)); }
+  catch(err){
+    events.splice(0, Math.floor(events.length / 2));     // storage full: keep recording, drop the oldest half
+    try{ localStorage.setItem('vocab_events', JSON.stringify(events)); }catch(_){}
+  }
+}
+function evPush(e){
+  evLoad();
+  e.i = e.t.toString(36) + Math.random().toString(36).slice(2, 6);
+  e.dv = deviceId;
+  events.push(e);
+  if(events.length > EV_MAX) events.splice(0, events.length - EV_MAX);
+  if(!evTimer) evTimer = setTimeout(evFlush, 1500);
+}
+// switching apps, locking the phone or closing the tab writes whatever is pending
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') evFlush(); });
+window.addEventListener('pagehide', evFlush);
+function logWordAnswer(en, ok, ctx){
+  ctx = ctx || {};
+  const w = WORDS.find(x => x.en === en);
+  evPush({k:'w', r: w ? wordId(w) : normEn(en), d: ctx.d || null, m: ctx.m || mode,
+          ok: !!ok, a: ctx.a == null ? null : String(ctx.a).slice(0, 80), t: Date.now()});
+}
+function logGrammarAnswer(topicId, item, ok, given){
+  const t = GRAMMAR.find(x => x.id === topicId);
+  const q = item && item.id ? item.id : (t ? t.items.indexOf(item) : -1);
+  evPush({k:'g', r: topicId, q, m:'grammar', ok: !!ok,
+          a: given == null ? null : String(given).slice(0, 80), t: Date.now()});
+}
+
+/* ═══════════════ BACKUP & RESTORE ═══════════════ */
+function saveFile(name, text, mime){
+  const a = document.createElement('a');
+  const enc = encodeURIComponent(text);
+  // a data link is what has proven to download on mobile Chrome; very large files need a blob
+  if(enc.length < 1800000) a.href = 'data:' + mime + ';charset=utf-8,' + enc;
+  else { a.href = URL.createObjectURL(new Blob([text], {type: mime})); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function downloadBackup(){
+  const payload = {app:'british-vocab', schema: SCHEMA, version: APP_VERSION,
+                   created: new Date().toISOString(), data: collectData()};
+  saveFile('vocab_backup_' + new Date().toISOString().slice(0,10) + '_v' + APP_VERSION + '.json',
+           JSON.stringify(payload), 'application/json');
+  showSync('💾 הגיבוי ירד');
+}
+function restoreBackup(ev){
+  const f = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    let p;
+    try{ p = JSON.parse(rd.result); }catch(e){ alert('הקובץ לא נקרא — הוא לא קובץ גיבוי תקין.'); return; }
+    if(!p || p.app !== 'british-vocab' || !p.data || typeof p.data !== 'object'){ alert('זה לא קובץ גיבוי של המערכת.'); return; }
+    const when = (p.created || '').slice(0, 10);
+    if(!confirm('לשחזר את הגיבוי מ-' + when + '?\n\nהנתונים הנוכחיים יוחלפו. עותק שלהם יישמר קודם, למקרה שתתחרט.')) return;
+    const keep = new Set(NOT_IN_BACKUP);
+    const mine = k => k && (k.startsWith('vocab_') || k.startsWith('gram_')) && !keep.has(k);
+    const before = collectData();
+    const writeAll = data => {
+      const old = [];
+      for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(mine(k)) old.push(k); }
+      old.forEach(k => localStorage.removeItem(k));
+      Object.keys(data).forEach(k => { if(mine(k)) localStorage.setItem(k, typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k])); });
+    };
+    try{
+      localStorage.setItem('vocab_backup_prerestore', JSON.stringify({created: new Date().toISOString(), data: before}));
+      writeAll(p.data);
+      // the answers held in memory belong to the data just replaced: never let
+      // the reload write them back over the restored log
+      evBlocked = true; events = null;
+    }catch(e){
+      try{ writeAll(before); }catch(_){}                   // put the current data back as it was
+      alert('השחזור נכשל, והנתונים הנוכחיים נשארו כמו שהיו.\n' + e.message);
+      return;
+    }
+    location.reload();
+  };
+  rd.readAsText(f);
+}
+
+/* ═══════════════ OFFLINE SHELL ═══════════════
+   Opening from scratch with no reception needs a service worker (sw.js beside
+   index.html). Only possible over https or localhost - a local file opens
+   without one anyway. */
+function setupOfflineShell(){
+  if(!window.isSecureContext || location.protocol === 'file:') return;
+  try{
+    if(!document.querySelector('link[rel="manifest"]')){
+      const l = document.createElement('link'); l.rel = 'manifest'; l.href = 'manifest.json';
+      document.head.appendChild(l);
+    }
+  }catch(e){}
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+function offlineStatus(){
+  if(location.protocol === 'file:') return '📂 קובץ מקומי — נפתח תמיד, גם בלי קליטה';
+  if(!('serviceWorker' in navigator)) return '⚠️ הדפדפן הזה לא תומך בפתיחה בלי קליטה';
+  if(navigator.serviceWorker.controller) return '✅ פתיחה בלי קליטה: פעילה';
+  return '⏳ פתיחה בלי קליטה: תופעל אחרי טעינה נוספת עם קליטה';
+}
+function renderDataPanel(){
+  const o = document.getElementById('drOffline'); if(o) o.textContent = offlineStatus();
+  const e = document.getElementById('drEvents');
+  if(e) e.textContent = '📝 ' + evLoad().length.toLocaleString('he-IL') + ' תשובות נשמרו ביומן';
 }
 
 function recordSession(pct){
@@ -1557,11 +1777,12 @@ function recordSession(pct){
   saveLocal();updateStatsUI();
 }
 
-function updateMastery(en,correct){
+function updateMastery(en,correct,ctx){
   markSeen(en);
   if(!mastery[en])mastery[en]={correct:0,total:0};
   mastery[en].total++;
   if(correct)mastery[en].correct++;
+  logWordAnswer(en, correct, ctx);
   saveLocal();updateStatsUI();
 }
 
@@ -1770,8 +1991,8 @@ const API_MODEL = 'claude-sonnet-5';
    Bumped on every delivered update. Shown at the bottom of the page, in
    the connection diagnostics, and baked into the downloaded filename so a
    file can always be identified without opening it. */
-const APP_VERSION = '2.7';
-const APP_BUILD   = '2026-11-02';
+const APP_VERSION = '3.0';
+const APP_BUILD   = '2026-11-03';
 
 /* Claude replies with text that is *supposed* to be JSON. It can arrive wrapped
    in ``` fences, with a stray sentence around it, or cut off mid-object when the
@@ -2014,7 +2235,9 @@ function speak(text){
 
 function shuffle(arr){return[...arr].sort(()=>Math.random()-0.5);}
 function setProgress(pct){document.getElementById('prog').style.width=pct+'%';}
-function showSync(msg){const el=document.getElementById('syncMsg');el.textContent=msg;setTimeout(()=>{el.textContent='';},2500);}
+// one timer at a time: a second message must not be wiped by the first one's timer
+let syncTimer = null;
+function showSync(msg, ms){const el=document.getElementById('syncMsg');el.textContent=msg;clearTimeout(syncTimer);syncTimer=setTimeout(()=>{el.textContent='';},ms||2500);}
 function updateCount(){document.getElementById('wcount').textContent=WORDS.length+' מילים';updateStatsUI();}
 
 function loadFC(){
@@ -2271,7 +2494,7 @@ function auJudge(ok){
   auJudging = false;
   document.getElementById('auJudge').classList.add('hidden');
   const w = auList[auIdx];
-  if(w){ updateMastery(w.en, ok); ok ? auRight++ : auWrong++; }
+  if(w){ updateMastery(w.en, ok, {m:'audio', d:'r'}); ok ? auRight++ : auWrong++; }
   auIdx++;
   if(auIdx >= auList.length){
     if(auLoop){ auIdx = 0; auList = shuffle(auList); }
@@ -2504,7 +2727,7 @@ function renderGrQ(){
     it.o.forEach((opt,i) => {
       const b = document.createElement('button');
       b.className = 'gr-opt'; b.textContent = opt;
-      b.onclick = () => answerGr(i === it.a, box, it, t);
+      b.onclick = () => answerGr(i === it.a, box, it, t, it.o[i]);
       box.appendChild(b);
     });
   } else {
@@ -2526,10 +2749,10 @@ function checkGrTyped(box, it, t){
   const inp = document.getElementById('grInput');
   if(!inp || inp.disabled || !inp.value.trim()) return;
   inp.disabled = true;
-  answerGr(graded(inp.value, it.a), box, it, t);
+  answerGr(graded(inp.value, it.a), box, it, t, inp.value);
 }
 
-function answerGr(ok, box, it, t){
+function answerGr(ok, box, it, t, given){
   box.querySelectorAll('.gr-opt').forEach(b => {
     b.disabled = true;
     if(b.textContent === it.o[it.a]) b.classList.add('correct');
@@ -2542,6 +2765,7 @@ function answerGr(ok, box, it, t){
   grTotal++; if(ok) grScore++;
   if(!grMastery[t.id]) grMastery[t.id] = {correct:0,total:0};
   grMastery[t.id].total++; if(ok) grMastery[t.id].correct++;
+  logGrammarAnswer(t.id, it, ok, given);
   if(grIsDiag){
     if(!grDiagScores[t.id]) grDiagScores[t.id] = {c:0,n:0};
     grDiagScores[t.id].n++; if(ok) grDiagScores[t.id].c++;
@@ -2661,6 +2885,7 @@ function openTopic(id){
 
 /* ── section switching ─────────────────────────────────────────── */
 function openDrawer(){
+  renderDataPanel();
   document.getElementById('drawer').classList.remove('hidden');
   document.getElementById('drawerBack').classList.remove('hidden');
 }
@@ -2828,7 +3053,7 @@ function gameAnswer(btn, ok, box){
   if(!gActive) return;
   const w = gCurrent.word;
   box.querySelectorAll('.choice').forEach(x => x.disabled = true);
-  updateMastery(w.en, ok);          // feeds the 🧠 smart mode too
+  updateMastery(w.en, ok, {m:'game', d: gCurrent.dir==='en' ? 'r' : 'p', a: btn.textContent});  // feeds the 🧠 smart mode too
 
   if(ok){
     gCorrect++; gStreak++;
@@ -2982,7 +3207,7 @@ function checkCloze(){
 
   inp.disabled = true;
   clozeTotal++; if(ok) clozeScore++;
-  updateMastery(w.en, ok);
+  updateMastery(w.en, ok, {m:'cloze', d:'p', a: inp.value.trim()});
 
   const fb = document.getElementById('clozeFb');
   fb.className = 'feedback ' + (ok ? 'ok' : 'no');
@@ -3087,7 +3312,7 @@ function loadMC(){
         const correct=dir==='en'?w.he:w.en;
         box.querySelectorAll('.choice').forEach(x=>{if(x.textContent===correct)x.classList.add('correct');});
       }
-      qTotal++;if(ok)score++;updateMastery(w.en,ok);
+      qTotal++;if(ok)score++;updateMastery(w.en,ok,{m:'mc', d: dir==='en' ? 'r' : 'p', a: opt.en});
       showFB('mcFb',ok,w);document.getElementById('mcNext').classList.remove('hidden');
     };
     box.appendChild(b);
@@ -3121,7 +3346,7 @@ function checkFill(){
   const typed=inp.value.trim().toLowerCase();
   const ok=typed===answer.toLowerCase()||
     answer.toLowerCase().split(/[,\s\/]+/).some(a=>a.length>1&&typed.includes(a));
-  inp.disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok);
+  inp.disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok,{m:'fill', d: dir==='en' ? 'p' : 'r', a: inp.value.trim()});
   showFB('fillFb',ok,w);document.getElementById('fillNext').classList.remove('hidden');
 }
 
@@ -3148,7 +3373,7 @@ function checkWrite(){
   const answerWords=answer.split(/[,\s\/]+/).map(x=>x.trim().toLowerCase());
   const inputWords=val.split(/\s+/).map(x=>x.trim().toLowerCase());
   const ok=inputWords.some(iw=>answerWords.some(aw=>aw.includes(iw)&&iw.length>1));
-  document.getElementById('writeInput').disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok);
+  document.getElementById('writeInput').disabled=true;qTotal++;if(ok)score++;updateMastery(w.en,ok,{m:'write', d: dir==='en' ? 'r' : 'p', a: val});
   showFB('writeFb',ok,w);document.getElementById('writeNext').classList.remove('hidden');
 }
 
@@ -3196,7 +3421,7 @@ function renderSmartQ(){
         box.querySelectorAll('.choice').forEach(x=>x.disabled=true);
         const ok=opt.en===w.en;b.classList.add(ok?'correct':'wrong');
         if(!ok){const correctLabel=dir==='en'?w.he:w.en;box.querySelectorAll('.choice').forEach(x=>{if(x.textContent===correctLabel)x.classList.add('correct');});}
-        smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(inner,ok,w);
+        smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok,{m:'smart', d: dir==='en' ? 'r' : 'p', a: opt.en});appendSmartFB(inner,ok,w);
       };box.appendChild(b);
     });
   } else if(type==='fill'){
@@ -3225,7 +3450,7 @@ function checkSFill(){
   const answer=dir==='en'?w.en:w.he;
   const typed=inp.value.trim().toLowerCase();
   const ok=typed===answer.toLowerCase()||answer.toLowerCase().split(/[,\s\/]+/).some(a=>a.length>1&&typed.includes(a));
-  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(document.getElementById('smartInner'),ok,w);
+  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok,{m:'smart', d: dir==='en' ? 'p' : 'r', a: inp.value.trim()});appendSmartFB(document.getElementById('smartInner'),ok,w);
 }
 function checkSWrite(){
   const inp=document.getElementById('sWrite');if(!inp||inp.disabled)return;
@@ -3234,7 +3459,7 @@ function checkSWrite(){
   const answerWords=answer.split(/[,\s\/]+/).map(x=>x.trim().toLowerCase());
   const inputWords=inp.value.trim().split(/\s+/).map(x=>x.trim().toLowerCase());
   const ok=inputWords.some(iw=>answerWords.some(aw=>aw.includes(iw)&&iw.length>1));
-  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok);appendSmartFB(document.getElementById('smartInner'),ok,w);
+  inp.disabled=true;smartTotal++;if(ok)smartScore++;updateMastery(w.en,ok,{m:'smart', d: dir==='en' ? 'r' : 'p', a: inp.value.trim()});appendSmartFB(document.getElementById('smartInner'),ok,w);
 }
 function appendSmartFB(parent,ok,w){
   const fb=document.createElement('div');fb.className='feedback '+(ok?'ok':'no');
@@ -3329,7 +3554,9 @@ function renderLevelSummary(){
 function toggleList(){const el=document.getElementById('wordList');el.classList.toggle('open');if(el.classList.contains('open'))buildList();}
 function deleteWord(i){
   if(WORDS.length<=4){alert('חייבות להיות לפחות 4 מילים');return;}
-  WORDS.splice(i,1);buildList();updateCount();saveLocal();showSync('🗑️ נמחק');
+  const gone = WORDS[i];
+  WORDS.splice(i,1);
+  if(gone) wordDeleted[wordId(gone)] = Date.now();buildList();updateCount();saveLocal();showSync('🗑️ נמחק');
   if(fcIdx>=WORDS.length)fcIdx=0;if(mode==='fc')loadFC();
 }
 
@@ -4254,6 +4481,8 @@ document.addEventListener('DOMContentLoaded', function(){
   loadTheme();loadApiKey();loadLocal();loadQueue();loadGrammar();loadSeen();updateCount();loadFC();buildList();updateStatsUI();updateOnlineStatus();
   const vl=document.getElementById('verLabel');
   if(vl) vl.textContent='v'+APP_VERSION+' · '+APP_BUILD;
+  setupOfflineShell();
+  if(justMigrated) setTimeout(() => showSync('✨ שודרג ל-v' + APP_VERSION + ' · גיבוי לכל הנתונים זמין בתפריט ☰', 6000), 600);
   renderTopics();
   renderScope();
   // a saved scope can be empty on a new day, so fall back rather than open a dead quiz
